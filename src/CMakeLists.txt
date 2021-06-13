@@ -102,11 +102,11 @@ endif()
 option(ENABLE_GLES "Use OpenGL ES instead of OpenGL" FALSE)
 mark_as_advanced(ENABLE_GLES)
 if(BUILD_CLIENT)
-	if(ENABLE_GLES)
-		find_package(OpenGLES2 REQUIRED)
-	else()
-		# transitive dependency from Irrlicht (see longer explanation below)
-		if(NOT WIN32)
+	# transitive dependency from Irrlicht (see longer explanation below)
+	if(NOT WIN32)
+		if(ENABLE_GLES)
+			find_package(OpenGLES2 REQUIRED)
+		else()
 			set(OPENGL_GL_PREFERENCE "LEGACY" CACHE STRING
 				"See CMake Policy CMP0072 for reference. GLVND is broken on some nvidia setups")
 			set(OpenGL_GL_PREFERENCE ${OPENGL_GL_PREFERENCE})
@@ -523,10 +523,6 @@ include_directories(
 	${PROJECT_SOURCE_DIR}/script
 )
 
-if(ENABLE_GLES)
-	include_directories(${OPENGLES2_INCLUDE_DIR} ${EGL_INCLUDE_DIR})
-endif()
-
 if(USE_GETTEXT)
 	include_directories(${GETTEXT_INCLUDE_DIR})
 endif()
@@ -762,7 +758,16 @@ else()
 		check_c_source_compiles("#ifndef __aarch64__\n#error\n#endif\nint main(){}" IS_AARCH64)
 		if(IS_AARCH64)
 			# Move text segment below LuaJIT's 47-bit limit (see issue #9367)
-			SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Ttext-segment=0x200000000")
+			if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+				# FreeBSD uses lld, and lld does not support -Ttext-segment, suggesting
+				# --image-base instead. Not sure if it's equivalent change for the purpose 
+				# but at least if fixes build on FreeBSD/aarch64
+				# XXX: the condition should also be changed to check for lld regardless of
+				# os, bit CMake doesn't have anything like CMAKE_LINKER_IS_LLD yet
+				SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--image-base=0x200000000")
+			else()
+				SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Ttext-segment=0x200000000")
+			endif()
 		endif()
 	endif()
 
