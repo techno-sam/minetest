@@ -120,6 +120,7 @@ void RenderingCore::draw3D()
 		return;
 	hud->drawBlockBounds();
 	hud->drawSelectionMesh();
+	if (!shadow_renderer) {//for some reason, freezes computer when shadows and HUD nodes are enabled simultaneously
 	// HUD nodes (can't be drawn in drawHUD, because the transform is all wrong)
 	//preparation
 	ClientEnvironment &env = client->getEnv();
@@ -292,6 +293,7 @@ void RenderingCore::draw3D()
 	//cleanup
 	driver->setMaterial(oldmaterial);
 	// End HUD nodes
+	}
 	if (draw_wield_tool)
 		camera->drawWieldedTool();
 }
