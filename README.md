@@ -37,9 +37,9 @@ Further documentation
 - Forum: https://forum.minetest.net/
 - GitHub: https://github.com/minetest/minetest/
 - [doc/](doc/) directory of source distribution
-- Changes on the 'personal' branch:
+- Changes on the 'colored_lights' branch:
   * Add node HUDtype
-  * Make lighting colored
+  * Working on makeing lighting colored, nothing yet
 
 Default controls
 ----------------
