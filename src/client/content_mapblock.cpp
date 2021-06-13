@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "content_mapblock.h"
 #include "util/numeric.h"
 #include "util/directiontables.h"
+#include "util/basic_macros.h"
 #include "mapblock_mesh.h"
 #include "settings.h"
 #include "nodedef.h"
@@ -1311,6 +1312,56 @@ namespace {
 	};
 }
 
+void MapblockMeshGenerator::drawNormalNode()
+{
+	TileSpec normal_tiles[6];
+	for (int face = 0; face < 6; face++)
+		getTile(nodebox_tile_dirs[face], &normal_tiles[face]);
+	//useTile(0,0,0);
+
+	/*for (int face = 0; face < 6; face++) {
+		//useTile(face, 0, 0);
+		// Check this neighbor
+		v3s16 dir = g_6dirs[face];/*
+		v3s16 neighbor_pos = blockpos_nodes + p + dir;
+		MapNode neighbor = data->m_vmanip.getNodeNoExNoEmerge(neighbor_pos);
+		// Don't make face if neighbor is of same type
+		if (neighbor.getContent() == n.getContent())
+			continue;*//*
+		getTile(nodebox_tile_dirs[face], &normal_tiles[face]);
+		tile = normal_tiles[face];
+		if (!data->m_smooth_lighting)
+			color = encode_light(light, f->light_source);
+		// Face at Z-
+		v3f vertices[4] = {
+			v3f(-BS / 2,  BS / 2, -BS / 2),
+			v3f( BS / 2,  BS / 2, -BS / 2),
+			v3f( BS / 2, -BS / 2, -BS / 2),
+			v3f(-BS / 2, -BS / 2, -BS / 2),
+		};
+
+		for (v3f &vertex : vertices) {
+			switch (face) {
+				case D6D_ZP:
+					vertex.rotateXZBy(180); break;
+				case D6D_YP:
+					vertex.rotateYZBy( 90); break;
+				case D6D_XP:
+					vertex.rotateXZBy( 90); break;
+				case D6D_ZN:
+					vertex.rotateXZBy(  0); break;
+				case D6D_YN:
+					vertex.rotateYZBy(-90); break;
+				case D6D_XN:
+					vertex.rotateXZBy(-90); break;
+			}
+		}
+		drawQuad(vertices, dir);
+	}*/
+	static const aabb3f box(-BS / 2, -BS / 2, -BS / 2, BS / 2, BS / 2, BS / 2);
+	drawAutoLightedCuboid(box, nullptr, normal_tiles, 6);
+}
+
 void MapblockMeshGenerator::drawNodeboxNode()
 {
 	TileSpec tiles[6];
@@ -1446,6 +1497,45 @@ void MapblockMeshGenerator::drawNode()
 	}
 }
 
+void MapblockMeshGenerator::drawNodeClient() //client only nodes (from hud)
+{
+	// skip some drawtypes early
+	switch (f->drawtype) {
+		//case NDT_NORMAL:   // Drawn by MapBlockMesh
+		case NDT_AIRLIKE:  // Not drawn at all
+		//case NDT_LIQUID:   // Drawn by MapBlockMesh
+			return;
+		default:
+			break;
+	}
+	origin = intToFloat(p, BS);
+	/*if (data->m_smooth_lighting)
+		getSmoothLightFrame();
+	else
+		light = LightPair(getInteriorLight(n, 1, nodedef));*/
+	u8 lDay = 255;
+	u8 lNight = 255;
+	light = LightPair(lDay,lNight);
+	switch (f->drawtype) {
+		case NDT_FLOWINGLIQUID:     drawLiquidNode(); break;
+		case NDT_GLASSLIKE:         drawGlasslikeNode(); break;
+		case NDT_GLASSLIKE_FRAMED:  drawGlasslikeFramedNode(); break;
+		case NDT_ALLFACES:          drawAllfacesNode(); break;
+		case NDT_TORCHLIKE:         drawTorchlikeNode(); break;
+		case NDT_SIGNLIKE:          drawSignlikeNode(); break;
+		case NDT_PLANTLIKE:         drawPlantlikeNode(); break;
+		case NDT_PLANTLIKE_ROOTED:  drawPlantlikeRootedNode(); break;
+		case NDT_FIRELIKE:          drawFirelikeNode(); break;
+		case NDT_FENCELIKE:         drawFencelikeNode(); break;
+		case NDT_RAILLIKE:          drawRaillikeNode(); break;
+		case NDT_NODEBOX:           drawNodeboxNode(); break;
+		case NDT_MESH:              drawMeshNode(); break;
+		case NDT_LIQUID:            drawNormalNode(); break;
+		case NDT_NORMAL:            drawNormalNode(); break;
+		default:                    errorUnknownDrawtype(); break;
+	}
+}
+
 /*
 	TODO: Fix alpha blending for special nodes
 	Currently only the last element rendered is blended correct
@@ -1460,6 +1550,28 @@ void MapblockMeshGenerator::generate()
 		drawNode();
 	}
 }
+void MapblockMeshGenerator::generateClient() //client only nodes (from hud)
+{
+	auto MinEdge = data->m_vmanip.m_area.MinEdge;
+	auto MaxEdge = data->m_vmanip.m_area.MaxEdge;
+	int minZ = MinEdge.Z;
+	int minY = MinEdge.Y;
+	int minX = MinEdge.X;
+
+	int maxZ = MaxEdge.Z;
+	int maxY = MaxEdge.Y;
+	int maxX = MaxEdge.X;
+	//errorstream << "MinEdge: " << PP(MinEdge) << ", MaxEdge: " << PP(MaxEdge) << ", blockpos_nodes: " << PP(blockpos_nodes) << std::endl;
+	for (p.Z = minZ; p.Z <= maxZ; p.Z++)
+	for (p.Y = minY; p.Y <= maxY; p.Y++)
+	for (p.X = minX; p.X <= maxX; p.X++) {
+		auto pos = blockpos_nodes + p;
+		n = data->m_vmanip.getNodeNoEx(pos);
+		//errorstream << "Found node with id " << n.getContent() << ", at pos: (" << pos.X << ", " << pos.Y << ", " << pos.Z <<")" << std::endl;
+		f = &nodedef->get(n);
+		drawNodeClient();
+	}
+}
 
 void MapblockMeshGenerator::renderSingle(content_t node, u8 param2)
 {
@@ -1467,4 +1579,12 @@ void MapblockMeshGenerator::renderSingle(content_t node, u8 param2)
 	n = MapNode(node, 0xff, param2);
 	f = &nodedef->get(n);
 	drawNode();
+}
+
+void MapblockMeshGenerator::renderSingleClient(content_t node, u8 param2) //client only nodes (from hud)
+{
+	p = {0, 0, 0};
+	n = MapNode(node, 0xff, param2);
+	f = &nodedef->get(n);
+	drawNodeClient();
 }

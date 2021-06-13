@@ -166,14 +166,18 @@ public:
 	void drawRaillikeNode();
 	void drawNodeboxNode();
 	void drawMeshNode();
+	void drawNormalNode();
 
 // common
 	void errorUnknownDrawtype();
 	void drawNode();
+	void drawNodeClient();
 
 public:
 	MapblockMeshGenerator(MeshMakeData *input, MeshCollector *output,
 			scene::IMeshManipulator *mm);
 	void generate();
 	void renderSingle(content_t node, u8 param2 = 0x00);
+	void generateClient();
+	void renderSingleClient(content_t node, u8 param2 = 0x00);
 };

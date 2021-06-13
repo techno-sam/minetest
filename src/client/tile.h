@@ -268,6 +268,8 @@ struct TileLayer
 
 	u32 shader_id = 0;
 
+	u32 client_shader_id = 0;
+
 	u32 texture_id = 0;
 
 	u16 animation_frame_length_ms = 0;

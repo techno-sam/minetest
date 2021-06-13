@@ -582,8 +582,11 @@ end
 function store.update_paths()
 	local mod_hash = {}
 	pkgmgr.refresh_globals()
-	for _, mod in pairs(pkgmgr.global_mods:get_list()) do
-		if mod.author and mod.release > 0 then
+		for _, mod in pairs(pkgmgr.global_mods:get_list()) do
+		if mod.author and not mod.release then
+			core.log("error", "Bad mod: " .. dump(mod))
+		end
+		if mod.author and (mod.release or 0) > 0 then
 			mod_hash[mod.author:lower() .. "/" .. mod.name] = mod
 		end
 	end

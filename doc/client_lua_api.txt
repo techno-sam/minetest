@@ -1125,7 +1125,7 @@ Methods:
     * remove the HUD element of the specified id, returns `true` on success
 * `hud_change(id, stat, value)`
     * change a value of a previously added HUD element
-    * element `stat` values: `position`, `name`, `scale`, `text`, `number`, `item`, `dir`
+    * element `stat` values: `position`, `name`, `scale`, `text`, `number`, `item`, `dir`, `node`
     * Returns `true` on success, otherwise returns `nil`
 
 ### Settings
@@ -1295,13 +1295,13 @@ It can be created via `Raycast(pos1, pos2, objects, liquids)` or
 ```lua
     {
         hud_elem_type = "image", -- see HUD element types, default "text"
-    --  ^ type of HUD element, can be either of "image", "text", "statbar", or "inventory"
+    --  ^ type of HUD element, can be either of "node", "image", "text", "statbar", or "inventory"
         position = {x=0.5, y=0.5},
     --  ^ Left corner position of element, default `{x=0,y=0}`.
         name = "<name>",    -- default ""
         scale = {x=2, y=2}, -- default {x=0,y=0}
         text = "<text>",    -- default ""
-        number = 2,         -- default 0
+        number = 2,         -- default 0, used for param2 for node types
         item = 3,           -- default 0
     --  ^ Selected item in inventory.  0 for no item selected.
         direction = 0,      -- default 0
@@ -1312,6 +1312,9 @@ It can be created via `Raycast(pos1, pos2, objects, liquids)` or
     --  ^ See "HUD Element Types"
         size = { x=100, y=100 },  -- default {x=0, y=0}
     --  ^ Size of element in pixels
+
+	node = "<nodemane (mod:example)>
+	-- Used for node name for 'node' types
     }
 ```
 

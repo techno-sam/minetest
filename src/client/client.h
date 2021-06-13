@@ -347,6 +347,7 @@ public:
 	float mediaReceiveProgress();
 
 	void afterContentReceived();
+	void reloadContent();
 	void showUpdateProgressTexture(void *args, u32 progress, u32 max_progress);
 
 	float getRTT();
@@ -362,7 +363,9 @@ public:
 
 	// IGameDef interface
 	IItemDefManager* getItemDefManager() override;
+	IWritableItemDefManager* getWritableItemDefManager() override;
 	const NodeDefManager* getNodeDefManager() override;
+	NodeDefManager* getWritableNodeDefManager() override;
 	ICraftDefManager* getCraftDefManager() override;
 	ITextureSource* getTextureSource();
 	virtual IWritableShaderSource* getShaderSource();
@@ -374,6 +377,7 @@ public:
 	{ return checkPrivilege(priv); }
 	virtual scene::IAnimatedMesh* getMesh(const std::string &filename, bool cache = false);
 	const std::string* getModFile(std::string filename);
+	const std::string* getModFilename(std::string modname);
 
 	std::string getModStoragePath() const override;
 	bool registerModStorage(ModMetadata *meta) override;
@@ -384,7 +388,7 @@ public:
 	bool loadMedia(const std::string &data, const std::string &filename,
 		bool from_media_push = false);
 
-	bool extractZipFile(const char *filename, const std::string &destination);
+	//bool extractZipFile(const char *filename, const std::string &destination);
 
 	// Send a request for conventional media transfer
 	void request_media(const std::vector<std::string> &file_requests);
@@ -419,7 +423,7 @@ public:
 
 	inline bool checkCSMRestrictionFlag(CSMRestrictionFlags flag) const
 	{
-		return m_csm_restriction_flags & flag;
+		return false;//m_csm_restriction_flags & flag;
 	}
 
 	bool joinModChannel(const std::string &channel) override;
@@ -585,6 +589,7 @@ private:
 	float m_mod_storage_save_timer = 10.0f;
 	std::vector<ModSpec> m_mods;
 	StringMap m_mod_vfs;
+	StringMap m_mod_vfs_fs;
 
 	bool m_shutdown = false;
 

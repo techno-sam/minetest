@@ -1905,10 +1905,15 @@ void read_hud_element(lua_State *L, HudElement *elem)
 		elem->item = getintfield_default(L, 2, "precision", -1) + 1;
 	else
 		elem->item = getintfield_default(L, 2, "item", 0);
+	
 	elem->dir     = getintfield_default(L, 2, "direction", 0);
 	elem->z_index = MYMAX(S16_MIN, MYMIN(S16_MAX,
 			getintfield_default(L, 2, "z_index", 0)));
-	elem->text2   = getstringfield_default(L, 2, "text2", "");
+	if (elem->type == HUD_ELEM_NODE)
+		// nodes reuse the text2 field to store nodename
+		elem->text2   = getstringfield_default(L, 2, "node", "default:cobble");
+	else
+		elem->text2   = getstringfield_default(L, 2, "text2", "");
 
 	// Deprecated, only for compatibility's sake
 	if (elem->dir == 0)

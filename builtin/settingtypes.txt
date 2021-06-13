@@ -2188,6 +2188,9 @@ emergequeue_limit_generate (Per-player limit of queued blocks to generate) int 1
 #    'on_generated'. For many users the optimum setting may be '1'.
 num_emerge_threads (Number of emerge threads) int 1
 
+#    Whether to render IGNORE nodes, and whether to allow overriding IGNORE nodes
+render_ignore (Render and override IGNORE nodes) bool false
+
 [Online Content Repository]
 
 #    The URL for the content repository

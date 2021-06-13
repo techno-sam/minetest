@@ -902,8 +902,11 @@ void Hud::drawBlockBounds()
 			intToFloat((blockPos + blockOffset) * MAP_BLOCKSIZE, BS) - offset - halfNode,
 			intToFloat(((blockPos + blockOffset) * MAP_BLOCKSIZE) + (MAP_BLOCKSIZE - 1), BS) - offset + halfNode
 		);
-
-		driver->draw3DBox(box, video::SColor(255, 255, 0, 0));
+		if (x==0 and y ==0 and z==0) {
+			driver->draw3DBox(box, video::SColor(255, 255, 0, 0));
+		} else {
+			driver->draw3DBox(box, video::SColor(255, 255, 255, 0));
+		}
 	}
 
 	driver->setMaterial(old_material);

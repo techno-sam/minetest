@@ -643,6 +643,11 @@ static u8 face_contents(content_t m1, content_t m2, bool *equivalent,
 {
 	*equivalent = false;
 
+	if ((m1==CONTENT_IGNORE || m2==CONTENT_IGNORE) and g_settings->getBool("render_ignore")) {
+		*equivalent = true;
+		return 1;
+	}
+
 	if (m1 == m2 || m1 == CONTENT_IGNORE || m2 == CONTENT_IGNORE)
 		return 0;
 
@@ -784,14 +789,14 @@ static void getTileInfo(
 	const MapNode &n0 = vmanip.getNodeRefUnsafe(blockpos_nodes + p);
 
 	// Don't even try to get n1 if n0 is already CONTENT_IGNORE
-	if (n0.getContent() == CONTENT_IGNORE) {
+	if (n0.getContent() == CONTENT_IGNORE and !g_settings->getBool("render_ignore")) {
 		makes_face = false;
 		return;
 	}
 
 	const MapNode &n1 = vmanip.getNodeRefUnsafeCheckFlags(blockpos_nodes + p + face_dir);
 
-	if (n1.getContent() == CONTENT_IGNORE) {
+	if (n1.getContent() == CONTENT_IGNORE and !g_settings->getBool("render_ignore")) {
 		makes_face = false;
 		return;
 	}

@@ -74,6 +74,7 @@ void ClientScripting::InitializeModApi(lua_State *L, int top)
 	LuaCamera::Register(L);
 	ModChannelRef::Register(L);
 
+	ModApiItemMod::Initialize(L, top);
 	ModApiUtil::InitializeClient(L, top);
 	ModApiClient::Initialize(L, top);
 	ModApiStorage::Initialize(L, top);

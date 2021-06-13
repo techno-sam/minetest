@@ -24,6 +24,16 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/clientmap.h"
 #include "client/hud.h"
 #include "client/minimap.h"
+#include "voxel.h"
+#include "client/mapblock_mesh.h"
+#include "settings.h"
+#include "mapnode.h"
+#include "nodedef.h"
+#include "client/content_mapblock.h"
+#include "client/meshgen/collector.h"
+#include "client/shader.h"
+#include "profiler.h"
+
 
 RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud)
 	: device(_device), driver(device->getVideoDriver()), smgr(device->getSceneManager()),
@@ -70,6 +80,22 @@ void RenderingCore::draw(video::SColor _skycolor, bool _show_hud, bool _show_min
 	drawAll();
 }
 
+
+
+static void applyTileColor(PreMeshBuffer &pmb)
+{
+	video::SColor tc = pmb.layer.color;
+	if (tc == video::SColor(0xFFFFFFFF))
+		return;
+	for (video::S3DVertex &vertex : pmb.vertices) {
+		video::SColor *c = &vertex.Color;
+		c->set(c->getAlpha(),
+			c->getRed() * tc.getRed() / 255,
+			c->getGreen() * tc.getGreen() / 255,
+			c->getBlue() * tc.getBlue() / 255);
+	}
+}
+
 void RenderingCore::draw3D()
 {
 	smgr->drawAll();
@@ -78,6 +104,178 @@ void RenderingCore::draw3D()
 		return;
 	hud->drawBlockBounds();
 	hud->drawSelectionMesh();
+	// HUD nodes (can't be drawn in drawHUD, because the transform is all wrong)
+	//preparation
+	ClientEnvironment &env = client->getEnv();
+	Camera *camera = client->getCamera();
+	
+	v3f camera_offset = intToFloat(camera->getOffset(), BS);
+	
+	v3f eye_pos = (camera->getPosition() + camera->getDirection() - camera_offset);
+ 	
+ 	video::SMaterial material, oldmaterial;
+ 	oldmaterial = driver->getMaterial2D();
+	/*material.setFlag(video::EMF_LIGHTING, false);
+	material.setFlag(video::EMF_BILINEAR_FILTER, false);
+	material.setFlag(video::EMF_ZBUFFER, false);
+	material.setFlag(video::EMF_ZWRITE_ENABLE, false);
+	driver->setMaterial(material);*/
+
+	LocalPlayer *player = env.getLocalPlayer();
+
+	const NodeDefManager *ndefmgr = client->getNodeDefManager();
+
+	auto *m_shdrsrc = client->getShaderSource();
+
+	//voxelmanip prep
+	auto m_cache_enable_shaders = g_settings->getBool("enable_shaders");
+	auto m_cache_smooth_lighting = g_settings->getBool("smooth_lighting");
+	auto m_cache_enable_vbo = g_settings->getBool("enable_vbo");
+	MeshMakeData mesh_data = MeshMakeData(client,m_cache_enable_shaders);
+	mesh_data.m_blockpos = {0,0,0};
+	//VoxelManipulator data_manip = mesh_data.m_vmanip;
+	// actual logic
+	for (size_t i = 0; i != player->maxHudId(); i++) {
+		HudElement *e = player->getHud(i);
+		if (e) {
+			if (e->type == HUD_ELEM_NODE) {
+				v3f pos = (e->world_pos*10) - camera_offset;
+				auto align = 0;//5;
+				pos.X = pos.X + align;
+				pos.Y = pos.Y + align;
+				pos.Z = pos.Z + align;
+				v3s16 pos_int = floatToInt(pos, BS);
+				content_t content_id = ndefmgr->getId(e->text2);
+				MapNode node = MapNode(content_id,0,e->number);
+				mesh_data.m_vmanip.setNode(pos_int,node);
+				//errorstream << "Setting node with id " << content_id << ", and name " << e->text2 << ", at pos: (" << pos_int.X << ", " << pos_int.Y << ", " << pos_int.Z <<")" << std::endl;
+			}
+		}
+	}
+	MeshCollector mesh_collector;
+	MapblockMeshGenerator mesh_gen = MapblockMeshGenerator(&mesh_data,&mesh_collector,mesh_data.m_client->getSceneManager()->getMeshManipulator());
+	mesh_gen.generateClient();
+
+	/*
+		Convert MeshCollector to SMesh
+	*/
+	scene::IMesh *mclient_mesh[MAX_TILE_LAYERS];
+	for (auto &m : mclient_mesh)
+		m = new scene::SMesh();
+
+	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+		for(u32 i = 0; i < mesh_collector.prebuffers[layer].size(); i++)
+		{
+			PreMeshBuffer &p = mesh_collector.prebuffers[layer][i];
+
+			applyTileColor(p);
+
+			// Create material
+			video::SMaterial material;
+			material.setFlag(video::EMF_LIGHTING, false);
+			material.setFlag(video::EMF_BACK_FACE_CULLING, true);
+			material.setFlag(video::EMF_BILINEAR_FILTER, false);
+			material.setFlag(video::EMF_FOG_ENABLE, true);
+			material.setTexture(0, p.layer.texture);
+
+			if (m_cache_enable_shaders) {
+				//errorstream << "shader id: " << p.layer.client_shader_id << std::endl;
+				material.MaterialType = m_shdrsrc->getShaderInfo(
+						p.layer.client_shader_id).material;
+				p.layer.applyMaterialOptionsWithShaders(material);
+				if (p.layer.normal_texture)
+					material.setTexture(1, p.layer.normal_texture);
+				material.setTexture(2, p.layer.flags_texture);
+			} else {
+				p.layer.applyMaterialOptions(material);
+			}
+
+			scene::SMesh *clientmesh = (scene::SMesh *)mclient_mesh[layer];
+
+			scene::SMeshBuffer *buf = new scene::SMeshBuffer();
+			buf->Material = material;
+			buf->append(&p.vertices[0], p.vertices.size(),
+				&p.indices[0], p.indices.size());
+			clientmesh->addMeshBuffer(buf);
+			buf->drop();
+		}
+
+		if (mclient_mesh[layer]) {
+			// Use VBO for mesh (this just would set this for ever buffer)
+			if (m_cache_enable_vbo)
+				mclient_mesh[layer]->setHardwareMappingHint(scene::EHM_STATIC);
+		}
+	}
+
+	//create client_drawbufs
+	v3s16 block_pos = {0,0,0};
+	MeshBufListList client_drawbufs;
+	for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+		scene::IMesh *mesh = mclient_mesh[layer];
+		assert(mesh);
+		u32 c = mesh->getMeshBufferCount();
+		//errorstream << "MeshBufferCount: " << c <<std::endl;
+		for (u32 i = 0; i < c; i++) {
+			scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+
+			video::SMaterial& material = buf->getMaterial();
+			video::IMaterialRenderer* rnd =
+				driver->getMaterialRenderer(material.MaterialType);
+			bool c_transparent = (rnd && rnd->isTransparent());
+			bool c_is_transparent_pass = false;//c_transparent;
+			if (true) {//c_transparent == c_is_transparent_pass) {
+				if (buf->getVertexCount() == 0)
+					errorstream << "Block [" //<< analyze_block(block)
+						<< "] contains an empty meshbuf" << std::endl;
+
+				/*material.setFlag(video::EMF_TRILINEAR_FILTER,
+					m_cache_trilinear_filter);
+				material.setFlag(video::EMF_BILINEAR_FILTER,
+					m_cache_bilinear_filter);
+				material.setFlag(video::EMF_ANISOTROPIC_FILTER,
+					m_cache_anistropic_filter);
+				material.setFlag(video::EMF_WIREFRAME,
+					m_control.show_wireframe);*/
+
+				client_drawbufs.add(buf, block_pos, layer);
+			}
+		}
+	}
+	TimeTaker draw("Drawing mesh buffers for ghost nodes");
+
+	core::matrix4 m; // Model matrix
+	v3f offset = camera_offset;
+	// Render all layers in order
+	for (auto &lists : client_drawbufs.lists) {
+		for (MeshBufList &list : lists) {
+			// Check and abort if the machine is swapping a lot
+			if (draw.getTimerTime() > 2000) {
+				infostream << "ClientMap::renderMapGhost(): Rendering took >2s, " <<
+						"returning." << std::endl;
+				return;
+			}
+			driver->setMaterial(list.m);
+
+			//drawcall_count += list.bufs.size();
+			for (auto &pair : list.bufs) {
+				scene::IMeshBuffer *buf = pair.second;
+
+				v3f block_wpos = intToFloat(pair.first * MAP_BLOCKSIZE, BS);
+				m.setTranslation(block_wpos - offset);
+				//errorstream << "block_wpos: " << PP(block_wpos) << ", translation: " << PP(block_wpos - offset) << ", vertex count: " << buf->getVertexCount() << std::endl;
+
+				driver->setTransform(video::ETS_WORLD, m);
+				driver->drawMeshBuffer(buf);
+				//vertex_count += buf->getVertexCount();
+			}
+		}
+	}
+	std::string prefix = "renderGhost(ALL): ";
+	g_profiler->avg(prefix + "draw ghost meshes [ms]", draw.stop(true));
+
+	//cleanup
+	driver->setMaterial(oldmaterial);
+	// End HUD nodes
 	if (draw_wield_tool)
 		camera->drawWieldedTool();
 }

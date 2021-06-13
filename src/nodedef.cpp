@@ -624,10 +624,11 @@ void ContentFeatures::deSerialize(std::istream &is)
 #ifndef SERVER
 static void fillTileAttribs(ITextureSource *tsrc, TileLayer *layer,
 		const TileSpec &tile, const TileDef &tiledef, video::SColor color,
-		u8 material_type, u32 shader_id, bool backface_culling,
+		u8 material_type, u32 shader_id, u32 client_shader_id, bool backface_culling, //client_shader_id is for the shader to use for client-side blocks
 		const TextureSettings &tsettings)
 {
 	layer->shader_id     = shader_id;
+	layer->client_shader_id = client_shader_id;
 	layer->texture       = tsrc->getTextureForMesh(tiledef.name, &layer->texture_id);
 	layer->material_type = material_type;
 
@@ -906,6 +907,8 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 
 	u32 tile_shader = shdsrc->getShader("nodes_shader", material_type, drawtype);
 
+	u32 client_tile_shader = shdsrc->getShader("client_nodes_shader", material_type, drawtype);
+
 	MaterialType overlay_material = material_type;
 	if (overlay_material == TILE_MATERIAL_OPAQUE)
 		overlay_material = TILE_MATERIAL_BASIC;
@@ -914,16 +917,18 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 
 	u32 overlay_shader = shdsrc->getShader("nodes_shader", overlay_material, drawtype);
 
+	u32 client_overlay_shader = shdsrc->getShader("client_nodes_shader", overlay_material, drawtype);
+
 	// Tiles (fill in f->tiles[])
 	for (u16 j = 0; j < 6; j++) {
 		tiles[j].world_aligned = isWorldAligned(tdef[j].align_style,
 				tsettings.world_aligned_mode, drawtype);
 		fillTileAttribs(tsrc, &tiles[j].layers[0], tiles[j], tdef[j],
-				color, material_type, tile_shader,
+				color, material_type, tile_shader, client_tile_shader,
 				tdef[j].backface_culling, tsettings);
 		if (!tdef_overlay[j].name.empty())
 			fillTileAttribs(tsrc, &tiles[j].layers[1], tiles[j], tdef_overlay[j],
-					color, overlay_material, overlay_shader,
+					color, overlay_material, overlay_shader, client_overlay_shader,
 					tdef[j].backface_culling, tsettings);
 	}
 
@@ -935,11 +940,12 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 			special_material = TILE_MATERIAL_WAVING_LEAVES;
 	}
 	u32 special_shader = shdsrc->getShader("nodes_shader", special_material, drawtype);
+	u32 client_special_shader = shdsrc->getShader("client_nodes_shader", special_material, drawtype);
 
 	// Special tiles (fill in f->special_tiles[])
 	for (u16 j = 0; j < CF_SPECIAL_COUNT; j++)
 		fillTileAttribs(tsrc, &special_tiles[j].layers[0], special_tiles[j], tdef_spec[j],
-				color, special_material, special_shader,
+				color, special_material, special_shader, client_special_shader,
 				tdef_spec[j].backface_culling, tsettings);
 
 	if (param_type_2 == CPT2_COLOR ||
@@ -1305,7 +1311,7 @@ content_t NodeDefManager::set(const std::string &name, const ContentFeatures &de
 {
 	// Pre-conditions
 	assert(name != "");
-	assert(name != "ignore");
+	assert((name != "ignore") or g_settings->getBool("render_ignore"));
 	assert(name == def.name);
 
 	content_t id = CONTENT_IGNORE;

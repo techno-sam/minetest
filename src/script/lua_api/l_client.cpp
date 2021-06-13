@@ -76,6 +76,17 @@ int ModApiClient::l_get_modpath(lua_State *L)
 	return 1;
 }
 
+// get_true_modpath(modname)
+int ModApiClient::l_get_true_modpath(lua_State *L)
+{
+	std::string modname = readParam<std::string>(L, 1);
+	// Client mods use a virtual filesystem, see Client::scanModSubfolder()
+	std::string path = modname + ":";
+	const std::string* real_path = getClient(L)->getModFilename(path);
+	lua_pushstring(L, real_path->c_str());
+	return 1;
+}
+
 // get_last_run_mod()
 int ModApiClient::l_get_last_run_mod(lua_State *L)
 {
@@ -141,6 +152,13 @@ int ModApiClient::l_send_chat_message(lua_State *L)
 int ModApiClient::l_clear_out_chat_queue(lua_State *L)
 {
 	getClient(L)->clearOutChatQueue();
+	return 0;
+}
+
+// reload_content()
+int ModApiClient::l_reload_content(lua_State *L)
+{
+	getClient(L)->reloadContent();
 	return 0;
 }
 
@@ -418,10 +436,12 @@ void ModApiClient::Initialize(lua_State *L, int top)
 {
 	API_FCT(get_current_modname);
 	API_FCT(get_modpath);
+	API_FCT(get_true_modpath);
 	API_FCT(print);
 	API_FCT(display_chat_message);
 	API_FCT(send_chat_message);
 	API_FCT(clear_out_chat_queue);
+	API_FCT(reload_content);
 	API_FCT(get_player_names);
 	API_FCT(set_last_run_mod);
 	API_FCT(get_last_run_mod);

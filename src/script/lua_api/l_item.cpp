@@ -27,6 +27,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server.h"
 #include "inventory.h"
 #include "log.h"
+#include "settings.h"
 
 
 // garbage collector
@@ -534,9 +535,9 @@ int ModApiItemMod::l_register_item_raw(lua_State *L)
 
 	// Get the writable item and node definition managers from the server
 	IWritableItemDefManager *idef =
-			getServer(L)->getWritableItemDefManager();
+			getGameDef(L)->getWritableItemDefManager();
 	NodeDefManager *ndef =
-			getServer(L)->getWritableNodeDefManager();
+			getGameDef(L)->getWritableNodeDefManager();
 
 	// Check if name is defined
 	std::string name;
@@ -574,7 +575,7 @@ int ModApiItemMod::l_register_item_raw(lua_State *L)
 		read_content_features(L, f, table);
 		// when a mod reregisters ignore, only texture changes and such should
 		// be done
-		if (f.name == "ignore")
+		if (f.name == "ignore" and !g_settings->getBool("render_ignore"))
 			return 0;
 
 		content_t id = ndef->set(f.name, f);
@@ -596,12 +597,12 @@ int ModApiItemMod::l_unregister_item_raw(lua_State *L)
 	std::string name = luaL_checkstring(L, 1);
 
 	IWritableItemDefManager *idef =
-			getServer(L)->getWritableItemDefManager();
+			getGameDef(L)->getWritableItemDefManager();
 
 	// Unregister the node
 	if (idef->get(name).type == ITEM_NODE) {
 		NodeDefManager *ndef =
-			getServer(L)->getWritableNodeDefManager();
+			getGameDef(L)->getWritableNodeDefManager();
 		ndef->removeNode(name);
 	}
 

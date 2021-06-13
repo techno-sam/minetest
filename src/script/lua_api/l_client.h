@@ -33,6 +33,9 @@ private:
 	// get_modpath(modname)
 	static int l_get_modpath(lua_State *L);
 
+	// get_true_modpath(modname)
+	static int l_get_true_modpath(lua_State *L);
+
 	// print(text)
 	static int l_print(lua_State *L);
 
@@ -44,6 +47,9 @@ private:
 
 	// clear_out_chat_queue()
 	static int l_clear_out_chat_queue(lua_State *L);
+
+	// reload_content()
+	static int l_reload_content(lua_State *L);
 
 	// get_player_names()
 	static int l_get_player_names(lua_State *L);

@@ -209,6 +209,8 @@ void Client::scanModSubfolder(const std::string &mod_name, const std::string &mo
 {
 	std::string full_path = mod_path + DIR_DELIM + mod_subpath;
 	std::vector<fs::DirListNode> mod = fs::GetDirListing(full_path);
+	errorstream << "Client::scanModSubfolder(): Loading directory \"" << mod_path << "/\" as \"" << mod_name << ":\"." << std::endl;
+	m_mod_vfs_fs.emplace(mod_name+":",mod_path+"/");
 	for (const fs::DirListNode &j : mod) {
 		if (j.dir) {
 			scanModSubfolder(mod_name, mod_path, mod_subpath + j.name + DIR_DELIM);
@@ -229,6 +231,7 @@ void Client::scanModSubfolder(const std::string &mod_name, const std::string &mo
 		}
 
 		m_mod_vfs.emplace(vfs_path, contents);
+		m_mod_vfs_fs.emplace(vfs_path, real_path);
 	}
 }
 
@@ -725,19 +728,25 @@ bool Client::loadMedia(const std::string &data, const std::string &filename,
 	return false;
 }
 
-bool Client::extractZipFile(const char *filename, const std::string &destination)
+/*bool Client::extractZipFile(const char *filename, const std::string &destination)
 {
-	auto fs = m_rendering_engine->get_filesystem();
+	errorstream << "Starting extraction of \"" << filename << "\" to \"" << destination << "\"." << std::endl;
+	//auto fs = m_rendering_engine->get_filesystem();
+	io::IFileSystem *fs = m_rendering_engine->get_filesystem();
+	errorstream << "Acquired fs." << std::endl;
 
 	if (!fs->addFileArchive(filename, false, false, io::EFAT_ZIP)) {
+		errorstream << "Failed to add file archive." << std::endl;
 		return false;
 	}
 
+	errorstream << "File archive added." << std::endl;
 	sanity_check(fs->getFileArchiveCount() > 0);
+	errorstream << "Sanity check succeeded." << std::endl;
 
 	/**********************************************************************/
 	/* WARNING this is not threadsafe!!                                   */
-	/**********************************************************************/
+	/**********************************************************************//*
 	io::IFileArchive* opened_zip = fs->getFileArchive(fs->getFileArchiveCount() - 1);
 
 	const io::IFileList* files_in_zip = opened_zip->getFileList();
@@ -789,7 +798,7 @@ bool Client::extractZipFile(const char *filename, const std::string &destination
 
 	fs->removeFileArchive(fs->getFileArchiveCount() - 1);
 	return true;
-}
+}*/
 
 // Virtual methods from con::PeerHandler
 void Client::peerAdded(con::Peer *peer)
@@ -1386,13 +1395,13 @@ void Client::removeNode(v3s16 p)
  */
 MapNode Client::CSMGetNode(v3s16 p, bool *is_valid_position)
 {
-	if (checkCSMRestrictionFlag(CSMRestrictionFlags::CSM_RF_LOOKUP_NODES)) {
+	/*if (checkCSMRestrictionFlag(CSMRestrictionFlags::CSM_RF_LOOKUP_NODES)) {
 		v3s16 ppos = floatToInt(m_env.getLocalPlayer()->getPosition(), BS);
 		if ((u32) ppos.getDistanceFrom(p) > m_csm_restriction_noderange) {
 			*is_valid_position = false;
 			return {};
 		}
-	}
+	}*/
 	return m_env.getMap().getNode(p, is_valid_position);
 }
 
@@ -1823,6 +1832,74 @@ void Client::afterContentReceived()
 	delete[] text;
 }
 
+void Client::reloadContent()
+{
+	infostream<<"Client::reloadContent() started"<<std::endl;
+	assert(m_itemdef_received); // pre-condition
+	assert(m_nodedef_received); // pre-condition
+	assert(mediaReceived()); // pre-condition
+
+	const wchar_t* text = wgettext("Reloading textures...");
+
+	// Clear cached pre-scaled 2D GUI images, as this cache
+	// might have images with the same name but different
+	// content from previous sessions.
+	guiScalingCacheClear();
+
+	// Rebuild inherited images and recreate textures
+	infostream<<"- Rebuilding images and textures"<<std::endl;
+	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 70);
+	m_tsrc->rebuildImagesAndTextures();
+	delete[] text;
+
+	// Rebuild shaders
+	infostream<<"- Rebuilding shaders"<<std::endl;
+	text = wgettext("Rebuilding shaders...");
+	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 71);
+	m_shsrc->rebuildShaders();
+	delete[] text;
+
+	// Update node aliases
+	infostream<<"- Updating node aliases"<<std::endl;
+	text = wgettext("Reinitializing nodes...");
+	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 72);
+	m_nodedef->updateAliases(m_itemdef);
+	for (const auto &path : getTextureDirs()) {
+		TextureOverrideSource override_source(path + DIR_DELIM + "override.txt");
+		m_nodedef->applyTextureOverrides(override_source.getNodeTileOverrides());
+		m_itemdef->applyTextureOverrides(override_source.getItemTextureOverrides());
+	}
+	m_nodedef->setNodeRegistrationStatus(true);
+	m_nodedef->runNodeResolveCallbacks();
+	delete[] text;
+
+	// Update node textures and assign shaders to each tile
+	infostream<<"- Updating node textures"<<std::endl;
+	TextureUpdateArgs tu_args;
+	tu_args.guienv = guienv;
+	tu_args.last_time_ms = porting::getTimeMs();
+	tu_args.last_percent = 0;
+	tu_args.text_base =  wgettext("Reinitializing nodes");
+	tu_args.tsrc = m_tsrc;
+	m_nodedef->updateTextures(this, &tu_args);
+	delete[] tu_args.text_base;
+
+	// Start mesh update thread after setting up content definitions
+	//infostream<<"- Starting mesh update thread"<<std::endl;
+	//m_mesh_update_thread.start();
+
+	//m_state = LC_Ready;
+	//sendReady();
+
+	//if (m_mods_loaded)
+	//	m_script->on_client_ready(m_env.getLocalPlayer());
+
+	text = wgettext("Done!");
+	m_rendering_engine->draw_load_screen(text, guienv, m_tsrc, 0, 100);
+	infostream<<"Client::reloadContent() done"<<std::endl;
+	delete[] text;
+}
+
 float Client::getRTT()
 {
 	return m_con->getPeerStat(PEER_ID_SERVER,con::AVG_RTT);
@@ -1926,7 +2003,15 @@ IItemDefManager* Client::getItemDefManager()
 {
 	return m_itemdef;
 }
+IWritableItemDefManager* Client::getWritableItemDefManager()
+{
+	return m_itemdef;
+}
 const NodeDefManager* Client::getNodeDefManager()
+{
+	return m_nodedef;
+}
+NodeDefManager* Client::getWritableNodeDefManager()
 {
 	return m_nodedef;
 }
@@ -2005,6 +2090,14 @@ const std::string* Client::getModFile(std::string filename)
 
 	StringMap::const_iterator it = m_mod_vfs.find(filename);
 	if (it == m_mod_vfs.end())
+		return nullptr;
+	return &it->second;
+}
+
+const std::string* Client::getModFilename(std::string modname)
+{
+	StringMap::const_iterator it = m_mod_vfs_fs.find(modname);
+	if (it == m_mod_vfs_fs.end())
 		return nullptr;
 	return &it->second;
 }
