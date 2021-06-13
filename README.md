@@ -37,6 +37,8 @@ Further documentation
 - Forum: https://forum.minetest.net/
 - GitHub: https://github.com/minetest/minetest/
 - [doc/](doc/) directory of source distribution
+- Changes on the 'personal' branch:
+  * Add node HUDtype
 
 Default controls
 ----------------
