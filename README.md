@@ -39,6 +39,7 @@ Further documentation
 - [doc/](doc/) directory of source distribution
 - Changes on the 'personal' branch:
   * Add node HUDtype
+  * Make lighting colored
 
 Default controls
 ----------------
