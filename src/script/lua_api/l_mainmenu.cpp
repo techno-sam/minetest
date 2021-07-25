@@ -737,36 +737,13 @@ int ModApiMainMenu::l_get_video_drivers(lua_State *L)
 
 	lua_newtable(L);
 	for (u32 i = 0; i != drivers.size(); i++) {
-		const char *name  = RenderingEngine::getVideoDriverName(drivers[i]);
-		const char *fname = RenderingEngine::getVideoDriverFriendlyName(drivers[i]);
+		auto &info = RenderingEngine::getVideoDriverInfo(drivers[i]);
 
 		lua_newtable(L);
-		lua_pushstring(L, name);
+		lua_pushstring(L, info.name.c_str());
 		lua_setfield(L, -2, "name");
-		lua_pushstring(L, fname);
+		lua_pushstring(L, info.friendly_name.c_str());
 		lua_setfield(L, -2, "friendly_name");
-
-		lua_rawseti(L, -2, i + 1);
-	}
-
-	return 1;
-}
-
-/******************************************************************************/
-int ModApiMainMenu::l_get_video_modes(lua_State *L)
-{
-	std::vector<core::vector3d<u32> > videomodes
-		= RenderingEngine::getSupportedVideoModes();
-
-	lua_newtable(L);
-	for (u32 i = 0; i != videomodes.size(); i++) {
-		lua_newtable(L);
-		lua_pushnumber(L, videomodes[i].X);
-		lua_setfield(L, -2, "w");
-		lua_pushnumber(L, videomodes[i].Y);
-		lua_setfield(L, -2, "h");
-		lua_pushnumber(L, videomodes[i].Z);
-		lua_setfield(L, -2, "depth");
 
 		lua_rawseti(L, -2, i + 1);
 	}
@@ -895,7 +872,6 @@ void ModApiMainMenu::Initialize(lua_State *L, int top)
 	API_FCT(download_file);
 	API_FCT(gettext);
 	API_FCT(get_video_drivers);
-	API_FCT(get_video_modes);
 	API_FCT(get_screen_info);
 	API_FCT(get_min_supp_proto);
 	API_FCT(get_max_supp_proto);

@@ -212,6 +212,9 @@ void Client::scanModSubfolder(const std::string &mod_name, const std::string &mo
 	errorstream << "Client::scanModSubfolder(): Loading directory \"" << mod_path << "/\" as \"" << mod_name << ":\"." << std::endl;
 	m_mod_vfs_fs.emplace(mod_name+":",mod_path+"/");
 	for (const fs::DirListNode &j : mod) {
+		if (j.name[0] == '.')
+			continue;
+
 		if (j.dir) {
 			scanModSubfolder(mod_name, mod_path, mod_subpath + j.name + DIR_DELIM);
 			continue;
