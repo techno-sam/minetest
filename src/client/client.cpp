@@ -41,6 +41,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #include "mapblock_mesh.h"
 #include "mapblock.h"
+#include "mapsector.h"
 #include "minimap.h"
 #include "modchannels.h"
 #include "content/mods.h"
@@ -194,6 +195,8 @@ void Client::loadMods()
 
 	// Run a callback when mods are loaded
 	m_script->on_mods_loaded();
+
+	m_script->init_cheats();
 
 	// Create objects if they're ready
 	if (m_state == LC_Ready)
@@ -907,7 +910,7 @@ void Client::Send(NetworkPacket* pkt)
 // Will fill up 12 + 12 + 4 + 4 + 4 bytes
 void writePlayerPos(LocalPlayer *myplayer, ClientMap *clientMap, NetworkPacket *pkt)
 {
-	v3f pf           = myplayer->getPosition() * 100;
+	v3f pf           = myplayer->getLegitPosition() * 100;
 	v3f sf           = myplayer->getSpeed() * 100;
 	s32 pitch        = myplayer->getPitch() * 100;
 	s32 yaw          = myplayer->getYaw() * 100;
@@ -1287,7 +1290,7 @@ void Client::sendPlayerPos()
 			player->last_wanted_range == wanted_range)
 		return;
 
-	player->last_position     = player->getPosition();
+	player->last_position     = player->getLegitPosition();
 	player->last_speed        = player->getSpeed();
 	player->last_pitch        = player->getPitch();
 	player->last_yaw          = player->getYaw();
@@ -1637,6 +1640,27 @@ void Client::addUpdateMeshTaskForNode(v3s16 nodepos, bool ack_to_server, bool ur
 			addUpdateMeshTask(p, false, urgent);
 		}
 		catch(InvalidPositionException &e){}
+	}
+}
+
+void Client::updateAllMapBlocks()
+{
+	v3s16 currentBlock = getNodeBlockPos(floatToInt(m_env.getLocalPlayer()->getPosition(), BS));
+	
+	for (s16 X = currentBlock.X - 2; X <= currentBlock.X + 2; X++)
+	for (s16 Y = currentBlock.Y - 2; Y <= currentBlock.Y + 2; Y++)
+	for (s16 Z = currentBlock.Z - 2; Z <= currentBlock.Z + 2; Z++)
+		addUpdateMeshTask(v3s16(X, Y, Z), false, true);
+	
+	std::map<v2s16, MapSector*> *sectors = m_env.getMap().getSectorsPtr();
+	
+	for (auto &sector_it : *sectors) {
+		MapSector *sector = sector_it.second;
+		MapBlockVect blocks;
+		sector->getBlocks(blocks);
+		for (MapBlock *block : blocks) {
+			addUpdateMeshTask(block->getPos(), false, false);
+		}
 	}
 }
 

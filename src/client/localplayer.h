@@ -131,10 +131,38 @@ public:
 	inline void setPosition(const v3f &position)
 	{
 		m_position = position;
+		if (!m_freecam)
+			m_legit_position = position;
 		m_sneak_node_exists = false;
 	}
 
 	v3f getPosition() const { return m_position; }
+
+	v3f getLegitPosition() const { return m_legit_position; }
+
+	v3f getLegitSpeed() const { return m_freecam ? m_legit_speed : m_speed; }
+
+	v3f getSendSpeed();
+
+	inline void setLegitPosition(const v3f &position)
+	{
+		if (m_freecam)
+			m_legit_position = position;
+		else
+			setPosition(position);
+	}
+
+	inline void freecamEnable()
+	{
+		m_freecam = true;
+	}
+
+	inline void freecamDisable()
+	{
+		m_freecam = false;
+		setPosition(m_legit_position);
+		setSpeed(m_legit_speed);
+	}
 
 	// Non-transformed eye offset getters
 	// For accurate positions, use the Camera functions
@@ -168,7 +196,10 @@ private:
 		const v3f &position_before_move, const v3f &speed_before_move,
 		f32 pos_max_d);
 
+	bool m_freecam = false;
 	v3f m_position;
+	v3f m_legit_position;
+	v3f m_legit_speed;
 	v3s16 m_standing_node;
 
 	v3s16 m_sneak_node = v3s16(32767, 32767, 32767);

@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/client.h"
 #include "cpp_api/s_internal.h"
 #include "lua_api/l_client.h"
+#include "lua_api/l_clientobject.h"
 #include "lua_api/l_env.h"
 #include "lua_api/l_item.h"
 #include "lua_api/l_itemstackmeta.h"
@@ -35,6 +36,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "lua_api/l_nodemeta.h"
 #include "lua_api/l_localplayer.h"
 #include "lua_api/l_camera.h"
+#include "lua_api/l_settings.h"
+#include "settings.h"
 
 ClientScripting::ClientScripting(Client *client):
 	ScriptApiBase(ScriptingType::Client)
@@ -48,6 +51,12 @@ ClientScripting::ClientScripting(Client *client):
 
 	lua_getglobal(L, "core");
 	int top = lua_gettop(L);
+ 
+	lua_newtable(L);
+	lua_setfield(L, -2, "object_refs");
+
+	lua_newtable(L);
+	lua_setfield(L, -2, "luaentities");
 
 	lua_newtable(L);
 	lua_setfield(L, -2, "ui");
@@ -73,6 +82,8 @@ void ClientScripting::InitializeModApi(lua_State *L, int top)
 	LuaLocalPlayer::Register(L);
 	LuaCamera::Register(L);
 	ModChannelRef::Register(L);
+	LuaSettings::Register(L);
+	ClientObjectRef::Register(L);
 
 	ModApiItemMod::Initialize(L, top);
 	ModApiUtil::InitializeClient(L, top);

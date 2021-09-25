@@ -488,7 +488,7 @@ void GenericCAO::setAttachment(int parent_id, const std::string &bone,
 	} else if (!m_is_local_player) {
 		// Objects attached to the local player should be hidden in first person
 		m_is_visible = !m_attached_to_local ||
-			m_client->getCamera()->getCameraMode() != CAMERA_MODE_FIRST;
+			m_client->getCamera()->getCameraMode() != CAMERA_MODE_FIRST || (g_settings->getBool("freecam") && g_settings->getBool("cheats"));
 		m_force_visible = false;
 	} else {
 		// Local players need to have this set,
@@ -929,8 +929,12 @@ void GenericCAO::updateMarker()
 
 void GenericCAO::updateNametag()
 {
-	if (m_is_local_player) // No nametag for local player
+	if (m_is_local_player && !(g_settings->getBool("freecam") && g_settings->getBool("cheats"))) // No nametag for local player
 		return;
+
+	if (g_settings->getBool("cheats") && m_prop.nametag_color.getAlpha()==0) {
+		m_prop.nametag_color = video::SColor(255, 0, 0, 255);
+	}
 
 	if (m_prop.nametag.empty() || m_prop.nametag_color.getAlpha() == 0) {
 		// Delete nametag
@@ -954,7 +958,14 @@ void GenericCAO::updateNametag()
 			m_prop.nametag_bgcolor, pos);
 	} else {
 		// Update nametag
-		m_nametag->text = m_prop.nametag;
+		if (g_settings->getBool("cheats")) {
+			std::ostringstream poss;
+			poss << "(" << m_position.X/10 << "," << m_position.Y/10 << "," << m_position.Z/10 << ")";
+			auto string_pos = poss.str();
+			m_nametag->text = m_prop.nametag+" ["+string_pos+"] ["+std::to_string(m_hp)+"]";
+		} else {
+			m_nametag->text = m_prop.nametag;
+		}
 		m_nametag->textcolor = m_prop.nametag_color;
 		m_nametag->bgcolor = m_prop.nametag_bgcolor;
 		m_nametag->pos = pos;
@@ -982,13 +993,23 @@ void GenericCAO::updateNodePos()
 
 void GenericCAO::step(float dtime, ClientEnvironment *env)
 {
+	updateNametag();
 	// Handle model animations and update positions instantly to prevent lags
 	if (m_is_local_player) {
 		LocalPlayer *player = m_env->getLocalPlayer();
-		m_position = player->getPosition();
+		m_position = player->getLegitPosition();
 		pos_translator.val_current = m_position;
-		m_rotation.Y = wrapDegrees_0_360(player->getYaw());
-		rot_translator.val_current = m_rotation;
+		if (! (g_settings->getBool("freecam") && g_settings->getBool("cheats")) ) {
+			m_rotation.Y = wrapDegrees_0_360(player->getYaw());
+			rot_translator.val_current = m_rotation;
+		}
+		if (g_settings->getBool("cheats")) {
+			float min_zoom = g_settings->getFloat("min_zoom");
+			float current_zoom = player->getZoomFOV();
+			if (min_zoom>current_zoom) {
+				player->setZoomFOV(min_zoom);
+			}
+		}
 
 		if (m_is_visible) {
 			int old_anim = player->last_animation;
@@ -1000,7 +1021,7 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 			bool walking = false;
 			if (controls.up || controls.down || controls.left || controls.right ||
 					controls.forw_move_joystick_axis != 0.f ||
-					controls.sidew_move_joystick_axis != 0.f)
+					controls.sidew_move_joystick_axis != 0.f && ! (g_settings->getBool("freecam") && g_settings->getBool("cheats")))
 				walking = true;
 
 			f32 new_speed = player->local_animation_speed;
@@ -1008,12 +1029,12 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 			bool allow_update = false;
 
 			// increase speed if using fast or flying fast
-			if((g_settings->getBool("fast_move") &&
+			if(((g_settings->getBool("fast_move") &&
 					m_client->checkLocalPrivilege("fast")) &&
 					(controls.aux1 ||
 					(!player->touching_ground &&
 					g_settings->getBool("free_move") &&
-					m_client->checkLocalPrivilege("fly"))))
+					m_client->checkLocalPrivilege("fly")))) || (g_settings->getBool("freecam") && g_settings->getBool("cheats")))
 					new_speed *= 1.5;
 			// slowdown speed if sneeking
 			if (controls.sneak && walking)
@@ -1286,6 +1307,10 @@ void GenericCAO::updateTextures(std::string mod)
 	m_previous_texture_modifier = m_current_texture_modifier;
 	m_current_texture_modifier = mod;
 	m_glow = m_prop.glow;
+
+	if (m_is_player && g_settings->getBool("cheats")) {
+		m_glow = 20;
+	}
 
 	if (m_spritenode) {
 		if (m_prop.visual == "sprite") {
@@ -1655,6 +1680,10 @@ void GenericCAO::processMessage(const std::string &data)
 			player->setCollisionbox(collision_box);
 			player->setEyeHeight(m_prop.eye_height);
 			player->setZoomFOV(m_prop.zoom_fov);
+			float min_zoom = g_settings->getFloat("min_zoom");
+			if (m_prop.zoom_fov<min_zoom && g_settings->getBool("cheats")) {
+				player->setZoomFOV(min_zoom);
+			}
 		}
 
 		if ((m_is_player && !m_is_local_player) && m_prop.nametag.empty())
@@ -1916,7 +1945,7 @@ void GenericCAO::updateMeshCulling()
 	if (!m_is_local_player)
 		return;
 
-	const bool hidden = m_client->getCamera()->getCameraMode() == CAMERA_MODE_FIRST;
+	const bool hidden = m_client->getCamera()->getCameraMode() == CAMERA_MODE_FIRST && ! (g_settings->getBool("freecam") && g_settings->getBool("cheats"));
 
 	if (m_meshnode && m_prop.visual == "upright_sprite") {
 		u32 buffers = m_meshnode->getMesh()->getMeshBufferCount();

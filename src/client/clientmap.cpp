@@ -195,7 +195,7 @@ void ClientMap::updateDrawList()
 	// No occlusion culling when free_move is on and camera is
 	// inside ground
 	bool occlusion_culling_enabled = true;
-	if (g_settings->getBool("free_move") && g_settings->getBool("noclip")) {
+	if (g_settings->getBool("free_move") && g_settings->getBool("noclip") || (g_settings->getBool("freecam") && g_settings->getBool("cheats"))) {
 		MapNode n = getNode(cam_pos_nodes);
 		if (n.getContent() == CONTENT_IGNORE ||
 				m_nodedef->get(n).solidness == 2)
@@ -614,8 +614,8 @@ void ClientMap::renderPostFx(CameraMode cam_mode)
 	// - Do not if player is in third person mode
 	const ContentFeatures& features = m_nodedef->get(n);
 	video::SColor post_effect_color = features.post_effect_color;
-	if(features.solidness == 2 && !(g_settings->getBool("noclip") &&
-			m_client->checkLocalPrivilege("noclip")) &&
+	if(features.solidness == 2 && !((g_settings->getBool("noclip") || (g_settings->getBool("freecam") && g_settings->getBool("cheats"))) &&
+			(m_client->checkLocalPrivilege("noclip") || (g_settings->getBool("freecam") && g_settings->getBool("cheats")))) &&
 			cam_mode == CAMERA_MODE_FIRST)
 	{
 		post_effect_color = video::SColor(255, 0, 0, 0);

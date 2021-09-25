@@ -35,6 +35,9 @@ private:
 	// get_velocity(self)
 	static int l_get_velocity(lua_State *L);
 
+	// set_velocity(self, vel)
+	static int l_set_velocity(lua_State *L);
+
 	// get_hp(self)
 	static int l_get_hp(lua_State *L);
 
@@ -43,6 +46,9 @@ private:
 
 	// get_wield_index(self)
 	static int l_get_wield_index(lua_State *L);
+
+	// set_wield_index(self)
+	static int l_set_wield_index(lua_State *L);
 
 	// get_wielded_item(self)
 	static int l_get_wielded_item(lua_State *L);
@@ -54,6 +60,8 @@ private:
 	static int l_get_liquid_viscosity(lua_State *L);
 	static int l_is_climbing(lua_State *L);
 	static int l_swimming_vertical(lua_State *L);
+
+	static int l_set_physics_override(lua_State *L);
 
 	static int l_get_physics_override(lua_State *L);
 
@@ -72,6 +80,9 @@ private:
 
 	// get_pos(self)
 	static int l_get_pos(lua_State *L);
+
+	// set_pos(self, pos)
+	static int l_set_pos(lua_State *L);
 
 	// get_movement_acceleration(self)
 	static int l_get_movement_acceleration(lua_State *L);

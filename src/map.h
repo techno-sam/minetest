@@ -265,6 +265,11 @@ public:
 	NodeTimer getNodeTimer(v3s16 p);
 	void setNodeTimer(const NodeTimer &t);
 	void removeNodeTimer(v3s16 p);
+ 
+	/*
+		Misc.
+	*/
+	std::map<v2s16, MapSector*> *getSectorsPtr(){return &m_sectors;}
 
 	/*
 		Variables

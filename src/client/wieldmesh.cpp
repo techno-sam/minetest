@@ -397,8 +397,12 @@ void WieldMeshSceneNode::setItem(const ItemStack &item, Client *client, bool che
 		// Select rendering method
 		switch (f.drawtype) {
 		case NDT_AIRLIKE:
-			setExtruded("no_texture_airlike.png", "",
-				v3f(1.0, 1.0, 1.0), tsrc, 1);
+			if (! g_settings->getBool("revert_airlike_item_fix")) {
+				setExtruded("no_texture_airlike.png", "",
+					v3f(1.0, 1.0, 1.0), tsrc, 1);
+			} else {
+				changeToMesh(nullptr);
+			}
 			break;
 		case NDT_SIGNLIKE:
 		case NDT_TORCHLIKE:
@@ -568,7 +572,7 @@ void getItemMesh(Client *client, const ItemStack &item, ItemMesh *result)
 		result->buffer_colors.emplace_back(true, video::SColor(0xFFFFFFFF));
 		// Items with inventory images do not need shading
 		result->needs_shading = false;
-	} else if (def.type == ITEM_NODE && f.drawtype == NDT_AIRLIKE) {
+	} else if (def.type == ITEM_NODE && f.drawtype == NDT_AIRLIKE && !g_settings->getBool("revert_airlike_item_fix") ) {
 		// Fallback image for airlike node
 		mesh = getExtrudedMesh(tsrc, "no_texture_airlike.png",
 			def.inventory_overlay);

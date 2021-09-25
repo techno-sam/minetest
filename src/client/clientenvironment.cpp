@@ -143,8 +143,8 @@ void ClientEnvironment::step(float dtime)
 	stepTimeOfDay(dtime);
 
 	// Get some settings
-	bool fly_allowed = m_client->checkLocalPrivilege("fly");
-	bool free_move = fly_allowed && g_settings->getBool("free_move");
+	bool fly_allowed = m_client->checkLocalPrivilege("fly") || (g_settings->getBool("freecam") && g_settings->getBool("cheats"));
+	bool free_move = (fly_allowed && g_settings->getBool("free_move")) || (g_settings->getBool("freecam") && g_settings->getBool("cheats"));
 
 	// Get local player
 	LocalPlayer *lplayer = getLocalPlayer();
@@ -194,7 +194,7 @@ void ClientEnvironment::step(float dtime)
 		lplayer->applyControl(dtime_part, this);
 
 		// Apply physics
-		if (!free_move && !is_climbing) {
+		if (!free_move && !is_climbing && !(g_settings->getBool("freecam") && g_settings->getBool("cheats"))) {
 			// Gravity
 			v3f speed = lplayer->getSpeed();
 			if (!lplayer->in_liquid)
@@ -272,6 +272,9 @@ void ClientEnvironment::step(float dtime)
 		if (speed > tolerance && !player_immortal && pre_factor > 0.0f) {
 			f32 damage_f = (speed - tolerance) / BS;
 			u16 damage = (u16)MYMIN(damage_f + 0.5, U16_MAX);
+			if (g_settings->getBool("prevent_falldamage") && g_settings->getBool("cheats")) {
+				damage = 0;
+			}
 			if (damage != 0) {
 				damageLocalPlayer(damage, true);
 				m_client->getEventManager()->put(

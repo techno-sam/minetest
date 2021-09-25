@@ -56,6 +56,8 @@ protected:
 
 	virtual void beforeDraw() {}
 	virtual void drawAll() = 0;
+ 
+	void drawTracersAndESP();
 
 	void draw3D();
 	void drawHUD();

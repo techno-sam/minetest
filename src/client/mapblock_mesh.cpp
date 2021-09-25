@@ -767,6 +767,24 @@ void getNodeTile(MapNode mn, const v3s16 &p, const v3s16 &dir, MeshMakeData *dat
 	getNodeTileN(mn, p, dir_to_tile[tile_index], data, tile);
 	tile.rotation = tile.world_aligned ? 0 : dir_to_tile[tile_index + 1];
 }
+ 
+std::set<content_t> splitToContentT(std::string str, const NodeDefManager *ndef)
+{
+	str += "\n";
+	std::set<content_t> dat;
+	std::string buf;
+	for (char c : str) {
+		if (c == ',' || c == '\n') {
+			if (! buf.empty()) {
+				dat.insert(ndef->getId(buf));
+			}
+			buf.clear();
+		} else if (c != ' ') {
+			buf += c;
+		}
+	}
+	return dat;
+}
 
 static void getTileInfo(
 		// Input:
@@ -1037,6 +1055,9 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 
 	std::vector<FastFace> fastfaces_new;
 	fastfaces_new.reserve(512);
+	std::set<content_t> nodeESPSet;
+	
+	nodeESPSet = splitToContentT(g_settings->get("node_esp_nodes"), data->m_client->ndef());
 
 	/*
 		We are including the faces of the trailing edges of the block.
@@ -1051,6 +1072,23 @@ MapBlockMesh::MapBlockMesh(MeshMakeData *data, v3s16 camera_offset):
 		updateAllFastFaceRows(data, fastfaces_new);
 	}
 	// End of slow part
+ 
+	/*
+		NodeESP
+	*/
+	{
+		v3s16 blockpos_nodes = data->m_blockpos * MAP_BLOCKSIZE;
+		for (s16 x = 0; x < MAP_BLOCKSIZE; x++) {
+			for (s16 y = 0; y < MAP_BLOCKSIZE; y++) {
+				for (s16 z = 0; z < MAP_BLOCKSIZE; z++) {
+					v3s16 pos = v3s16(x, y, z) + blockpos_nodes;
+					const MapNode &node = data->m_vmanip.getNodeRefUnsafeCheckFlags(pos);
+					if (nodeESPSet.find(node.getContent()) != nodeESPSet.end())
+						esp_nodes.insert(pos);
+				}
+			}
+		}
+	}
 
 	/*
 		Convert FastFaces to MeshCollector

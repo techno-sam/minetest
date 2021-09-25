@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "cpp_api/s_internal.h"
 #include "cpp_api/s_security.h"
 #include "lua_api/l_object.h"
+//#include "lua_api/l_clientobject.h"
 #include "common/c_converter.h"
 #include "server/player_sao.h"
 #include "filesys.h"

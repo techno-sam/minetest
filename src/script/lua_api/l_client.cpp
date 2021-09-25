@@ -29,11 +29,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "cpp_api/s_base.h"
 #include "gettext.h"
 #include "l_internal.h"
+#include "l_clientobject.h"
 #include "lua_api/l_nodemeta.h"
 #include "gui/mainmenumanager.h"
 #include "map.h"
 #include "util/string.h"
 #include "nodedef.h"
+#include "util/pointedthing.h"
+#include "script/common/c_content.h"
 
 #define checkCSMRestrictionFlag(flag) \
 	( getClient(L)->checkCSMRestrictionFlag(CSMRestrictionFlags::flag) )
@@ -431,6 +434,123 @@ int ModApiClient::l_get_csm_restrictions(lua_State *L)
 	}
 	return 1;
 }
+ 
+// send_damage(damage)
+int ModApiClient::l_send_damage(lua_State *L)
+{
+	u16 damage = luaL_checknumber(L, 1);
+	getClient(L)->sendDamage(damage);
+	return 0;	
+}
+
+// place_node(pos)
+int ModApiClient::l_place_node(lua_State *L)
+{
+	Client *client = getClient(L);
+	ClientMap &map = client->getEnv().getClientMap();
+	LocalPlayer *player = client->getEnv().getLocalPlayer();
+	ItemStack selected_item, hand_item;
+	player->getWieldedItem(&selected_item, &hand_item);
+	const ItemDefinition &selected_def = selected_item.getDefinition(getGameDef(L)->idef());
+	v3s16 pos = read_v3s16(L, 1);
+	PointedThing pointed;
+	pointed.type = POINTEDTHING_NODE;
+	pointed.node_abovesurface = pos;
+	pointed.node_undersurface = pos;
+	//NodeMetadata *meta = map.getNodeMetadata(pos);
+	//g_game->nodePlacement(selected_def, selected_item, pos, pos, pointed, meta);
+	client->interact(INTERACT_PLACE, pointed);
+	return 0;
+}
+
+// dig_node(pos)
+int ModApiClient::l_dig_node(lua_State *L)
+{
+	Client *client = getClient(L);
+	v3s16 pos = read_v3s16(L, 1);
+	PointedThing pointed;
+	pointed.type = POINTEDTHING_NODE;
+	pointed.node_abovesurface = pos;
+	pointed.node_undersurface = pos;
+	client->interact(INTERACT_START_DIGGING, pointed);
+	client->interact(INTERACT_DIGGING_COMPLETED, pointed);
+	return 0;
+}
+
+// get_inventory(location)
+int ModApiClient::l_get_inventory(lua_State *L)
+{
+	Client *client = getClient(L);
+	InventoryLocation inventory_location;
+	Inventory *inventory;
+	std::string location;
+	
+	location = readParam<std::string>(L, 1);
+
+	try {
+		inventory_location.deSerialize(location);
+		inventory = client->getInventory(inventory_location);
+		push_inventory(L, inventory);
+	} catch (SerializationError &) {
+		lua_pushnil(L);
+	}
+	
+	return 1;
+}
+
+// set_keypress(key_setting, pressed) -> returns true on success
+int ModApiClient::l_set_keypress(lua_State *L)
+{
+	/*std::string setting_name = "keymap_" + readParam<std::string>(L, 1);
+	bool pressed = lua_isboolean(L, 2) && readParam<bool>(L, 2);
+	try {
+		KeyPress keyCode = getKeySetting(setting_name.c_str());
+		if (pressed)
+			g_game->input->setKeypress(keyCode);
+		else
+			g_game->input->unsetKeypress(keyCode);
+		lua_pushboolean(L, true);
+	} catch (SettingNotFoundException &) {
+		lua_pushboolean(L, false);
+	}*/
+	return 0;//1;
+}
+
+// drop_selected_item()
+int ModApiClient::l_drop_selected_item(lua_State *L)
+{
+	//g_game->dropSelectedItem();
+	return 0;
+}
+
+// get_objects_inside_radius(pos, radius)
+int ModApiClient::l_get_objects_inside_radius(lua_State *L)
+{
+	ClientEnvironment &env = getClient(L)->getEnv();
+	
+	v3f pos = checkFloatPos(L, 1);
+	float radius = readParam<float>(L, 2) * BS;
+	
+	std::vector<DistanceSortedActiveObject> objs;
+	env.getActiveObjects(pos, radius, objs);
+	
+	int i = 0;
+	lua_createtable(L, objs.size(), 0);
+	for (const auto obj : objs) {
+		ClientObjectRef::create(L, obj.obj);//push_objectRef(L,obj.obj->getId());//ClientObjectRef::create(L, obj.obj);							// TODO: getObjectRefOrCreate
+		lua_rawseti(L, -2, ++i);
+	}
+	return 1;
+	//return 0;
+}
+
+//make_screenshot()
+int ModApiClient::l_make_screenshot(lua_State *L)
+{
+  getClient(L)->makeScreenshot();
+  lua_pushboolean(L, true);
+  return 1;
+}
 
 void ModApiClient::Initialize(lua_State *L, int top)
 {
@@ -461,4 +581,12 @@ void ModApiClient::Initialize(lua_State *L, int top)
 	API_FCT(get_builtin_path);
 	API_FCT(get_language);
 	API_FCT(get_csm_restrictions);
+	API_FCT(send_damage);
+	API_FCT(place_node);
+	API_FCT(dig_node);
+	API_FCT(get_inventory);
+	API_FCT(set_keypress);
+	API_FCT(drop_selected_item);
+	API_FCT(get_objects_inside_radius);
+	API_FCT(make_screenshot);
 }

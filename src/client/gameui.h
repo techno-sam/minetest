@@ -61,6 +61,7 @@ public:
 		bool show_minimal_debug = false;
 		bool show_basic_debug = false;
 		bool show_profiler_graph = false;
+		bool show_cheat_menu = true;
 	};
 
 	void init();
@@ -93,6 +94,7 @@ public:
 	void updateProfiler();
 
 	void toggleChat();
+	void toggleCheatMenu();
 	void toggleHud();
 	void toggleProfiler();
 

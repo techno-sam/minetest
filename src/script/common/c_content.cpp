@@ -1329,6 +1329,20 @@ void push_tool_capabilities(lua_State *L,
 		}
 		lua_setfield(L, -2, "damage_groups");
 }
+ 
+/******************************************************************************/
+void push_inventory(lua_State *L, Inventory *inventory)
+{
+	std::vector<const InventoryList*> lists = inventory->getLists();
+	std::vector<const InventoryList*>::iterator iter = lists.begin();
+	lua_createtable(L, 0, lists.size());
+	for (; iter != lists.end(); iter++) {
+		const char* name = (*iter)->getName().c_str();
+		lua_pushstring(L, name);
+		push_inventory_list(L, inventory, name);
+		lua_rawset(L, -3);
+	}
+}
 
 /******************************************************************************/
 void push_inventory_list(lua_State *L, Inventory *inv, const char *name)

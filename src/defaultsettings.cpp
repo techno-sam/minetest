@@ -68,6 +68,44 @@ void set_default_settings()
 	settings->setDefault("clickable_chat_weblinks", "false");
 	settings->setDefault("chat_weblink_color", "#8888FF");
 
+	//Cheats
+	settings->setDefault("cheats", "false");
+	settings->setDefault("privilege_override", "false");
+	settings->setDefault("prevent_falldamage", "false");
+	settings->setDefault("min_zoom", "15.0");
+	settings->setDefault("pointall", "false");
+	settings->setDefault("instamine", "false");
+	settings->setDefault("freecam", "false");
+	settings->setDefault("keymap_toggle_freecam", "KEY_KEY_G");
+	settings->setDefault("cheat_hud", "true");
+	settings->setDefault("keymap_toggle_cheat_menu", "KEY_F8");
+	settings->setDefault("keymap_toggle_falldamage", "KEY_KEY_X");
+	settings->setDefault("enable_esp", "false"); //entity esp
+	settings->setDefault("enable_tracers", "false");
+	settings->setDefault("enable_node_esp", "false");
+	settings->setDefault("enable_node_tracers", "false");
+	settings->setDefault("player_only_esp", "false"); //only do entity esp for players
+	settings->setDefault("player_only_tracers", "false"); // ^^, but with tracers
+	settings->setDefault("node_esp_nodes", ""); //nodes to highlight for node esp and node tracers
+	settings->setDefault("min_light", "50"); //minimum light level in light_LUT
+
+	//Non Cheaty Overrides
+	settings->setDefault("revert_airlike_item_fix", "false");
+
+	// Cheat Menu
+	settings->setDefault("cheat_menu_font", "FM_Standard");
+	settings->setDefault("cheat_menu_bg_color", "(45, 45, 68)");
+	settings->setDefault("cheat_menu_bg_color_alpha", "173");
+	settings->setDefault("cheat_menu_active_bg_color", "(0, 0, 0)");
+	settings->setDefault("cheat_menu_active_bg_color_alpha", "210");
+	settings->setDefault("cheat_menu_font_color", "(255, 255, 255)");
+	settings->setDefault("cheat_menu_font_color_alpha", "195");
+	settings->setDefault("cheat_menu_selected_font_color", "(255, 255, 255)");
+	settings->setDefault("cheat_menu_selected_font_color_alpha", "235");
+	settings->setDefault("cheat_menu_head_height", "50");
+	settings->setDefault("cheat_menu_entry_height", "35");
+	settings->setDefault("cheat_menu_entry_width", "200");
+
 	// Keymap
 	settings->setDefault("remote_port", "30000");
 	settings->setDefault("keymap_forward", "KEY_KEY_W");

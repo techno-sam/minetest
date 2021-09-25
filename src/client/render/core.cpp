@@ -34,6 +34,12 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/shader.h"
 #include "profiler.h"
 #include "client/shadows/dynamicshadowsrender.h"
+ 
+#include <iostream>
+#include <cmath>
+#include "client/content_cao.h"
+#include "mapblock.h"
+#include "mapsector.h"
 
 RenderingCore::RenderingCore(IrrlichtDevice *_device, Client *_client, Hud *_hud)
 	: device(_device), driver(device->getVideoDriver()), smgr(device->getSceneManager()),
@@ -296,6 +302,111 @@ void RenderingCore::draw3D()
 	}
 	if (draw_wield_tool)
 		camera->drawWieldedTool();
+	drawTracersAndESP();
+}
+
+void RenderingCore::drawTracersAndESP()
+{
+	bool draw_esp = g_settings->getBool("enable_esp");
+	bool draw_tracers = g_settings->getBool("enable_tracers");
+	bool draw_node_esp = g_settings->getBool("enable_node_esp");
+	bool draw_node_tracers = g_settings->getBool("enable_node_tracers");
+	bool draw_chunk_bounds = g_settings->getBool("enable_chunk_bounds");
+	bool draw_sector_bounds = g_settings->getBool("enable_sector_bounds");
+	ClientEnvironment &env = client->getEnv();
+	Camera *camera = client->getCamera();
+	
+	v3f camera_offset = intToFloat(camera->getOffset(), BS);
+	
+	v3f eye_pos = (camera->getPosition() + camera->getDirection() - camera_offset);
+ 	
+ 	video::SMaterial material, oldmaterial;
+ 	oldmaterial = driver->getMaterial2D();
+	material.setFlag(video::EMF_LIGHTING, false);
+	material.setFlag(video::EMF_BILINEAR_FILTER, false);
+	material.setFlag(video::EMF_ZBUFFER, false);
+	material.setFlag(video::EMF_ZWRITE_ENABLE, false);
+	driver->setMaterial(material);
+
+
+	LocalPlayer *player = env.getLocalPlayer();
+
+ 	//draw tracers and esp
+ 	if (draw_esp || draw_tracers) {
+		auto allObjects = env.getAllActiveObjects();
+
+		for (auto &it : allObjects) {
+			ClientActiveObject *cao = it.second;
+			if (cao->isLocalPlayer() || cao->getParent())
+				continue;
+			auto draw_color = video::SColor(255, 255, 255, 255);
+			if (cao->isPlayer()) {
+				draw_color = video::SColor(255, 255, 0, 255);
+			}
+			/*if (cao->isLocalPlayer()) {
+				draw_color = video::SColor(255, 0, 255, 255);
+			}*/
+			GenericCAO *obj = dynamic_cast<GenericCAO *>(cao);
+			if (! obj)
+				continue;
+			aabb3f box;
+			if (! obj->getSelectionBox(&box))
+				continue;
+			v3f pos = obj->getPosition() - camera_offset;
+			box.MinEdge += pos;
+			box.MaxEdge += pos;
+			if (draw_esp and (cao->isPlayer()==true or g_settings->getBool("player_only_esp")==false))
+				driver->draw3DBox(box, draw_color);
+			if (draw_tracers and (cao->isPlayer()==true or g_settings->getBool("player_only_tracers")==false))
+				driver->draw3DLine(eye_pos, box.getCenter(), draw_color);
+		}
+		//draw tracers to localplayer
+		if (g_settings->getBool("freecam")) {
+			auto draw_color = video::SColor(255,0,255,255);
+			GenericCAO *obj = dynamic_cast<GenericCAO *>(player);
+			aabb3f box;
+			v3f pos = player->getLegitPosition() - camera_offset;
+			box.MinEdge += pos;
+			box.MaxEdge += pos;
+			if (draw_esp)
+				driver->draw3DBox(box, draw_color);
+			if (draw_tracers)
+				driver->draw3DLine(eye_pos, box.getCenter(), draw_color);
+		}
+	}
+	if (draw_node_esp || draw_node_tracers) {
+		Map &map = env.getMap();
+		std::map<v2s16, MapSector*> *sectors = map.getSectorsPtr();
+		
+		for (auto &sector_it : *sectors) {
+			MapSector *sector = sector_it.second;
+			MapBlockVect blocks;
+			sector->getBlocks(blocks);
+			for (MapBlock *block : blocks) {
+				if (! block->mesh)
+					continue;
+				for (v3s16 p : block->mesh->esp_nodes) {
+					v3f pos = intToFloat(p, BS) - camera_offset;
+					MapNode node = map.getNode(p);
+					std::vector<aabb3f> boxes;
+					node.getSelectionBoxes(client->getNodeDefManager(), &boxes, node.getNeighbors(p, &map));
+					video::SColor color = client->getNodeDefManager()->get(node).minimap_color;
+				
+					for (aabb3f box : boxes) {
+						box.MinEdge += pos;
+						box.MaxEdge += pos;
+						if (draw_node_esp)
+							driver->draw3DBox(box, color);
+						if (draw_node_tracers)
+							driver->draw3DLine(eye_pos, box.getCenter(), color);
+					}
+				}
+			}
+		}
+
+	}
+	
+	driver->setMaterial(oldmaterial);
 }
 
 void RenderingCore::drawHUD()

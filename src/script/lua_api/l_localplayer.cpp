@@ -25,6 +25,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "hud.h"
 #include "common/c_content.h"
 #include "client/content_cao.h"
+#include "client/client.h"
+#include "client/camera.h"
+#include "settings.h"
 
 LuaLocalPlayer::LuaLocalPlayer(LocalPlayer *m) : m_localplayer(m)
 {
@@ -60,6 +63,19 @@ int LuaLocalPlayer::l_get_velocity(lua_State *L)
 	return 1;
 }
 
+int LuaLocalPlayer::l_set_velocity(lua_State *L)
+{
+	if (!g_settings->getBool("cheats")) {
+		return 0;
+	}
+	LocalPlayer *player = getobject(L, 1);
+	
+	v3f pos = checkFloatPos(L, 2);
+	player->setSpeed(pos);
+	
+	return 0;
+}
+
 int LuaLocalPlayer::l_get_hp(lua_State *L)
 {
 	LocalPlayer *player = getobject(L, 1);
@@ -83,6 +99,23 @@ int LuaLocalPlayer::l_get_wield_index(lua_State *L)
 
 	lua_pushinteger(L, player->getWieldIndex());
 	return 1;
+}
+
+// set_wield_index(self)
+int LuaLocalPlayer::l_set_wield_index(lua_State *L)
+{
+	if (!g_settings->getBool("cheats")) {
+		return 0;
+	}
+	LocalPlayer *player = getobject(L, 1);
+	u32 index = luaL_checkinteger(L, 2) - 1;
+	
+	player->setWieldIndex(index);
+	//g_game->processItemSelection(&g_game->runData.new_playeritem);
+	ItemStack selected_item, hand_item;
+	ItemStack &tool_item = player->getWieldedItem(&selected_item, &hand_item);
+	getClient(L)->getCamera()->wield(tool_item);
+	return 0;
 }
 
 // get_wielded_item(self)
@@ -150,6 +183,25 @@ int LuaLocalPlayer::l_swimming_vertical(lua_State *L)
 
 	lua_pushboolean(L, player->swimming_vertical);
 	return 1;
+}
+
+// set_physics_override(self, override_table)
+int LuaLocalPlayer::l_set_physics_override(lua_State *L)
+{
+	if (!g_settings->getBool("cheats")) {
+		return 0;
+	}
+	LocalPlayer *player = getobject(L, 1);
+
+	if (lua_istable(L, 2)) {
+		getfloatfield(L, 2, "speed", player->physics_override_speed);
+		getfloatfield(L, 2, "jump", player->physics_override_jump);
+		getfloatfield(L, 2, "gravity", player->physics_override_gravity);
+		getboolfield(L, 2, "sneak", player->physics_override_sneak);
+		getboolfield(L, 2, "sneak_glitch", player->physics_override_sneak_glitch);
+		getboolfield(L, 2, "new_move", player->physics_override_new_move);
+	}
+	return 0;
 }
 
 // get_physics_override(self)
@@ -253,6 +305,20 @@ int LuaLocalPlayer::l_get_pos(lua_State *L)
 
 	push_v3f(L, player->getPosition() / BS);
 	return 1;
+}
+
+// set_pos(self, pos)
+int LuaLocalPlayer::l_set_pos(lua_State *L)
+{
+	if (!g_settings->getBool("cheats")) {
+		return 0;
+	}
+	LocalPlayer *player = getobject(L, 1);
+	
+	v3f pos = checkFloatPos(L, 2);
+	player->setPosition(pos);
+	//getClient(L)->sendPlayerPos();
+	return 0;
 }
 
 // get_movement_acceleration(self)
@@ -453,9 +519,11 @@ void LuaLocalPlayer::Register(lua_State *L)
 const char LuaLocalPlayer::className[] = "LocalPlayer";
 const luaL_Reg LuaLocalPlayer::methods[] = {
 		luamethod(LuaLocalPlayer, get_velocity),
+		luamethod(LuaLocalPlayer, set_velocity),
 		luamethod(LuaLocalPlayer, get_hp),
 		luamethod(LuaLocalPlayer, get_name),
 		luamethod(LuaLocalPlayer, get_wield_index),
+		luamethod(LuaLocalPlayer, set_wield_index),
 		luamethod(LuaLocalPlayer, get_wielded_item),
 		luamethod(LuaLocalPlayer, is_attached),
 		luamethod(LuaLocalPlayer, is_touching_ground),
@@ -465,6 +533,7 @@ const luaL_Reg LuaLocalPlayer::methods[] = {
 		luamethod(LuaLocalPlayer, is_climbing),
 		luamethod(LuaLocalPlayer, swimming_vertical),
 		luamethod(LuaLocalPlayer, get_physics_override),
+		luamethod(LuaLocalPlayer, set_physics_override),
 		// TODO: figure our if these are useful in any way
 		luamethod(LuaLocalPlayer, get_last_pos),
 		luamethod(LuaLocalPlayer, get_last_velocity),
@@ -474,6 +543,7 @@ const luaL_Reg LuaLocalPlayer::methods[] = {
 		luamethod(LuaLocalPlayer, get_control),
 		luamethod(LuaLocalPlayer, get_breath),
 		luamethod(LuaLocalPlayer, get_pos),
+		luamethod(LuaLocalPlayer, set_pos),
 		luamethod(LuaLocalPlayer, get_movement_acceleration),
 		luamethod(LuaLocalPlayer, get_movement_speed),
 		luamethod(LuaLocalPlayer, get_movement),

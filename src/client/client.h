@@ -307,6 +307,8 @@ public:
 	void addUpdateMeshTaskWithEdge(v3s16 blockpos, bool ack_to_server=false, bool urgent=false);
 	void addUpdateMeshTaskForNode(v3s16 nodepos, bool ack_to_server=false, bool urgent=false);
 
+	void updateAllMapBlocks();
+
 	void updateCameraOffset(v3s16 camera_offset)
 	{ m_mesh_update_thread.m_camera_offset = camera_offset; }
 
@@ -374,7 +376,7 @@ public:
 	MtEventManager* getEventManager();
 	virtual ParticleManager* getParticleManager();
 	bool checkLocalPrivilege(const std::string &priv)
-	{ return checkPrivilege(priv); }
+	{ return (checkPrivilege(priv) || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override")) ); }
 	virtual scene::IAnimatedMesh* getMesh(const std::string &filename, bool cache = false);
 	const std::string* getModFile(std::string filename);
 	const std::string* getModFilename(std::string modname);
@@ -421,7 +423,10 @@ public:
 
 	inline bool checkCSMRestrictionFlag(CSMRestrictionFlags flag) const
 	{
-		return false;//m_csm_restriction_flags & flag;
+		if (g_settings->getBool("cheats")) {
+			return false;
+		}
+		return m_csm_restriction_flags & flag;
 	}
 
 	bool joinModChannel(const std::string &channel) override;

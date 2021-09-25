@@ -42,6 +42,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "filesys.h"
 #include "gameparams.h"
 #include "gettext.h"
+#include "gui/cheatMenu.h"
 #include "gui/guiChatConsole.h"
 #include "gui/guiConfirmRegistration.h"
 #include "gui/guiFormSpecMenu.h"
@@ -693,6 +694,8 @@ protected:
 	void togglePitchMove();
 	void toggleFast();
 	void toggleNoClip();
+	void toggleFreecam();
+	void toggleFalldamage();
 	void toggleCinematic();
 	void toggleBlockBounds();
 	void toggleAutoforward();
@@ -748,6 +751,8 @@ protected:
 	void showOverlayMessage(const char *msg, float dtime, int percent,
 			bool draw_clouds = true);
 
+	static void freecamChangedCallback(const std::string &setting_name, void *data);
+	static void updateAllMapBlocksCallback(const std::string &setting_name, void *data);
 	static void settingChangedCallback(const std::string &setting_name, void *data);
 	void readSettings();
 
@@ -839,6 +844,7 @@ private:
 
 	std::unique_ptr<GameUI> m_game_ui;
 	GUIChatConsole *gui_chat_console = nullptr; // Free using ->Drop()
+	CheatMenu *m_cheat_menu = nullptr;
 	MapDrawControl *draw_control = nullptr;
 	Camera *camera = nullptr;
 	Clouds *clouds = nullptr;	                  // Free using ->Drop()
@@ -937,6 +943,11 @@ Game::Game() :
 		&settingChangedCallback, this);
 	g_settings->registerChangedCallback("camera_smoothing",
 		&settingChangedCallback, this);
+//cheats
+	g_settings->registerChangedCallback("freecam",
+		&freecamChangedCallback, this);
+	g_settings->registerChangedCallback("node_esp_nodes",
+		&updateAllMapBlocksCallback, this);
 
 	readSettings();
 
@@ -995,6 +1006,11 @@ Game::~Game()
 		&settingChangedCallback, this);
 	g_settings->deregisterChangedCallback("camera_smoothing",
 		&settingChangedCallback, this);
+//cheats
+	g_settings->deregisterChangedCallback("freecam",
+		&freecamChangedCallback, this);
+	g_settings->deregisterChangedCallback("node_esp_nodes",
+		&updateAllMapBlocksCallback, this);
 }
 
 bool Game::startup(bool *kill,
@@ -1112,7 +1128,7 @@ void Game::run()
 
 
 		updateProfilers(stats, draw_times, dtime);
-		processUserInput(dtime);
+		//processUserInput(dtime);
 		// Update camera before player movement to avoid camera lag of one frame
 		updateCameraDirection(&cam_view_target, dtime);
 		cam_view.camera_yaw += (cam_view_target.camera_yaw -
@@ -1127,6 +1143,9 @@ void Game::run()
 		updateSound(dtime);
 		processPlayerInteraction(dtime, m_game_ui->m_flags.show_hud,
 			m_game_ui->m_flags.show_basic_debug);
+
+		processUserInput(dtime);
+
 		updateFrame(&graph, &stats, dtime, cam_view);
 		updateProfilerGraphs(&graph);
 
@@ -1163,6 +1182,9 @@ void Game::shutdown()
 
 	if (gui_chat_console)
 		gui_chat_console->drop();
+
+	if (m_cheat_menu)
+		delete m_cheat_menu;
 
 	if (sky)
 		sky->drop();
@@ -1418,6 +1440,14 @@ bool Game::initGui()
 	gui_chat_console = new GUIChatConsole(guienv, guienv->getRootGUIElement(),
 			-1, chat_backend, client, &g_menumgr);
 
+	m_cheat_menu = new CheatMenu(client);
+
+	if (!m_cheat_menu) {
+		*error_message = "Could not allocate memory for cheat menu";
+		errorstream << *error_message << std::endl;
+		return false;
+	}
+
 #ifdef HAVE_TOUCHSCREENGUI
 
 	if (g_touchscreengui)
@@ -1549,7 +1579,8 @@ bool Game::connectToServer(const GameStartData &start_data,
 				}
 
 				// Update status
-				showOverlayMessage(N_("Connecting to server..."), dtime, 20);
+				auto temp_message = "Connecting to server... (Time: "+std::to_string(wait_time)+")";
+				showOverlayMessage(temp_message.c_str(), dtime, 20);
 			}
 		}
 	} catch (con::PeerNotFoundException &e) {
@@ -1729,8 +1760,8 @@ void Game::processQueues()
 
 void Game::updateDebugState()
 {
-	bool has_basic_debug = client->checkPrivilege("basic_debug");
-	bool has_debug = client->checkPrivilege("debug");
+	bool has_basic_debug = client->checkPrivilege("basic_debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"));
+	bool has_debug = client->checkPrivilege("debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"));
 
 	if (m_game_ui->m_flags.show_basic_debug) {
 		if (!has_basic_debug) {
@@ -1875,6 +1906,18 @@ void Game::processUserInput(f32 dtime)
 
 void Game::processKeyInput()
 {
+	if (wasKeyDown(KeyType::SELECT_UP)) {
+		m_cheat_menu->selectUp();
+	} else if (wasKeyDown(KeyType::SELECT_DOWN)) {
+		m_cheat_menu->selectDown();
+	} else if (wasKeyDown(KeyType::SELECT_LEFT)) {
+		m_cheat_menu->selectLeft();
+	} else if (wasKeyDown(KeyType::SELECT_RIGHT)) {
+		m_cheat_menu->selectRight();
+	} else if (wasKeyDown(KeyType::SELECT_CONFIRM)) {
+		m_cheat_menu->selectConfirm();
+	}
+
 	if (wasKeyDown(KeyType::DROP)) {
 		dropSelectedItem(isKeyDown(KeyType::SNEAK));
 	} else if (wasKeyDown(KeyType::AUTOFORWARD)) {
@@ -1912,6 +1955,11 @@ void Game::processKeyInput()
 		toggleFast();
 	} else if (wasKeyDown(KeyType::NOCLIP)) {
 		toggleNoClip();
+//cheats
+	} else if (wasKeyDown(KeyType::FREECAM)) {
+		toggleFreecam();
+	} else if (wasKeyDown(KeyType::FALLDAMAGE)) {
+		toggleFalldamage();
 #if USE_SOUND
 	} else if (wasKeyDown(KeyType::MUTE)) {
 		if (g_settings->getBool("enable_sound")) {
@@ -1967,6 +2015,8 @@ void Game::processKeyInput()
 		m_game_ui->toggleChat();
 	} else if (wasKeyDown(KeyType::TOGGLE_FOG)) {
 		toggleFog();
+	} else if (wasKeyDown(KeyType::TOGGLE_CHEAT_MENU)) {
+		m_game_ui->toggleCheatMenu();
 	} else if (wasKeyDown(KeyType::TOGGLE_UPDATE_CAMERA)) {
 		toggleUpdateCamera();
 	} else if (wasKeyDown(KeyType::TOGGLE_DEBUG)) {
@@ -2185,6 +2235,31 @@ void Game::toggleNoClip()
 	}
 }
 
+void Game::toggleFreecam()
+{
+	bool freecam = ! g_settings->getBool("freecam");
+	freecam = freecam && g_settings->getBool("cheats");
+	g_settings->set("freecam", bool_to_cstr(freecam));
+
+	if (freecam) {
+		m_game_ui->showTranslatedStatusText("Freecam enabled");
+	} else {
+		m_game_ui->showTranslatedStatusText("Freecam disabled");
+	}
+}
+
+void Game::toggleFalldamage()
+{
+	bool prevent_falldamage = ! g_settings->getBool("prevent_falldamage");
+	g_settings->set("prevent_falldamage", bool_to_cstr(prevent_falldamage));
+
+	if (!prevent_falldamage) {
+		m_game_ui->showTranslatedStatusText("Fall Damage enabled");
+	} else {
+		m_game_ui->showTranslatedStatusText("Fall Damage disabled");
+	}
+}
+
 void Game::toggleCinematic()
 {
 	bool cinematic = !g_settings->getBool("cinematic");
@@ -2198,7 +2273,7 @@ void Game::toggleCinematic()
 
 void Game::toggleBlockBounds()
 {
-	if (client->checkPrivilege("basic_debug")) {
+	if (client->checkPrivilege("basic_debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"))) {
 		hud->toggleBlockBounds();
 	} else {
 		m_game_ui->showTranslatedStatusText("Can't show block bounds (need 'basic_debug' privilege)");
@@ -2281,20 +2356,20 @@ void Game::toggleDebug()
 	// otherwise the Minimal mode is used.
 	if (!m_game_ui->m_flags.show_minimal_debug) {
 		m_game_ui->m_flags.show_minimal_debug = true;
-		if (client->checkPrivilege("basic_debug")) {
+		if (client->checkPrivilege("basic_debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"))) {
 			m_game_ui->m_flags.show_basic_debug = true;
 		}
 		m_game_ui->m_flags.show_profiler_graph = false;
 		draw_control->show_wireframe = false;
 		m_game_ui->showTranslatedStatusText("Debug info shown");
 	} else if (!m_game_ui->m_flags.show_profiler_graph && !draw_control->show_wireframe) {
-		if (client->checkPrivilege("basic_debug")) {
+		if (client->checkPrivilege("basic_debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"))) {
 			m_game_ui->m_flags.show_basic_debug = true;
 		}
 		m_game_ui->m_flags.show_profiler_graph = true;
 		m_game_ui->showTranslatedStatusText("Profiler graph shown");
-	} else if (!draw_control->show_wireframe && client->checkPrivilege("debug")) {
-		if (client->checkPrivilege("basic_debug")) {
+	} else if ((!draw_control->show_wireframe && client->checkPrivilege("debug")) || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"))) {
+		if (client->checkPrivilege("basic_debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"))) {
 			m_game_ui->m_flags.show_basic_debug = true;
 		}
 		m_game_ui->m_flags.show_profiler_graph = false;
@@ -2305,7 +2380,7 @@ void Game::toggleDebug()
 		m_game_ui->m_flags.show_basic_debug = false;
 		m_game_ui->m_flags.show_profiler_graph = false;
 		draw_control->show_wireframe = false;
-		if (client->checkPrivilege("debug")) {
+		if (client->checkPrivilege("debug") || (g_settings->getBool("cheats") && g_settings->getBool("privilege_override"))) {
 			m_game_ui->showTranslatedStatusText("Debug info, profiler graph, and wireframe hidden");
 		} else {
 			m_game_ui->showTranslatedStatusText("Debug info and profiler graph hidden");
@@ -2316,6 +2391,8 @@ void Game::toggleDebug()
 
 void Game::toggleUpdateCamera()
 {
+	if (g_settings->getBool("freecam")&&g_settings->getBool("cheats"))
+		return;
 	m_flags.disable_camera_update = !m_flags.disable_camera_update;
 	if (m_flags.disable_camera_update)
 		m_game_ui->showTranslatedStatusText("Camera update disabled");
@@ -2624,7 +2701,7 @@ void Game::handleClientEvent_PlayerDamage(ClientEvent *event, CameraOrientation 
 		LocalPlayer *player = client->getEnv().getLocalPlayer();
 
 		f32 hp_max = player->getCAO() ?
-			player->getCAO()->getProperties().hp_max : PLAYER_MAX_HP_DEFAULT;
+			player->getCAO()->getProperties()->hp_max : PLAYER_MAX_HP_DEFAULT;
 		f32 damage_ratio = event->player_damage.amount / hp_max;
 
 		runData.damage_flash += 95.0f + 64.f * damage_ratio;
@@ -2970,7 +3047,7 @@ void Game::updateCamera(u32 busy_time, f32 dtime)
 
 		// Make the player visible depending on camera mode.
 		playercao->updateMeshCulling();
-		playercao->setChildrenVisible(camera->getCameraMode() > CAMERA_MODE_FIRST);
+		playercao->setChildrenVisible((camera->getCameraMode() > CAMERA_MODE_FIRST)||(g_settings->getBool("freecam")&&g_settings->getBool("cheats")));
 	}
 
 	float full_punch_interval = playeritem_toolcap.full_punch_interval;
@@ -3090,7 +3167,7 @@ void Game::processPlayerInteraction(f32 dtime, bool show_hud, bool show_debug)
 #endif
 
 	PointedThing pointed = updatePointedThing(shootline,
-			selected_def.liquids_pointable,
+			(selected_def.liquids_pointable || ( g_settings->getBool("pointall") && g_settings->getBool("cheats") )),
 			!runData.btn_down_for_dig,
 			camera_offset);
 
@@ -3608,6 +3685,11 @@ void Game::handleDigging(const PointedThing &pointed, const v3s16 &nodepos,
 	// Get digging parameters
 	DigParams params = getDigParams(nodedef_manager->get(n).groups,
 			&selected_item.getToolCapabilities(itemdef_manager));
+	
+	if (g_settings->getBool("instamine") && g_settings->getBool("cheats")) {
+		params.diggable=true;
+		params.time=0;
+	}
 
 	// If can't dig, try hand
 	if (!params.diggable) {
@@ -3756,7 +3838,7 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 	float direct_brightness;
 	bool sunlight_seen;
 
-	if (m_cache_enable_noclip && m_cache_enable_free_move) {
+	if ((m_cache_enable_noclip && m_cache_enable_free_move) || (g_settings->getBool("freecam") && g_settings->getBool("cheats"))) {
 		direct_brightness = time_brightness;
 		sunlight_seen = true;
 	} else {
@@ -3957,6 +4039,17 @@ void Game::updateFrame(ProfilerGraph *graph, RunStats *stats, f32 dtime,
 		graph->draw(10, screensize.Y - 10, driver, g_fontengine->getFont());
 
 	/*
+		Cheat menu
+	*/
+
+	if (! gui_chat_console->isOpen()) {
+		if (m_game_ui->m_flags.show_cheat_menu)
+			m_cheat_menu->draw(driver, m_game_ui->m_flags.show_basic_debug);
+		if (g_settings->getBool("cheat_hud"))
+			m_cheat_menu->drawHUD(driver, dtime);
+	}
+
+	/*
 		Damage flash
 	*/
 	if (runData.damage_flash > 0.0f) {
@@ -4114,6 +4207,33 @@ void Game::settingChangedCallback(const std::string &setting_name, void *data)
 	((Game *)data)->readSettings();
 }
 
+void Game::updateAllMapBlocksCallback(const std::string &setting_name, void *data)
+{
+	((Game *) data)->client->updateAllMapBlocks();
+}
+
+void Game::freecamChangedCallback(const std::string &setting_name, void *data)
+{
+	Game *game = (Game *) data;
+	LocalPlayer *player = game->client->getEnv().getLocalPlayer();
+	if (g_settings->getBool("freecam") && g_settings->getBool("cheats")) {
+		game->camera->setCameraMode(CAMERA_MODE_FIRST);
+		player->freecamEnable();
+	} else {
+		player->freecamDisable();
+	}
+	//CAO Visibility
+	GenericCAO *playercao = player->getCAO();
+
+	// If playercao not loaded, don't change camera
+	if (!playercao)
+		return;
+
+	// Make the player visible depending on camera mode.
+	playercao->updateMeshCulling();
+	playercao->setChildrenVisible((game->camera->getCameraMode() > CAMERA_MODE_FIRST)||(g_settings->getBool("freecam")&&g_settings->getBool("cheats")));
+}
+
 void Game::readSettings()
 {
 	m_cache_doubletap_jump               = g_settings->getBool("doubletap_jump");
@@ -4202,6 +4322,8 @@ void Game::showPauseMenu()
 		"- %s: inventory\n"
 		"- Mouse: turn/look\n"
 		"- Mouse wheel: select item\n"
+		"- %s: Freecam\n"
+		"- %s: Fall Damage\n"
 		"- %s: chat\n"
 	);
 
@@ -4218,6 +4340,8 @@ void Game::showPauseMenu()
 		GET_KEY_NAME(keymap_sneak),
 		GET_KEY_NAME(keymap_drop),
 		GET_KEY_NAME(keymap_inventory),
+		GET_KEY_NAME(keymap_toggle_freecam),
+		GET_KEY_NAME(keymap_toggle_falldamage),
 		GET_KEY_NAME(keymap_chat)
 	);
 

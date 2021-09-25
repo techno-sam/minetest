@@ -124,6 +124,8 @@ public:
 		if(m_animation_force_timer > 0)
 			m_animation_force_timer--;
 	}
+ 
+	std::set<v3s16> esp_nodes;
 
 private:
 	scene::IMesh *m_mesh[MAX_TILE_LAYERS];

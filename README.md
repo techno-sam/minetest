@@ -39,6 +39,7 @@ Further documentation
 - [doc/](doc/) directory of source distribution
 - Changes on the 'personal' branch:
   * Add node HUDtype
+  * Add cheats system
 
 Default controls
 ----------------

@@ -75,6 +75,9 @@ void set_light_table(float gamma)
 
 // Boundary values should be fixed
 	light_LUT[0] = 0;
+	if (g_settings->getBool("cheats")) {
+		light_LUT[0] = rangelim(g_settings->getU16("min_light"), 0, 255);
+	}
 	light_LUT[LIGHT_SUN] = 255;
 
 	for (size_t i = 1; i < LIGHT_SUN; i++) {
