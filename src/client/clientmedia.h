@@ -85,6 +85,9 @@ public:
 			const std::string &name,
 			const std::string &data,
 			Client *client);
+	
+	//Writes the filename:sha1 table to disk
+	void writeTableToDisk();
 
 private:
 	struct FileStatus {

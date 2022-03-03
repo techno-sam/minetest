@@ -43,7 +43,7 @@ local function create_text()
 			number = 0xff0000,
 			position = {x=0, y=1},
 			offset = {x=8, y=-8},
-			text = "You are using the preview mod",
+			text = "",
 			scale = {x=200, y=60},
 			alignment = {x=1, y=-1}})
 	id2 = core.localplayer:hud_add({
@@ -395,6 +395,19 @@ core.register_chatcommand("privs", {
 core.register_chatcommand("text", {
 	func = function(param)
 		return core.localplayer:hud_change(id, "text", param)
+	end,
+})
+
+--[[core.register_chatcommand("list_nodes", {
+	func = function(param)
+		original_print(dump(core.registered_nodes))
+		return true, "Listed Nodes"
+	end,
+})--]]
+
+core.register_chatcommand("node_def", {
+	func = function(param)
+		return true, dump(core.get_node_def(param))
 	end,
 })
 

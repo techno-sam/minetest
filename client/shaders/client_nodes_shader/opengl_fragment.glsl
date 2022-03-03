@@ -72,6 +72,7 @@ void main(void)
 		discard;
 	}
 #endif
+	base.a = base.a*0.6;
 
 	color = base.rgb;
 

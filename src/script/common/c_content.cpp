@@ -871,8 +871,10 @@ void push_content_features(lua_State *L, const ContentFeatures &c)
 		lua_pushstring(L, c.palette_name.c_str());
 		lua_setfield(L, -2, "palette_name");
 
-		push_palette(L, c.palette);
-		lua_setfield(L, -2, "palette");
+		if (c.palette!=NULL) {
+			push_palette(L, c.palette);
+			lua_setfield(L, -2, "palette");
+		}
 	}
 	lua_pushnumber(L, c.waving);
 	lua_setfield(L, -2, "waving");
@@ -886,6 +888,16 @@ void push_content_features(lua_State *L, const ContentFeatures &c)
 		lua_rawseti(L, -2, i++);
 	}
 	lua_setfield(L, -2, "connects_to");
+	
+	//push tiles
+	lua_createtable(L, 6, 0);
+	for (i=0; i<6; i++) {
+		std::string it = c.tiledef[i].name;
+		lua_pushlstring(L, it.c_str(), it.size());
+		lua_rawseti(L, -2, i);
+	}
+	lua_setfield(L, -2, "tiles");
+	//end tiles
 
 	push_ARGB8(L, c.post_effect_color);
 	lua_setfield(L, -2, "post_effect_color");

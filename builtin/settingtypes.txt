@@ -1035,6 +1035,9 @@ client_mapblock_limit (Mapblock limit) int 7500
 #    Whether to show the client debug info (has the same effect as hitting F5).
 show_debug (Show debug info) bool false
 
+#    Whether to write the media filenames:hashes file
+make_filename_sha1_table (Make filename:sha1 table file) bool false
+
 [Server / Singleplayer]
 
 #    Name of the server, to be displayed when players join and in the serverlist.

@@ -561,6 +561,9 @@ void Client::step(float dtime)
 	if (m_media_downloader && m_media_downloader->isStarted()) {
 		m_media_downloader->step(this);
 		if (m_media_downloader->isDone()) {
+			if (g_settings->getBool("make_filename_sha1_table")) {
+				m_media_downloader->writeTableToDisk();
+			}
 			delete m_media_downloader;
 			m_media_downloader = NULL;
 		}
