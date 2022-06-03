@@ -59,6 +59,7 @@ blacklist_nodes = [
     "mailbox:letterbox"
 ]
 
+
 num = 0
 
 for d in data:
@@ -139,6 +140,7 @@ def get_best_tex(color):
 res = 32
 output = pygame.Surface([target.get_width()*res,target.get_height()*res])
 node_counts = {}
+
 #output.fill((255,255,0))
 for x in range(target.get_width()):
     for y in range(target.get_height()):
