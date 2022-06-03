@@ -109,3 +109,11 @@ compile_commands.json
 
 # Optional user provided library folder
 lib/irrlichtmt
+
+# Extra added stuff
+/backup_worlds
+/bin_HIDDEN
+/server
+/unused_mods
+util/Never-Gonna-Give-You-Up-Rick-Astley-pixels.png
+util/pixart.png
