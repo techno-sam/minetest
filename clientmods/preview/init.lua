@@ -1,3 +1,4 @@
+if original_print == nil then original_print = print end
 local modname = assert(core.get_current_modname())
 local modstorage = core.get_mod_storage()
 local mod_channel
@@ -5,18 +6,18 @@ local mod_channel
 dofile(core.get_modpath(modname) .. "example.lua")
 
 core.register_on_shutdown(function()
-	print("[PREVIEW] shutdown client")
+	original_print("[PREVIEW] shutdown client")
 end)
 local id = nil
 
 do
 	local server_info = core.get_server_info()
-	print("Server version: " .. server_info.protocol_version)
-	print("Server ip: " .. server_info.ip)
-	print("Server address: " .. server_info.address)
-	print("Server port: " .. server_info.port)
+	original_print("Server version: " .. server_info.protocol_version)
+	original_print("Server ip: " .. server_info.ip)
+	original_print("Server address: " .. server_info.address)
+	original_print("Server port: " .. server_info.port)
 
-	print("CSM restrictions: " .. dump(core.get_csm_restrictions()))
+	original_print("CSM restrictions: " .. dump(core.get_csm_restrictions()))
 end
 
 local show_stuff = false
@@ -30,7 +31,7 @@ core.after(4, function()
 end)--]]
 
 local function create_text()
-	--print("armor: " .. dump(core.localplayer:get_armor_groups()))
+	--original_print("armor: " .. dump(core.localplayer:get_armor_groups()))
 	local player = core.localplayer
 	if not player then
 		player = core.localplayer
@@ -43,7 +44,7 @@ local function create_text()
 			number = 0xff0000,
 			position = {x=0, y=1},
 			offset = {x=8, y=-8},
-			text = "You are using the preview mod",
+			text = "",
 			scale = {x=200, y=60},
 			alignment = {x=1, y=-1}})
 	id2 = core.localplayer:hud_add({
@@ -59,7 +60,7 @@ end
 minetest.after(5,create_text)
 
 --[[core.register_on_modchannel_message(function(channel, sender, message)
-	print("[PREVIEW][modchannels] Received message `" .. message .. "` on channel `"
+	original_print("[PREVIEW][modchannels] Received message `" .. message .. "` on channel `"
 			.. channel .. "` from sender `" .. sender .. "`")
 	core.after(1, function()
 		mod_channel:send_all("CSM preview received " .. message)
@@ -67,28 +68,28 @@ minetest.after(5,create_text)
 end)
 
 core.register_on_modchannel_signal(function(channel, signal)
-	print("[PREVIEW][modchannels] Received signal id `" .. signal .. "` on channel `"
+	original_print("[PREVIEW][modchannels] Received signal id `" .. signal .. "` on channel `"
 			.. channel)
 end)
 
 core.register_on_inventory_open(function(inventory)
-	print("INVENTORY OPEN")
-	print(dump(inventory))
+	original_print("INVENTORY OPEN")
+	original_print(dump(inventory))
 	return false
 end)--]]
 
 --[[core.register_on_placenode(function(pointed_thing, node)
-	print("The local player place a node!")
-	print("pointed_thing :" .. dump(pointed_thing))
-	print("node placed :" .. dump(node))
+	original_print("The local player place a node!")
+	original_print("pointed_thing :" .. dump(pointed_thing))
+	original_print("node placed :" .. dump(node))
 	return false
 end)--]]
 
 core.register_on_item_use(function(itemstack, pointed_thing)
 	if not show_stuff then return false end
-	print("The local player used an item!")
-	print("pointed_thing :" .. dump(pointed_thing))
-	print("item = " .. itemstack:get_name())
+	original_print("The local player used an item!")
+	original_print("pointed_thing :" .. dump(pointed_thing))
+	original_print("item = " .. itemstack:get_name())
 
 	if not itemstack:is_empty() then
 		return false
@@ -99,13 +100,13 @@ core.register_on_item_use(function(itemstack, pointed_thing)
 
 	local rc = core.raycast(pos, pos2)
 	local i = rc:next()
-	print("[PREVIEW] raycast next: " .. dump(i))
+	original_print("[PREVIEW] raycast next: " .. dump(i))
 	if i then
-		print("[PREVIEW] line of sight: " .. (core.line_of_sight(pos, i.above) and "yes" or "no"))
+		original_print("[PREVIEW] line of sight: " .. (core.line_of_sight(pos, i.above) and "yes" or "no"))
 
 		local n1 = core.find_nodes_in_area(pos, i.under, {"default:stone"})
 		local n2 = core.find_nodes_in_area_under_air(pos, i.under, {"default:stone"})
-		print(("[PREVIEW] found %s nodes, %s nodes under air"):format(
+		original_print(("[PREVIEW] found %s nodes, %s nodes under air"):format(
 				n1 and #n1 or "?", n2 and #n2 or "?"))
 	end--]]
 
@@ -114,28 +115,28 @@ end)
 
 -- This is an example function to ensure it's working properly, should be removed before merge
 --[[core.register_on_receiving_chat_message(function(message)
-	print("[PREVIEW] Received message " .. message)
+	original_print("[PREVIEW] Received message " .. message)
 	return false
 end)
 
 -- This is an example function to ensure it's working properly, should be removed before merge
 core.register_on_sending_chat_message(function(message)
-	print("[PREVIEW] Sending message " .. message)
+	original_print("[PREVIEW] Sending message " .. message)
 	return false
 end)--]]
 
 --[[core.register_on_chatcommand(function(command, params)
-	print("[PREVIEW] caught command '"..command.."'. Parameters: '"..params.."'")
+	original_print("[PREVIEW] caught command '"..command.."'. Parameters: '"..params.."'")
 end)
 
 -- This is an example function to ensure it's working properly, should be removed before merge
 core.register_on_hp_modification(function(hp)
-	print("[PREVIEW] HP modified " .. hp)
+	original_print("[PREVIEW] HP modified " .. hp)
 end)--]]
 
 -- This is an example function to ensure it's working properly, should be removed before merge
 --[[core.register_on_damage_taken(function(hp)
-	print("[PREVIEW] Damage taken " .. hp)
+	original_print("[PREVIEW] Damage taken " .. hp)
 end)--]]
 
 -- This is an example function to ensure it's working properly, should be removed before merge
@@ -148,7 +149,7 @@ core.register_chatcommand("dump", {
 local function preview_minimap()
 	local minimap = core.ui.minimap
 	if not minimap then
-		print("[PREVIEW] Minimap is disabled. Skipping.")
+		original_print("[PREVIEW] Minimap is disabled. Skipping.")
 		return
 	end
 	minimap:set_mode(4)
@@ -156,13 +157,13 @@ local function preview_minimap()
 	minimap:set_pos({x=5, y=50, z=5})
 	minimap:set_shape(math.random(0, 1))
 
-	print("[PREVIEW] Minimap: mode => " .. dump(minimap:get_mode()) ..
+	original_print("[PREVIEW] Minimap: mode => " .. dump(minimap:get_mode()) ..
 			" position => " .. dump(minimap:get_pos()) ..
 			" angle => " .. dump(minimap:get_angle()))
 end
 
 core.after(2, function()
-	print("[PREVIEW] loaded " .. modname .. " mod")
+	original_print("[PREVIEW] loaded " .. modname .. " mod")
 	modstorage:set_string("current_mod", modname)
 	assert(modstorage:get_string("current_mod") == modname)
 	--preview_minimap()
@@ -173,19 +174,19 @@ end)
 		core.ui.minimap:show()
 	end
 
-	print("[PREVIEW] Time of day " .. core.get_timeofday())
+	original_print("[PREVIEW] Time of day " .. core.get_timeofday())
 
-	print("[PREVIEW] Node level: " .. core.get_node_level({x=0, y=20, z=0}) ..
+	original_print("[PREVIEW] Node level: " .. core.get_node_level({x=0, y=20, z=0}) ..
 		" max level " .. core.get_node_max_level({x=0, y=20, z=0}))
 
-	print("[PREVIEW] Find node near: " .. dump(core.find_node_near({x=0, y=20, z=0}, 10,
+	original_print("[PREVIEW] Find node near: " .. dump(core.find_node_near({x=0, y=20, z=0}, 10,
 		{"group:tree", "default:dirt", "default:stone"})))
 end)--]]
 
 --[[core.register_on_dignode(function(pos, node)
-	print("The local player dug a node!")
-	print("pos:" .. dump(pos))
-	print("node:" .. dump(node))
+	original_print("The local player dug a node!")
+	original_print("pos:" .. dump(pos))
+	original_print("node:" .. dump(node))
 	return false
 end)--]]
 
@@ -325,6 +326,7 @@ core.register_on_formspec_input(function(formname,fields)
 	if formname == "preview:node" then
 		if fields.read then --[Read] button
 			local num = tonumber(fields.number)
+			if num == nil then return end
 			local _,pos = core.parse_pos(fields.position)
 			local meta = minetest.get_meta(pos)
 			if not tableHasKey(meta:to_table(),"inventory") then
@@ -357,19 +359,19 @@ core.register_on_punchnode(function(pos, node)
 		local spos = pos["x"]..","..pos["y"]..","..pos["z"]
 		show_book_inventory({label="Bookshelf",spos=spos})
 	end
-	print("The local player punched a node!")
+	original_print("The local player punched a node!")
 	local itemstack = core.localplayer:get_wielded_item()
-	print(dump(itemstack:to_table()))
-	print("pos:" .. dump(pos))
-	print("node:" .. dump(node))
+	original_print(dump(itemstack:to_table()))
+	original_print("pos:" .. dump(pos))
+	original_print("node:" .. dump(node))
 	local meta = core.get_meta(pos)
-	print("punched meta: " .. (meta and adjusted_dump(meta:to_table()) or "(missing)"))
+	original_print("punched meta: " .. (meta and adjusted_dump(meta:to_table()) or "(missing)"))
 	--local inventory = meta:get_inventory()
 	if not meta:to_table() then return false end
 	if not tableHasKey(meta:to_table(),"inventory") then
 		return false
 	end
-	print("inventory: {")
+	original_print("inventory: {")
 	local desc = ""
 	for key, list in pairs(meta:to_table()["inventory"]) do
 		desc = desc .. indent(1, key .. ": ") .. "\n"
@@ -377,12 +379,12 @@ core.register_on_punchnode(function(pos, node)
 		for i = 1, size do
 			local stack = list[i]
 			if not stack:is_empty() then
-				desc = desc .. indent(2, "\"" .. stack:get_name() .. "\" - " .. stack:get_count()) .. "\n"
+				desc = desc .. indent(2, "\"" .. stack:get_name() .. "\" - " .. stack:get_count()) .. "[" .. adjusted_dump(stack:get_meta():to_table()) .. "]" .. "\n"
 			end
 		end
 	end
-	print(desc)
-	print("}")
+	original_print(desc)
+	original_print("}")
 	return false
 end)
 
@@ -395,6 +397,19 @@ core.register_chatcommand("privs", {
 core.register_chatcommand("text", {
 	func = function(param)
 		return core.localplayer:hud_change(id, "text", param)
+	end,
+})
+
+--[[core.register_chatcommand("list_nodes", {
+	func = function(param)
+		original_print(dump(core.registered_nodes))
+		return true, "Listed Nodes"
+	end,
+})--]]
+
+core.register_chatcommand("node_def", {
+	func = function(param)
+		return true, dump(core.get_node_def(param))
 	end,
 })
 

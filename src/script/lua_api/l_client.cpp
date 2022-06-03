@@ -37,6 +37,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "nodedef.h"
 #include "util/pointedthing.h"
 #include "script/common/c_content.h"
+#include "nameidmapping.h"
 
 #define checkCSMRestrictionFlag(flag) \
 	( getClient(L)->checkCSMRestrictionFlag(CSMRestrictionFlags::flag) )
@@ -403,6 +404,40 @@ int ModApiClient::l_get_node_def(lua_State *L)
 	return 1;
 }
 
+// get_node_defs()
+int ModApiClient::l_get_node_defs(lua_State *L)
+{
+	if (checkCSMRestrictionFlag(CSM_RF_READ_NODEDEFS))
+		return 0;
+
+	IGameDef *gdef = getGameDef(L);
+	assert(gdef);
+
+	const NodeDefManager *ndef = gdef->ndef();
+	assert(ndef);
+
+	const int size = ndef->getNumberIds();
+	errorstream << "Size is: " << size << std::endl;
+	NameIdMapping mapping = ndef->getNameIdMapping();
+	
+	lua_createtable(L, 0, size);
+	for (u16 id=0; id<=size; id++) {
+		const ContentFeatures &cf = ndef->get(id);
+		std::string name;
+		mapping.getName(id, name);
+		//errorstream << "ID ["<<id<<"] maps to ["<<name<<"]."<<std::endl;
+		lua_pushnumber(L, id);
+		lua_pushstring(L, name.c_str());
+		//lua_pushstring(L, cf.name.c_str());
+		//push_content_features(L, cf);
+		lua_settable(L, -3);
+	}
+
+	return 1;
+}
+
+
+
 // get_privilege_list()
 int ModApiClient::l_get_privilege_list(lua_State *L)
 {
@@ -577,6 +612,7 @@ void ModApiClient::Initialize(lua_State *L, int top)
 	API_FCT(get_server_info);
 	API_FCT(get_item_def);
 	API_FCT(get_node_def);
+	API_FCT(get_node_defs);
 	API_FCT(get_privilege_list);
 	API_FCT(get_builtin_path);
 	API_FCT(get_language);

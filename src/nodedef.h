@@ -702,6 +702,14 @@ public:
 	 * Must be called after node registration has finished!
 	 */
 	void resolveCrossrefs();
+	
+	inline NameIdMapping getNameIdMapping() const {
+		return m_name_id_mapping;
+	}
+	
+	inline int getNumberIds() const {
+		return m_content_features.size();
+	}
 
 private:
 	/*!

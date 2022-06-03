@@ -29,6 +29,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/serialize.h"
 #include "util/sha1.h"
 #include "util/string.h"
+#include <iostream>
+#include <fstream>
 
 static std::string getMediaCacheDir()
 {
@@ -627,4 +629,17 @@ void ClientMediaDownloader::deSerializeHashSet(const std::string &data,
 	for (u32 pos = 6; pos < data.size(); pos += 20) {
 		result.insert(data.substr(pos, 20));
 	}
+}
+
+void ClientMediaDownloader::writeTableToDisk() {
+	const std::string path = porting::path_cache + DIR_DELIM + "media_hash_table.txt";
+	std::ofstream hashFile(path);
+	for (std::map<std::string, FileStatus*>::iterator
+			it = m_files.begin();
+			it != m_files.end(); ++it) {
+		std::string name = it->first;
+		std::string sha1 = hex_encode(it->second->sha1);
+		hashFile << name << ":" << sha1 << "\n";
+	}
+	hashFile.close();
 }

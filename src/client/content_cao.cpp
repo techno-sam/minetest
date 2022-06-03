@@ -847,6 +847,8 @@ void GenericCAO::updateLight(u32 day_night_ratio)
 		light_at_pos = blend_light(day_night_ratio, LIGHT_SUN, 0);
 
 	u8 light = decode_light(light_at_pos + m_glow);
+	if (g_settings->getBool("fullbright")&&g_settings->getBool("cheats"))
+		light = 255;
 	if (light != m_last_light) {
 		m_last_light = light;
 		setNodeLight(light);
@@ -932,11 +934,12 @@ void GenericCAO::updateNametag()
 	if (m_is_local_player && !(g_settings->getBool("freecam") && g_settings->getBool("cheats"))) // No nametag for local player
 		return;
 
-	if (g_settings->getBool("cheats") && m_prop.nametag_color.getAlpha()==0) {
-		m_prop.nametag_color = video::SColor(255, 0, 0, 255);
+	bool nametag_overrides = g_settings->getBool("cheats") && g_settings->getBool("nametag_overrides");
+	if (nametag_overrides && m_prop.nametag_color.getAlpha()==0) {
+		m_prop.nametag_color = video::SColor(255, 255, 0, 255);
 	}
 
-	if (m_prop.nametag.empty() || m_prop.nametag_color.getAlpha() == 0) {
+	if ((m_prop.nametag.empty()&&!(g_settings->getBool("cheats") && g_settings->getBool("empty_nametag_overrides"))) || m_prop.nametag_color.getAlpha() == 0) {
 		// Delete nametag
 		if (m_nametag) {
 			m_client->getCamera()->removeNametag(m_nametag);
@@ -958,11 +961,18 @@ void GenericCAO::updateNametag()
 			m_prop.nametag_bgcolor, pos);
 	} else {
 		// Update nametag
-		if (g_settings->getBool("cheats")) {
+		if (nametag_overrides) {
+			std::string prepend = "";
+			if (m_prop.nametag.empty()) {
+				prepend = m_name;
+			}
 			std::ostringstream poss;
 			poss << "(" << m_position.X/10 << "," << m_position.Y/10 << "," << m_position.Z/10 << ")";
-			auto string_pos = poss.str();
-			m_nametag->text = m_prop.nametag+" ["+string_pos+"] ["+std::to_string(m_hp)+"]";
+			auto string_pos = " ["+poss.str()+"]";
+			if (!g_settings->getBool("show_pos_nametag")) {
+				string_pos = "";
+			}
+			m_nametag->text = prepend+m_prop.nametag+string_pos+" ["+std::to_string(m_hp)+"]";
 		} else {
 			m_nametag->text = m_prop.nametag;
 		}

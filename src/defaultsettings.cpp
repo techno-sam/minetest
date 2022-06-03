@@ -88,9 +88,24 @@ void set_default_settings()
 	settings->setDefault("player_only_tracers", "false"); // ^^, but with tracers
 	settings->setDefault("node_esp_nodes", ""); //nodes to highlight for node esp and node tracers
 	settings->setDefault("min_light", "50"); //minimum light level in light_LUT
+	settings->setDefault("nametag_overrides", "false");
+	settings->setDefault("empty_nametag_overrides", "false");
+	settings->setDefault("show_pos_nametag", "false");
+	settings->setDefault("fullbright", "false");
+	settings->setDefault("no_night", "false");
+	settings->setDefault("jetpack", "false");
+	
+	settings->setDefault("keymap_select_up", "KEY_UP");
+	settings->setDefault("keymap_select_down", "KEY_DOWN");
+	settings->setDefault("keymap_select_left", "KEY_LEFT");
+	settings->setDefault("keymap_select_right", "KEY_RIGHT");
+	settings->setDefault("keymap_select_confirm", "KEY_RETURN");
 
 	//Non Cheaty Overrides
 	settings->setDefault("revert_airlike_item_fix", "false");
+	settings->setDefault("make_filename_sha1_table","false");
+	//settings->setDefault("enable_chunk_bounds", "false");
+	//settings->setDefault("enable_sector_bounds", "false");
 
 	// Cheat Menu
 	settings->setDefault("cheat_menu_font", "FM_Standard");

@@ -1358,24 +1358,22 @@ namespace {
 
 void MapblockMeshGenerator::drawNormalNode()
 {
+	//*
 	TileSpec normal_tiles[6];
 	for (int face = 0; face < 6; face++)
-		getTile(nodebox_tile_dirs[face], &normal_tiles[face]);
-	//useTile(0,0,0);
-
-	/*for (int face = 0; face < 6; face++) {
-		//useTile(face, 0, 0);
+		getTile(nodebox_tile_dirs[face], &normal_tiles[face]);//*/
+	
+	//useTile(0, 0, 0);
+	/*
+	for (int face = 0; face < 6; face++) {
+		getTile(g_6dirs[face],&tile);
 		// Check this neighbor
-		v3s16 dir = g_6dirs[face];/*
+		v3s16 dir = g_6dirs[face];
 		v3s16 neighbor_pos = blockpos_nodes + p + dir;
 		MapNode neighbor = data->m_vmanip.getNodeNoExNoEmerge(neighbor_pos);
 		// Don't make face if neighbor is of same type
-		if (neighbor.getContent() == n.getContent())
-			continue;*//*
-		getTile(nodebox_tile_dirs[face], &normal_tiles[face]);
-		tile = normal_tiles[face];
-		if (!data->m_smooth_lighting)
-			color = encode_light(light, f->light_source);
+		if (neighbor.getContent() == n.getContent())//(nodedef->get(neighbor.getContent()).solidness == f->solidness)
+			continue;
 		// Face at Z-
 		v3f vertices[4] = {
 			v3f(-BS / 2,  BS / 2, -BS / 2),
@@ -1401,7 +1399,7 @@ void MapblockMeshGenerator::drawNormalNode()
 			}
 		}
 		drawQuad(vertices, dir);
-	}*/
+	}//*/
 	static const aabb3f box(-BS / 2, -BS / 2, -BS / 2, BS / 2, BS / 2, BS / 2);
 	drawAutoLightedCuboid(box, nullptr, normal_tiles, 6);
 }

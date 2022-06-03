@@ -114,3 +114,14 @@ core.registered_on_item_use, core.register_on_item_use = make_registration()
 core.registered_on_modchannel_message, core.register_on_modchannel_message = make_registration()
 core.registered_on_modchannel_signal, core.register_on_modchannel_signal = make_registration()
 core.registered_on_inventory_open, core.register_on_inventory_open = make_registration()
+
+core.registered_nodes = {}
+local nodes = core.get_node_defs()
+for id,name in pairs(nodes) do
+	if name~="" then
+		--print("["..id.."] "..name)
+		--print("next: ["..(id+1).."] "..nodes[id+1])
+		--print(dump(core.get_node_def(name)))
+		core.registered_nodes[name] = core.get_node_def(name)
+	end
+end

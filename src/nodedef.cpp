@@ -798,9 +798,15 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 		// Before working with the alpha mode, resolve any legacy kludges
 		alpha = textureAlphaCheck(tsrc, tdef, 6) ? ALPHAMODE_CLIP : ALPHAMODE_OPAQUE;
 	}
+	
+	AlphaMode client_alpha = ALPHAMODE_BLEND;
 
 	MaterialType material_type = alpha == ALPHAMODE_OPAQUE ?
 		TILE_MATERIAL_OPAQUE : (alpha == ALPHAMODE_CLIP ? TILE_MATERIAL_BASIC :
+		TILE_MATERIAL_ALPHA);
+
+	MaterialType client_material_type = client_alpha == ALPHAMODE_OPAQUE ?
+		TILE_MATERIAL_OPAQUE : (client_alpha == ALPHAMODE_CLIP ? TILE_MATERIAL_BASIC :
 		TILE_MATERIAL_ALPHA);
 
 	switch (drawtype) {
@@ -881,6 +887,9 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 			material_type = alpha == ALPHAMODE_OPAQUE ?
 				TILE_MATERIAL_WAVING_LIQUID_OPAQUE : (alpha == ALPHAMODE_CLIP ?
 				TILE_MATERIAL_WAVING_LIQUID_BASIC : TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT);
+			client_material_type = client_alpha == ALPHAMODE_OPAQUE ?
+				TILE_MATERIAL_WAVING_LIQUID_OPAQUE : (client_alpha == ALPHAMODE_CLIP ?
+				TILE_MATERIAL_WAVING_LIQUID_BASIC : TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT);
 		}
 		break;
 	case NDT_TORCHLIKE:
@@ -899,25 +908,36 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 			material_type = alpha == ALPHAMODE_OPAQUE ?
 				TILE_MATERIAL_WAVING_LIQUID_OPAQUE : (alpha == ALPHAMODE_CLIP ?
 				TILE_MATERIAL_WAVING_LIQUID_BASIC : TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT);
+			client_material_type = client_alpha == ALPHAMODE_OPAQUE ?
+				TILE_MATERIAL_WAVING_LIQUID_OPAQUE : (client_alpha == ALPHAMODE_CLIP ?
+				TILE_MATERIAL_WAVING_LIQUID_BASIC : TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT);
 		} else {
 			material_type = alpha == ALPHAMODE_OPAQUE ? TILE_MATERIAL_LIQUID_OPAQUE :
+				TILE_MATERIAL_LIQUID_TRANSPARENT;
+			client_material_type = client_alpha == ALPHAMODE_OPAQUE ? TILE_MATERIAL_LIQUID_OPAQUE :
 				TILE_MATERIAL_LIQUID_TRANSPARENT;
 		}
 	}
 
 	u32 tile_shader = shdsrc->getShader("nodes_shader", material_type, drawtype);
 
-	u32 client_tile_shader = shdsrc->getShader("client_nodes_shader", material_type, drawtype);
+	u32 client_tile_shader = shdsrc->getShader("client_nodes_shader", client_material_type, drawtype);
 
 	MaterialType overlay_material = material_type;
 	if (overlay_material == TILE_MATERIAL_OPAQUE)
 		overlay_material = TILE_MATERIAL_BASIC;
 	else if (overlay_material == TILE_MATERIAL_LIQUID_OPAQUE)
 		overlay_material = TILE_MATERIAL_LIQUID_TRANSPARENT;
+		
+	MaterialType client_overlay_material = client_material_type;
+	if (client_overlay_material == TILE_MATERIAL_OPAQUE)
+		client_overlay_material = TILE_MATERIAL_BASIC;
+	else if (client_overlay_material == TILE_MATERIAL_LIQUID_OPAQUE)
+		client_overlay_material = TILE_MATERIAL_LIQUID_TRANSPARENT;
 
 	u32 overlay_shader = shdsrc->getShader("nodes_shader", overlay_material, drawtype);
 
-	u32 client_overlay_shader = shdsrc->getShader("client_nodes_shader", overlay_material, drawtype);
+	u32 client_overlay_shader = shdsrc->getShader("client_nodes_shader", client_overlay_material, drawtype);
 
 	// Tiles (fill in f->tiles[])
 	for (u16 j = 0; j < 6; j++) {
@@ -939,8 +959,15 @@ void ContentFeatures::updateTextures(ITextureSource *tsrc, IShaderSource *shdsrc
 		else if (waving == 2)
 			special_material = TILE_MATERIAL_WAVING_LEAVES;
 	}
+	MaterialType client_special_material = client_material_type;
+	if (drawtype == NDT_PLANTLIKE_ROOTED) {
+		if (waving == 1)
+			client_special_material = TILE_MATERIAL_WAVING_PLANTS;
+		else if (waving == 2)
+			client_special_material = TILE_MATERIAL_WAVING_LEAVES;
+	}
 	u32 special_shader = shdsrc->getShader("nodes_shader", special_material, drawtype);
-	u32 client_special_shader = shdsrc->getShader("client_nodes_shader", special_material, drawtype);
+	u32 client_special_shader = shdsrc->getShader("client_nodes_shader", client_special_material, drawtype);
 
 	// Special tiles (fill in f->special_tiles[])
 	for (u16 j = 0; j < CF_SPECIAL_COUNT; j++)

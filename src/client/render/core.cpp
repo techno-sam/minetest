@@ -298,11 +298,22 @@ void RenderingCore::draw3D()
 
 	//cleanup
 	driver->setMaterial(oldmaterial);
+	
+	for (scene::IMesh *m : mclient_mesh) {
+		if (m_cache_enable_vbo) {
+			for (u32 i = 0; i < m->getMeshBufferCount(); i++) {
+				scene::IMeshBuffer *buf = m->getMeshBuffer(i);
+				driver->removeHardwareBuffer(buf);
+			}
+		}
+		m->drop();
+	}
+	
 	// End HUD nodes
 	}
+	drawTracersAndESP();
 	if (draw_wield_tool)
 		camera->drawWieldedTool();
-	drawTracersAndESP();
 }
 
 void RenderingCore::drawTracersAndESP()
@@ -311,8 +322,9 @@ void RenderingCore::drawTracersAndESP()
 	bool draw_tracers = g_settings->getBool("enable_tracers");
 	bool draw_node_esp = g_settings->getBool("enable_node_esp");
 	bool draw_node_tracers = g_settings->getBool("enable_node_tracers");
-	bool draw_chunk_bounds = g_settings->getBool("enable_chunk_bounds");
-	bool draw_sector_bounds = g_settings->getBool("enable_sector_bounds");
+	//errorstream << "drawTracersAndESP" << std::endl;
+	//bool draw_chunk_bounds = g_settings->getBool("enable_chunk_bounds");
+	//bool draw_sector_bounds = g_settings->getBool("enable_sector_bounds");
 	ClientEnvironment &env = client->getEnv();
 	Camera *camera = client->getCamera();
 	
@@ -333,9 +345,11 @@ void RenderingCore::drawTracersAndESP()
 
  	//draw tracers and esp
  	if (draw_esp || draw_tracers) {
+ 		//errorstream << "draw_esp || draw_tracers is true" << std::endl;
 		auto allObjects = env.getAllActiveObjects();
 
 		for (auto &it : allObjects) {
+			//errorstream << "Iterating through an object" << std::endl;
 			ClientActiveObject *cao = it.second;
 			if (cao->isLocalPlayer() || cao->getParent())
 				continue;

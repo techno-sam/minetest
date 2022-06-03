@@ -129,10 +129,16 @@ void GUIKeyChangeMenu::regenerateGui(v2u32 screensize)
 	removeChildren();
 
 	const float s = m_gui_scale;
-	DesiredRect = core::rect<s32>(
+	/*DesiredRect = core::rect<s32>(
 		screensize.X / 2 - 835 * s / 2,
 		screensize.Y / 2 - 430 * s / 2,
 		screensize.X / 2 + 835 * s / 2,
+		screensize.Y / 2 + 430 * s / 2
+	);*/
+	DesiredRect = core::rect<s32>(
+		screensize.X / 2 - 1113 * s / 2,
+		screensize.Y / 2 - 430 * s / 2,
+		screensize.X / 2 + 1113 * s / 2,
 		screensize.Y / 2 + 430 * s / 2
 	);
 	recalculateAbsolutePosition(false);
