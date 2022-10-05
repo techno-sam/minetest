@@ -25,6 +25,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "IGUIFont.h"
 
 #include "porting.h"
+#include "util/string.h"
 
 GUIEditBox::~GUIEditBox()
 {
@@ -517,8 +518,7 @@ void GUIEditBox::onKeyControlC(const SEvent &event)
 	const s32 realmbgn = m_mark_begin < m_mark_end ? m_mark_begin : m_mark_end;
 	const s32 realmend = m_mark_begin < m_mark_end ? m_mark_end : m_mark_begin;
 
-	core::stringc s;
-	s = Text.subString(realmbgn, realmend - realmbgn).c_str();
+	std::string s = stringw_to_utf8(Text.subString(realmbgn, realmend - realmbgn));
 	m_operator->copyToClipboard(s.c_str());
 }
 
@@ -567,29 +567,28 @@ bool GUIEditBox::onKeyControlV(const SEvent &event, s32 &mark_begin, s32 &mark_e
 
 	// add new character
 	if (const c8 *p = m_operator->getTextFromClipboard()) {
+		core::stringw inserted_text = utf8_to_stringw(p);
 		if (m_mark_begin == m_mark_end) {
 			// insert text
 			core::stringw s = Text.subString(0, m_cursor_pos);
-			s.append(p);
+			s.append(inserted_text);
 			s.append(Text.subString(
 					m_cursor_pos, Text.size() - m_cursor_pos));
 
 			if (!m_max || s.size() <= m_max) {
 				Text = s;
-				s = p;
-				m_cursor_pos += s.size();
+				m_cursor_pos += inserted_text.size();
 			}
 		} else {
 			// replace text
 
 			core::stringw s = Text.subString(0, realmbgn);
-			s.append(p);
+			s.append(inserted_text);
 			s.append(Text.subString(realmend, Text.size() - realmend));
 
 			if (!m_max || s.size() <= m_max) {
 				Text = s;
-				s = p;
-				m_cursor_pos = realmbgn + s.size();
+				m_cursor_pos = realmbgn + inserted_text.size();
 			}
 		}
 	}
@@ -846,55 +845,4 @@ void GUIEditBox::updateVScrollBar()
 			m_vscrollbar->setPageSize(s32(getTextDimension().Height));
 		}
 	}
-}
-
-void GUIEditBox::deserializeAttributes(
-		io::IAttributes *in, io::SAttributeReadWriteOptions *options = 0)
-{
-	IGUIEditBox::deserializeAttributes(in, options);
-
-	setOverrideColor(in->getAttributeAsColor("OverrideColor"));
-	enableOverrideColor(in->getAttributeAsBool("OverrideColorEnabled"));
-	setMax(in->getAttributeAsInt("MaxChars"));
-	setWordWrap(in->getAttributeAsBool("WordWrap"));
-	setMultiLine(in->getAttributeAsBool("MultiLine"));
-	setAutoScroll(in->getAttributeAsBool("AutoScroll"));
-	core::stringw ch = in->getAttributeAsStringW("PasswordChar");
-
-	if (ch.empty())
-		setPasswordBox(in->getAttributeAsBool("PasswordBox"));
-	else
-		setPasswordBox(in->getAttributeAsBool("PasswordBox"), ch[0]);
-
-	setTextAlignment((EGUI_ALIGNMENT)in->getAttributeAsEnumeration(
-					 "HTextAlign", GUIAlignmentNames),
-			(EGUI_ALIGNMENT)in->getAttributeAsEnumeration(
-					"VTextAlign", GUIAlignmentNames));
-
-	setWritable(in->getAttributeAsBool("Writable"));
-	// setOverrideFont(in->getAttributeAsFont("OverrideFont"));
-}
-
-//! Writes attributes of the element.
-void GUIEditBox::serializeAttributes(
-		io::IAttributes *out, io::SAttributeReadWriteOptions *options = 0) const
-{
-	// IGUIEditBox::serializeAttributes(out,options);
-
-	out->addBool("OverrideColorEnabled", m_override_color_enabled);
-	out->addColor("OverrideColor", m_override_color);
-	// out->addFont("OverrideFont",m_override_font);
-	out->addInt("MaxChars", m_max);
-	out->addBool("WordWrap", m_word_wrap);
-	out->addBool("MultiLine", m_multiline);
-	out->addBool("AutoScroll", m_autoscroll);
-	out->addBool("PasswordBox", m_passwordbox);
-	core::stringw ch = L" ";
-	ch[0] = m_passwordchar;
-	out->addString("PasswordChar", ch.c_str());
-	out->addEnum("HTextAlign", m_halign, GUIAlignmentNames);
-	out->addEnum("VTextAlign", m_valign, GUIAlignmentNames);
-	out->addBool("Writable", m_writable);
-
-	IGUIEditBox::serializeAttributes(out, options);
 }

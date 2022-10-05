@@ -164,6 +164,7 @@ public:
 	s32 getS32(const std::string &name) const;
 	u64 getU64(const std::string &name) const;
 	float getFloat(const std::string &name) const;
+	float getFloat(const std::string &name, float min, float max) const;
 	v2f getV2F(const std::string &name) const;
 	v3f getV3F(const std::string &name) const;
 	u32 getFlagStr(const std::string &name, const FlagDesc *flagdesc,
@@ -172,9 +173,12 @@ public:
 	bool getNoiseParamsFromValue(const std::string &name, NoiseParams &np) const;
 	bool getNoiseParamsFromGroup(const std::string &name, NoiseParams &np) const;
 
-	// return all keys used
+	// return all keys used in this object
 	std::vector<std::string> getNames() const;
+	// check if setting exists anywhere in the hierarchy
 	bool exists(const std::string &name) const;
+	// check if setting exists in this object ("locally")
+	bool existsLocal(const std::string &name) const;
 
 
 	/***************************************
@@ -186,6 +190,7 @@ public:
 	bool getFlag(const std::string &name) const;
 	bool getU16NoEx(const std::string &name, u16 &val) const;
 	bool getS16NoEx(const std::string &name, s16 &val) const;
+	bool getU32NoEx(const std::string &name, u32 &val) const;
 	bool getS32NoEx(const std::string &name, s32 &val) const;
 	bool getU64NoEx(const std::string &name, u64 &val) const;
 	bool getFloatNoEx(const std::string &name, float &val) const;

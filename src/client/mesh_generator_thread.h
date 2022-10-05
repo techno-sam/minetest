@@ -21,6 +21,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include <ctime>
 #include <mutex>
+#include <unordered_map>
+#include <unordered_set>
 #include "mapblock_mesh.h"
 #include "threading/mutex_auto_lock.h"
 #include "util/thread.h"
@@ -43,6 +45,7 @@ struct QueuedMeshUpdate
 	int crack_level = -1;
 	v3s16 crack_pos;
 	MeshMakeData *data = nullptr; // This is generated in MeshUpdateQueue::pop()
+	bool urgent = false;
 
 	QueuedMeshUpdate() = default;
 	~QueuedMeshUpdate();
@@ -66,7 +69,7 @@ public:
 
 	// Caches the block at p and its neighbors (if needed) and queues a mesh
 	// update for the block at p
-	void addBlock(Map *map, v3s16 p, bool ack_block_to_server, bool urgent);
+	bool addBlock(Map *map, v3s16 p, bool ack_block_to_server, bool urgent);
 
 	// Returned pointer must be deleted
 	// Returns NULL if queue is empty
@@ -81,8 +84,9 @@ public:
 private:
 	Client *m_client;
 	std::vector<QueuedMeshUpdate *> m_queue;
-	std::set<v3s16> m_urgents;
-	std::map<v3s16, CachedMapBlockData *> m_cache;
+	std::unordered_set<v3s16> m_urgents;
+	std::unordered_map<v3s16, CachedMapBlockData *> m_cache;
+	u64 m_next_cache_cleanup; // milliseconds
 	std::mutex m_mutex;
 
 	// TODO: Add callback to update these when g_settings changes
@@ -102,6 +106,7 @@ struct MeshUpdateResult
 	v3s16 p = v3s16(-1338, -1338, -1338);
 	MapBlockMesh *mesh = nullptr;
 	bool ack_block_to_server = false;
+	bool urgent = false;
 
 	MeshUpdateResult() = default;
 };
@@ -113,7 +118,8 @@ public:
 
 	// Caches the block at p and its neighbors (if needed) and queues a mesh
 	// update for the block at p
-	void updateBlock(Map *map, v3s16 p, bool ack_block_to_server, bool urgent);
+	void updateBlock(Map *map, v3s16 p, bool ack_block_to_server, bool urgent,
+			bool update_neighbors = false);
 
 	v3s16 m_camera_offset;
 	MutexedQueue<MeshUpdateResult> m_queue_out;

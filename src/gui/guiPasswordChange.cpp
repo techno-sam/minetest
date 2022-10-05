@@ -25,6 +25,10 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <IGUIStaticText.h>
 #include <IGUIFont.h>
 
+#ifdef HAVE_TOUCHSCREENGUI
+	#include "client/renderingengine.h"
+#endif
+
 #include "porting.h"
 #include "gettext.h"
 
@@ -47,23 +51,6 @@ GUIPasswordChange::GUIPasswordChange(gui::IGUIEnvironment* env,
 {
 }
 
-GUIPasswordChange::~GUIPasswordChange()
-{
-	removeChildren();
-}
-
-void GUIPasswordChange::removeChildren()
-{
-	const core::list<gui::IGUIElement *> &children = getChildren();
-	core::list<gui::IGUIElement *> children_copy;
-	for (gui::IGUIElement *i : children) {
-		children_copy.push_back(i);
-	}
-
-	for (gui::IGUIElement *i : children_copy) {
-		i->remove();
-	}
-}
 void GUIPasswordChange::regenerateGui(v2u32 screensize)
 {
 	/*
@@ -74,13 +61,13 @@ void GUIPasswordChange::regenerateGui(v2u32 screensize)
 	/*
 		Remove stuff
 	*/
-	removeChildren();
+	removeAllChildren();
 
 	/*
 		Calculate new sizes and positions
 	*/
-#ifdef __ANDROID__
-	const float s = m_gui_scale * porting::getDisplayDensity() / 2;
+#ifdef HAVE_TOUCHSCREENGUI
+	const float s = m_gui_scale * RenderingEngine::getDisplayDensity() / 2;
 #else
 	const float s = m_gui_scale;
 #endif

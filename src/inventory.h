@@ -48,8 +48,8 @@ struct ItemStack
 	// Returns the string used for inventory
 	std::string getItemString(bool include_meta = true) const;
 	// Returns the tooltip
-	std::string getDescription(IItemDefManager *itemdef) const;
-	std::string getShortDescription(IItemDefManager *itemdef) const;
+	std::string getDescription(const IItemDefManager *itemdef) const;
+	std::string getShortDescription(const IItemDefManager *itemdef) const;
 
 	/*
 		Quantity methods
@@ -82,13 +82,13 @@ struct ItemStack
 	}
 
 	// Maximum size of a stack
-	u16 getStackMax(IItemDefManager *itemdef) const
+	u16 getStackMax(const IItemDefManager *itemdef) const
 	{
 		return itemdef->get(name).stack_max;
 	}
 
 	// Number of items that can be added to this stack
-	u16 freeSpace(IItemDefManager *itemdef) const
+	u16 freeSpace(const IItemDefManager *itemdef) const
 	{
 		u16 max = getStackMax(itemdef);
 		if (count >= max)
@@ -97,7 +97,7 @@ struct ItemStack
 	}
 
 	// Returns false if item is not known and cannot be used
-	bool isKnown(IItemDefManager *itemdef) const
+	bool isKnown(const IItemDefManager *itemdef) const
 	{
 		return itemdef->isKnown(name);
 	}
@@ -105,14 +105,14 @@ struct ItemStack
 	// Returns a pointer to the item definition struct,
 	// or a fallback one (name="unknown") if the item is unknown.
 	const ItemDefinition& getDefinition(
-			IItemDefManager *itemdef) const
+			const IItemDefManager *itemdef) const
 	{
 		return itemdef->get(name);
 	}
 
 	// Get tool digging properties, or those of the hand if not a tool
 	const ToolCapabilities& getToolCapabilities(
-			IItemDefManager *itemdef) const
+			const IItemDefManager *itemdef) const
 	{
 		const ToolCapabilities *item_cap =
 			itemdef->get(name).tool_capabilities;
@@ -127,7 +127,7 @@ struct ItemStack
 
 	// Wear out (only tools)
 	// Returns true if the item is (was) a tool
-	bool addWear(s32 amount, IItemDefManager *itemdef)
+	bool addWear(s32 amount, const IItemDefManager *itemdef)
 	{
 		if(getDefinition(itemdef).type == ITEM_TOOL)
 		{
@@ -198,7 +198,7 @@ public:
 	void serialize(std::ostream &os, bool incremental) const;
 	void deSerialize(std::istream &is);
 
-	InventoryList(const InventoryList &other);
+	InventoryList(const InventoryList &other) { *this = other; }
 	InventoryList & operator = (const InventoryList &other);
 	bool operator == (const InventoryList &other) const;
 	bool operator != (const InventoryList &other) const
@@ -206,16 +206,25 @@ public:
 		return !(*this == other);
 	}
 
-	const std::string &getName() const;
-	u32 getSize() const;
-	u32 getWidth() const;
+	const std::string &getName() const { return m_name; }
+	u32 getSize() const { return static_cast<u32>(m_items.size()); }
+	u32 getWidth() const { return m_width; }
 	// Count used slots
 	u32 getUsedSlots() const;
-	u32 getFreeSlots() const;
 
 	// Get reference to item
-	const ItemStack& getItem(u32 i) const;
-	ItemStack& getItem(u32 i);
+	const ItemStack &getItem(u32 i) const
+	{
+		assert(i < m_size); // Pre-condition
+		return m_items[i];
+	}
+	ItemStack &getItem(u32 i)
+	{
+		assert(i < m_size); // Pre-condition
+		return m_items[i];
+	}
+	// Get reference to all items
+	const std::vector<ItemStack> &getItems() const { return m_items; }
 	// Returns old item. Parameter can be an empty item.
 	ItemStack changeItem(u32 i, const ItemStack &newitem);
 	// Delete item
@@ -272,7 +281,7 @@ public:
 private:
 	std::vector<ItemStack> m_items;
 	std::string m_name;
-	u32 m_size;
+	u32 m_size; // always the same as m_items.size()
 	u32 m_width = 0;
 	IItemDefManager *m_itemdef;
 	bool m_dirty = true;
@@ -302,7 +311,7 @@ public:
 	InventoryList * addList(const std::string &name, u32 size);
 	InventoryList * getList(const std::string &name);
 	const InventoryList * getList(const std::string &name) const;
-	std::vector<const InventoryList*> getLists();
+	const std::vector<InventoryList *> &getLists() const { return m_lists; }
 	bool deleteList(const std::string &name);
 	// A shorthand for adding items. Returns leftover item (possibly empty).
 	ItemStack addItem(const std::string &listname, const ItemStack &newitem)
@@ -336,7 +345,7 @@ public:
 	}
 private:
 	// -1 if not found
-	const s32 getListIndex(const std::string &name) const;
+	s32 getListIndex(const std::string &name) const;
 
 	std::vector<InventoryList*> m_lists;
 	IItemDefManager *m_itemdef;

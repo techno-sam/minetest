@@ -108,17 +108,22 @@ void LuaEntitySAO::addedToEnvironment(u32 dtime_s)
 		m_env->getScriptIface()->
 			luaentity_Activate(m_id, m_init_state, dtime_s);
 	} else {
+		// It's an unknown object
+		// Use entitystring as infotext for debugging
 		m_prop.infotext = m_init_name;
+		// Set unknown object texture
+		m_prop.textures.clear();
+		m_prop.textures.emplace_back("unknown_object.png");
 	}
 }
 
-void LuaEntitySAO::dispatchScriptDeactivate()
+void LuaEntitySAO::dispatchScriptDeactivate(bool removal)
 {
 	// Ensure that this is in fact a registered entity,
 	// and that it isn't already gone.
 	// The latter also prevents this from ever being called twice.
 	if (m_registered && !isGone())
-		m_env->getScriptIface()->luaentity_Deactivate(m_id);
+		m_env->getScriptIface()->luaentity_Deactivate(m_id, removal);
 }
 
 void LuaEntitySAO::step(float dtime, bool send_recommended)
@@ -170,8 +175,7 @@ void LuaEntitySAO::step(float dtime, bool send_recommended)
 			m_velocity = p_velocity;
 			m_acceleration = p_acceleration;
 		} else {
-			m_base_position += dtime * m_velocity + 0.5 * dtime
-					* dtime * m_acceleration;
+			m_base_position += (m_velocity + m_acceleration * 0.5f * dtime) * dtime;
 			m_velocity += dtime * m_acceleration;
 		}
 
@@ -285,7 +289,7 @@ void LuaEntitySAO::getStaticData(std::string *result) const
 		os<<serializeString32(m_init_state);
 	}
 	writeU16(os, m_hp);
-	writeV3F1000(os, m_velocity);
+	writeV3F1000(os, clampToF1000(m_velocity));
 	// yaw
 	writeF1000(os, m_rotation.Y);
 
@@ -300,10 +304,11 @@ void LuaEntitySAO::getStaticData(std::string *result) const
 	*result = os.str();
 }
 
-u16 LuaEntitySAO::punch(v3f dir,
+u32 LuaEntitySAO::punch(v3f dir,
 		const ToolCapabilities *toolcap,
 		ServerActiveObject *puncher,
-		float time_from_last_punch)
+		float time_from_last_punch,
+		u16 initial_wear)
 {
 	if (!m_registered) {
 		// Delete unknown LuaEntities when punched
@@ -321,7 +326,8 @@ u16 LuaEntitySAO::punch(v3f dir,
 			m_armor_groups,
 			toolcap,
 			&tool_item,
-			time_from_last_punch);
+			time_from_last_punch,
+			initial_wear);
 
 	bool damage_handled = m_env->getScriptIface()->luaentity_Punch(m_id, puncher,
 			time_from_last_punch, toolcap, dir, result.did_punch ? result.damage : 0);
@@ -330,17 +336,7 @@ u16 LuaEntitySAO::punch(v3f dir,
 		if (result.did_punch) {
 			setHP((s32)getHP() - result.damage,
 				PlayerHPChangeReason(PlayerHPChangeReason::PLAYER_PUNCH, puncher));
-
-			// create message and add to list
-			sendPunchCommand();
 		}
-	}
-
-	if (getHP() == 0 && !isGone()) {
-		clearParentAttachment();
-		clearChildAttachments();
-		m_env->getScriptIface()->luaentity_on_death(m_id, puncher);
-		markForRemoval();
 	}
 
 	actionstream << puncher->getDescription() << " (id=" << puncher->getId() <<
@@ -395,6 +391,20 @@ std::string LuaEntitySAO::getDescription()
 void LuaEntitySAO::setHP(s32 hp, const PlayerHPChangeReason &reason)
 {
 	m_hp = rangelim(hp, 0, U16_MAX);
+
+	sendPunchCommand();
+
+	if (m_hp == 0 && !isGone()) {
+		clearParentAttachment();
+		clearChildAttachments();
+		if (m_registered) {
+			ServerActiveObject *killer = nullptr;
+			if (reason.type == PlayerHPChangeReason::PLAYER_PUNCH)
+				killer = reason.object;
+			m_env->getScriptIface()->luaentity_on_death(m_id, killer);
+		}
+		markForRemoval();
+	}	
 }
 
 u16 LuaEntitySAO::getHP() const

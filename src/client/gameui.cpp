@@ -68,14 +68,17 @@ void GameUI::init()
 	u16 chat_font_size = g_settings->getU16("chat_font_size");
 	if (chat_font_size != 0) {
 		m_guitext_chat->setOverrideFont(g_fontengine->getFont(
-			chat_font_size, FM_Unspecified));
+			rangelim(chat_font_size, 5, 72), FM_Unspecified));
 	}
 
-	// At the middle of the screen
-	// Object infos are shown in this
+
+	// Infotext of nodes and objects.
+	// If in debug mode, object debug infos shown here, too.
+	// Located on the left on the screen, below chat.
 	u32 chat_font_height = m_guitext_chat->getActiveFont()->getDimension(L"Ay").Height;
 	m_guitext_info = gui::StaticText::add(guienv, L"",
-		core::rect<s32>(0, 0, 400, g_fontengine->getTextHeight() * 5 + 5) +
+		// Size is limited; text will be truncated after 6 lines.
+		core::rect<s32>(0, 0, 400, g_fontengine->getTextHeight() * 6) +
 			v2s32(100, chat_font_height *
 			(g_settings->getU16("recent_chat_messages") + 3)),
 			false, true, guiroot);
@@ -101,16 +104,16 @@ void GameUI::update(const RunStats &stats, Client *client, MapDrawControl *draw_
 
 	// Minimal debug text must only contain info that can't give a gameplay advantage
 	if (m_flags.show_minimal_debug) {
-		static float drawtime_avg = 0;
-		drawtime_avg = drawtime_avg * 0.95 + stats.drawtime * 0.05;
-		u16 fps = 1.0 / stats.dtime_jitter.avg;
+		const u16 fps = 1.0 / stats.dtime_jitter.avg;
+		m_drawtime_avg *= 0.95f;
+		m_drawtime_avg += 0.05f * (stats.drawtime / 1000);
 
 		std::ostringstream os(std::ios_base::binary);
 		os << std::fixed
 			<< PROJECT_NAME_C " " << g_version_hash
 			<< " | FPS: " << fps
 			<< std::setprecision(0)
-			<< " | drawtime: " << drawtime_avg << "ms"
+			<< " | drawtime: " << m_drawtime_avg << "ms"
 			<< std::setprecision(1)
 			<< " | dtime jitter: "
 			<< (stats.dtime_jitter.max_fraction * 100.0) << "%"
@@ -148,9 +151,13 @@ void GameUI::update(const RunStats &stats, Client *client, MapDrawControl *draw_
 			const NodeDefManager *nodedef = client->getNodeDefManager();
 			MapNode n = map.getNode(pointed_old.node_undersurface);
 
-			if (n.getContent() != CONTENT_IGNORE && nodedef->get(n).name != "unknown") {
-				os << ", pointed: " << nodedef->get(n).name
-					<< ", param2: " << (u64) n.getParam2();
+			if (n.getContent() != CONTENT_IGNORE) {
+				if (nodedef->get(n).name == "unknown") {
+					os << ", pointed: <unknown node>";
+				} else {
+					os << ", pointed: " << nodedef->get(n).name;
+				}
+				os << ", param2: " << (u64) n.getParam2();
 			}
 		}
 
@@ -207,7 +214,6 @@ void GameUI::initFlags()
 {
 	m_flags = GameUI::Flags();
 	m_flags.show_minimal_debug = g_settings->getBool("show_debug");
-	m_flags.show_basic_debug = false;
 }
 
 void GameUI::showMinimap(bool show)
@@ -224,7 +230,13 @@ void GameUI::showTranslatedStatusText(const char *str)
 
 void GameUI::setChatText(const EnrichedString &chat_text, u32 recent_chat_count)
 {
+	setStaticText(m_guitext_chat, chat_text);
 
+	m_recent_chat_count = recent_chat_count;
+}
+
+void GameUI::updateChatSize()
+{
 	// Update gui element size and position
 	s32 chat_y = 5;
 
@@ -235,15 +247,15 @@ void GameUI::setChatText(const EnrichedString &chat_text, u32 recent_chat_count)
 
 	const v2u32 &window_size = RenderingEngine::getWindowSize();
 
-	core::rect<s32> chat_size(10, chat_y,
-		window_size.X - 20, 0);
+	core::rect<s32> chat_size(10, chat_y, window_size.X - 20, 0);
 	chat_size.LowerRightCorner.Y = std::min((s32)window_size.Y,
-		m_guitext_chat->getTextHeight() + chat_y);
+			m_guitext_chat->getTextHeight() + chat_y);
+
+	if (chat_size == m_current_chat_size)
+		return;
+	m_current_chat_size = chat_size;
 
 	m_guitext_chat->setRelativePosition(chat_size);
-	setStaticText(m_guitext_chat, chat_text);
-
-	m_recent_chat_count = recent_chat_count;
 }
 
 void GameUI::updateProfiler()
@@ -308,12 +320,9 @@ void GameUI::toggleProfiler()
 	updateProfiler();
 
 	if (m_profiler_current_page != 0) {
-		wchar_t buf[255];
-		const wchar_t* str = wgettext("Profiler shown (page %d of %d)");
-		swprintf(buf, sizeof(buf) / sizeof(wchar_t), str,
-			m_profiler_current_page, m_profiler_max_page);
-		delete[] str;
-		showStatusText(buf);
+		std::wstring msg = fwgettext("Profiler shown (page %d of %d)",
+				m_profiler_current_page, m_profiler_max_page);
+		showStatusText(msg);
 	} else {
 		showTranslatedStatusText("Profiler hidden");
 	}

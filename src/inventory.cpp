@@ -250,7 +250,7 @@ std::string ItemStack::getItemString(bool include_meta) const
 	return os.str();
 }
 
-std::string ItemStack::getDescription(IItemDefManager *itemdef) const
+std::string ItemStack::getDescription(const IItemDefManager *itemdef) const
 {
 	std::string desc = metadata.getString("description");
 	if (desc.empty())
@@ -258,7 +258,7 @@ std::string ItemStack::getDescription(IItemDefManager *itemdef) const
 	return desc.empty() ? name : desc;
 }
 
-std::string ItemStack::getShortDescription(IItemDefManager *itemdef) const
+std::string ItemStack::getShortDescription(const IItemDefManager *itemdef) const
 {
 	std::string desc = metadata.getString("short_description");
 	if (desc.empty())
@@ -460,7 +460,6 @@ void InventoryList::deSerialize(std::istream &is)
 		std::getline(is, line, '\n');
 
 		std::istringstream iss(line);
-		//iss.imbue(std::locale("C"));
 
 		std::string name;
 		std::getline(iss, name, ' ');
@@ -504,11 +503,6 @@ void InventoryList::deSerialize(std::istream &is)
 	throw SerializationError(ss.str());
 }
 
-InventoryList::InventoryList(const InventoryList &other)
-{
-	*this = other;
-}
-
 InventoryList & InventoryList::operator = (const InventoryList &other)
 {
 	m_items = other.m_items;
@@ -536,21 +530,6 @@ bool InventoryList::operator == (const InventoryList &other) const
 	return true;
 }
 
-const std::string &InventoryList::getName() const
-{
-	return m_name;
-}
-
-u32 InventoryList::getSize() const
-{
-	return m_items.size();
-}
-
-u32 InventoryList::getWidth() const
-{
-	return m_width;
-}
-
 u32 InventoryList::getUsedSlots() const
 {
 	u32 num = 0;
@@ -559,23 +538,6 @@ u32 InventoryList::getUsedSlots() const
 			num++;
 	}
 	return num;
-}
-
-u32 InventoryList::getFreeSlots() const
-{
-	return getSize() - getUsedSlots();
-}
-
-const ItemStack& InventoryList::getItem(u32 i) const
-{
-	assert(i < m_size); // Pre-condition
-	return m_items[i];
-}
-
-ItemStack& InventoryList::getItem(u32 i)
-{
-	assert(i < m_size); // Pre-condition
-	return m_items[i];
 }
 
 ItemStack InventoryList::changeItem(u32 i, const ItemStack &newitem)
@@ -966,16 +928,6 @@ InventoryList * Inventory::getList(const std::string &name)
 	return m_lists[i];
 }
 
-std::vector<const InventoryList*> Inventory::getLists()
-{
-	std::vector<const InventoryList*> lists;
-	lists.reserve(m_lists.size());
-	for (auto list : m_lists) {
-		lists.push_back(list);
-	}
-	return lists;
-}
-
 bool Inventory::deleteList(const std::string &name)
 {
 	s32 i = getListIndex(name);
@@ -996,7 +948,7 @@ const InventoryList *Inventory::getList(const std::string &name) const
 	return m_lists[i];
 }
 
-const s32 Inventory::getListIndex(const std::string &name) const
+s32 Inventory::getListIndex(const std::string &name) const
 {
 	for(u32 i=0; i<m_lists.size(); i++)
 	{

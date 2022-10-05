@@ -24,6 +24,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/tile.h"
 #include <ICameraSceneNode.h>
 #include <ISceneNode.h>
+#include <plane3d.h>
+#include <array>
 #include <list>
 #include "util/Optional.h"
 
@@ -133,19 +135,31 @@ public:
 		return MYMAX(m_fov_x, m_fov_y);
 	}
 
+	// Returns a lambda that when called with an object's position and bounding-sphere
+	// radius (both in BS space) returns true if, and only if the object should be
+	// frustum-culled.
+	auto getFrustumCuller() const
+	{
+		return [planes = getFrustumCullPlanes(),
+				camera_offset = intToFloat(m_camera_offset, BS)
+				](v3f position, f32 radius) {
+			v3f pos_camspace = position - camera_offset;
+			for (auto &plane : planes) {
+				if (plane.getDistanceTo(pos_camspace) > radius)
+					return true;
+			}
+			return false;
+		};
+	}
+
 	// Notify about new server-sent FOV and initialize smooth FOV transition
 	void notifyFovChange();
-
-	// Checks if the constructor was able to create the scene nodes
-	bool successfullyCreated(std::string &error_message);
 
 	// Step the camera: updates the viewing range and view bobbing.
 	void step(f32 dtime);
 
 	// Update the camera from the local player's position.
-	// busytime is used to adjust the viewing range.
-	void update(LocalPlayer* player, f32 frametime, f32 busytime,
-			f32 tool_reload_ratio);
+	void update(LocalPlayer* player, f32 frametime, f32 tool_reload_ratio);
 
 	// Update render distance
 	void updateViewingRange();
@@ -195,6 +209,10 @@ public:
 	inline void addArmInertia(f32 player_yaw);
 
 private:
+	// Use getFrustumCuller().
+	// This helper just exists to decrease the header's number of includes.
+	std::array<core::plane3d<f32>, 4> getFrustumCullPlanes() const;
+
 	// Nodes
 	scene::ISceneNode *m_playernode = nullptr;
 	scene::ISceneNode *m_headnode = nullptr;
@@ -217,6 +235,8 @@ private:
 	v3f m_camera_direction;
 	// Camera offset
 	v3s16 m_camera_offset;
+
+	bool m_stepheight_smooth_active = false;
 
 	// Server-sent FOV variables
 	bool m_server_sent_fov = false;
@@ -267,4 +287,7 @@ private:
 
 	std::list<Nametag *> m_nametags;
 	bool m_show_nametag_backgrounds;
+
+	// Last known light color of the player
+	video::SColor m_player_light_color;
 };

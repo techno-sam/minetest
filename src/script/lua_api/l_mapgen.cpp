@@ -752,9 +752,7 @@ int ModApiMapgen::l_get_mapgen_params(lua_State *L)
 	lua_setfield(L, -2, "mgname");
 
 	settingsmgr->getMapSetting("seed", &value);
-	std::istringstream ss(value);
-	u64 seed;
-	ss >> seed;
+	u64 seed = from_string<u64>(value);
 	lua_pushinteger(L, seed);
 	lua_setfield(L, -2, "seed");
 
@@ -1431,7 +1429,7 @@ int ModApiMapgen::l_generate_ores(lua_State *L)
 	Mapgen mg;
 	// Intentionally truncates to s32, see Mapgen::Mapgen()
 	mg.seed = (s32)emerge->mgparams->seed;
-	mg.vm   = LuaVoxelManip::checkobject(L, 1)->vm;
+	mg.vm   = checkObject<LuaVoxelManip>(L, 1)->vm;
 	mg.ndef = getServer(L)->getNodeDefManager();
 
 	v3s16 pmin = lua_istable(L, 2) ? check_v3s16(L, 2) :
@@ -1460,7 +1458,7 @@ int ModApiMapgen::l_generate_decorations(lua_State *L)
 	Mapgen mg;
 	// Intentionally truncates to s32, see Mapgen::Mapgen()
 	mg.seed = (s32)emerge->mgparams->seed;
-	mg.vm   = LuaVoxelManip::checkobject(L, 1)->vm;
+	mg.vm   = checkObject<LuaVoxelManip>(L, 1)->vm;
 	mg.ndef = getServer(L)->getNodeDefManager();
 
 	v3s16 pmin = lua_istable(L, 2) ? check_v3s16(L, 2) :
@@ -1599,7 +1597,7 @@ int ModApiMapgen::l_place_schematic_on_vmanip(lua_State *L)
 	SchematicManager *schemmgr = getServer(L)->getEmergeManager()->schemmgr;
 
 	//// Read VoxelManip object
-	MMVManip *vm = LuaVoxelManip::checkobject(L, 1)->vm;
+	MMVManip *vm = checkObject<LuaVoxelManip>(L, 1)->vm;
 
 	//// Read position
 	v3s16 p = check_v3s16(L, 2);

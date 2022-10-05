@@ -64,8 +64,7 @@ void set_default_settings()
 	settings->setDefault("enable_client_modding", "false");
 	settings->setDefault("max_out_chat_queue_size", "20");
 	settings->setDefault("pause_on_lost_focus", "false");
-	settings->setDefault("enable_register_confirmation", "true");
-	settings->setDefault("clickable_chat_weblinks", "false");
+	settings->setDefault("enable_split_login_register", "true");
 	settings->setDefault("chat_weblink_color", "#8888FF");
 
 	//Cheats
@@ -141,7 +140,7 @@ void set_default_settings()
 	settings->setDefault("keymap_cmd_local", ".");
 	settings->setDefault("keymap_minimap", "KEY_KEY_V");
 	settings->setDefault("keymap_console", "KEY_F10");
-	settings->setDefault("keymap_rangeselect", "KEY_KEY_R");
+	settings->setDefault("keymap_rangeselect", "");
 	settings->setDefault("keymap_freemove", "KEY_KEY_K");
 	settings->setDefault("keymap_pitchmove", "KEY_KEY_P");
 	settings->setDefault("keymap_fastmove", "KEY_KEY_J");
@@ -237,6 +236,7 @@ void set_default_settings()
 	settings->setDefault("leaves_style", "fancy");
 	settings->setDefault("connected_glass", "false");
 	settings->setDefault("smooth_lighting", "true");
+	settings->setDefault("performance_tradeoffs", "false");
 	settings->setDefault("lighting_alpha", "0.0");
 	settings->setDefault("lighting_beta", "1.5");
 	settings->setDefault("display_gamma", "1.0");
@@ -296,6 +296,7 @@ void set_default_settings()
 	settings->setDefault("enable_particles", "true");
 	settings->setDefault("arm_inertia", "true");
 	settings->setDefault("show_nametag_backgrounds", "true");
+	settings->setDefault("transparency_sorting_distance", "16");
 
 	settings->setDefault("enable_minimap", "true");
 	settings->setDefault("minimap_shape_round", "true");
@@ -315,13 +316,19 @@ void set_default_settings()
 	settings->setDefault("water_wave_speed", "5.0");
 	settings->setDefault("enable_waving_leaves", "false");
 	settings->setDefault("enable_waving_plants", "false");
+	settings->setDefault("exposure_factor", "1.0");
+	settings->setDefault("enable_bloom", "false");
+	settings->setDefault("enable_bloom_debug", "false");
+	settings->setDefault("enable_bloom_dedicated_texture", "false");
+	settings->setDefault("bloom_intensity", "0.05");
+	settings->setDefault("bloom_radius", "16");
 
 	//Custom
 	settings->setDefault("render_ignore","false");
 
 	// Effects Shadows
 	settings->setDefault("enable_dynamic_shadows", "false");
-	settings->setDefault("shadow_strength", "0.2");
+	settings->setDefault("shadow_strength_gamma", "1.0");
 	settings->setDefault("shadow_map_max_distance", "200.0");
 	settings->setDefault("shadow_map_texture_size", "2048");
 	settings->setDefault("shadow_map_texture_32bit", "true");
@@ -329,7 +336,7 @@ void set_default_settings()
 	settings->setDefault("shadow_filters", "1");
 	settings->setDefault("shadow_poisson_filter", "true");
 	settings->setDefault("shadow_update_frames", "8");
-	settings->setDefault("shadow_soft_radius", "1.0");
+	settings->setDefault("shadow_soft_radius", "5.0");
 	settings->setDefault("shadow_sky_body_orbit_tilt", "0.0");
 
 	// Input
@@ -341,7 +348,7 @@ void set_default_settings()
 	settings->setDefault("aux1_descends", "false");
 	settings->setDefault("doubletap_jump", "false");
 	settings->setDefault("always_fly_fast", "true");
-#ifdef __ANDROID__
+#ifdef HAVE_TOUCHSCREENGUI
 	settings->setDefault("autojump", "true");
 #else
 	settings->setDefault("autojump", "false");
@@ -358,8 +365,7 @@ void set_default_settings()
 	settings->setDefault("main_menu_path", "");
 	settings->setDefault("serverlist_file", "favoriteservers.json");
 
-#if USE_FREETYPE
-	settings->setDefault("freetype", "true");
+	// General font settings
 	settings->setDefault("font_path", porting::getDataPath("fonts" DIR_DELIM "Arimo-Regular.ttf"));
 	settings->setDefault("font_path_italic", porting::getDataPath("fonts" DIR_DELIM "Arimo-Italic.ttf"));
 	settings->setDefault("font_path_bold", porting::getDataPath("fonts" DIR_DELIM "Arimo-Bold.ttf"));
@@ -368,21 +374,15 @@ void set_default_settings()
 	settings->setDefault("font_italic", "false");
 	settings->setDefault("font_shadow", "1");
 	settings->setDefault("font_shadow_alpha", "127");
+	settings->setDefault("font_size_divisible_by", "1");
 	settings->setDefault("mono_font_path", porting::getDataPath("fonts" DIR_DELIM "Cousine-Regular.ttf"));
 	settings->setDefault("mono_font_path_italic", porting::getDataPath("fonts" DIR_DELIM "Cousine-Italic.ttf"));
 	settings->setDefault("mono_font_path_bold", porting::getDataPath("fonts" DIR_DELIM "Cousine-Bold.ttf"));
 	settings->setDefault("mono_font_path_bold_italic", porting::getDataPath("fonts" DIR_DELIM "Cousine-BoldItalic.ttf"));
+	settings->setDefault("mono_font_size_divisible_by", "1");
 	settings->setDefault("fallback_font_path", porting::getDataPath("fonts" DIR_DELIM "DroidSansFallbackFull.ttf"));
 
 	std::string font_size_str = std::to_string(TTF_DEFAULT_FONT_SIZE);
-#else
-	settings->setDefault("freetype", "false");
-	settings->setDefault("font_path", porting::getDataPath("fonts" DIR_DELIM "mono_dejavu_sans"));
-	settings->setDefault("mono_font_path", porting::getDataPath("fonts" DIR_DELIM "mono_dejavu_sans"));
-
-	std::string font_size_str = std::to_string(DEFAULT_FONT_SIZE);
-#endif
-	// General font settings
 	settings->setDefault("font_size", font_size_str);
 	settings->setDefault("mono_font_size", font_size_str);
 	settings->setDefault("chat_font_size", "0"); // Default "font_size"
@@ -397,6 +397,12 @@ void set_default_settings()
 	settings->setDefault("contentdb_flag_blacklist", "nonfree, desktop_default");
 #endif
 
+	settings->setDefault("update_information_url", "https://www.minetest.net/release_info.json");
+#if ENABLE_UPDATE_CHECKER
+	settings->setDefault("update_last_checked", "");
+#else
+	settings->setDefault("update_last_checked", "disabled");
+#endif
 
 	// Server
 	settings->setDefault("disable_escape_sequences", "false");
@@ -448,13 +454,13 @@ void set_default_settings()
 	settings->setDefault("time_speed", "72");
 	settings->setDefault("world_start_time", "6125");
 	settings->setDefault("server_unload_unused_data_timeout", "29");
-	settings->setDefault("max_objects_per_block", "64");
+	settings->setDefault("max_objects_per_block", "256");
 	settings->setDefault("server_map_save_interval", "5.3");
 	settings->setDefault("chat_message_max_size", "500");
 	settings->setDefault("chat_message_limit_per_10sec", "8.0");
 	settings->setDefault("chat_message_limit_trigger_kick", "50");
 	settings->setDefault("sqlite_synchronous", "2");
-	settings->setDefault("map_compression_level_disk", "3");
+	settings->setDefault("map_compression_level_disk", "-1");
 	settings->setDefault("map_compression_level_net", "-1");
 	settings->setDefault("full_block_send_enable_min_time_from_building", "2.0");
 	settings->setDefault("dedicated_server_step", "0.09");
@@ -497,7 +503,7 @@ void set_default_settings()
 	// Mapgen
 	settings->setDefault("mg_name", "v7");
 	settings->setDefault("water_level", "1");
-	settings->setDefault("mapgen_limit", "31000");
+	settings->setDefault("mapgen_limit", "31007");
 	settings->setDefault("chunksize", "5");
 	settings->setDefault("fixed_map_seed", "");
 	settings->setDefault("max_block_generate_distance", "10");
@@ -513,34 +519,38 @@ void set_default_settings()
 
 	settings->setDefault("enable_console", "false");
 	settings->setDefault("screen_dpi", "72");
+	settings->setDefault("display_density_factor", "1");
 
 	// Altered settings for macOS
 #if defined(__MACH__) && defined(__APPLE__)
 	settings->setDefault("keymap_sneak", "KEY_SHIFT");
-	settings->setDefault("fps_max", "0");
 #endif
 
+#ifdef HAVE_TOUCHSCREENGUI
+	settings->setDefault("touchscreen_threshold","20");
+	settings->setDefault("touch_use_crosshair", "false");
+	settings->setDefault("fixed_virtual_joystick", "false");
+	settings->setDefault("virtual_joystick_triggers_aux1", "false");
+	settings->setDefault("clickable_chat_weblinks", "false");
+#else
+	settings->setDefault("clickable_chat_weblinks", "true");
+#endif
 	// Altered settings for Android
 #ifdef __ANDROID__
 	settings->setDefault("screen_w", "0");
 	settings->setDefault("screen_h", "0");
 	settings->setDefault("fullscreen", "true");
-	settings->setDefault("touchtarget", "true");
-	settings->setDefault("touchscreen_threshold","20");
-	settings->setDefault("fixed_virtual_joystick", "false");
-	settings->setDefault("virtual_joystick_triggers_aux1", "false");
 	settings->setDefault("smooth_lighting", "false");
+	settings->setDefault("performance_tradeoffs", "true");
 	settings->setDefault("max_simultaneous_block_sends_per_client", "10");
 	settings->setDefault("emergequeue_limit_diskonly", "16");
 	settings->setDefault("emergequeue_limit_generate", "16");
 	settings->setDefault("max_block_generate_distance", "5");
 	settings->setDefault("enable_3d_clouds", "false");
-	settings->setDefault("fps_max", "30");
 	settings->setDefault("fps_max_unfocused", "10");
-	settings->setDefault("max_objects_per_block", "20");
 	settings->setDefault("sqlite_synchronous", "1");
 	settings->setDefault("map_compression_level_disk", "-1");
-	settings->setDefault("map_compression_level_net", "3");
+	settings->setDefault("map_compression_level_net", "-1");
 	settings->setDefault("server_map_save_interval", "15");
 	settings->setDefault("client_mapblock_limit", "1000");
 	settings->setDefault("active_block_range", "2");

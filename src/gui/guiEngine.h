@@ -175,10 +175,6 @@ public:
 		return m_scriptdir;
 	}
 
-	/** pass async callback to scriptengine **/
-	unsigned int queueAsync(const std::string &serialized_fct,
-			const std::string &serialized_params);
-
 private:
 
 	/** find and run the main menu script */
@@ -300,7 +296,7 @@ private:
 	clouddata   m_cloud;
 
 	/** start playing a sound and return handle */
-	s32 playSound(const SimpleSoundSpec &spec, bool looped);
+	s32 playSound(const SimpleSoundSpec &spec);
 	/** stop playing a sound started with playSound() */
 	void stopSound(s32 handle);
 

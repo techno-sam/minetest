@@ -117,7 +117,7 @@ bool LocalPlayer::updateSneakNode(Map *map, const v3f &position,
 			continue;
 		// And the node(s) above have to be nonwalkable
 		bool ok = true;
-		if (!physics_override_sneak_glitch) {
+		if (!physics_override.sneak_glitch) {
 			u16 height =
 				ceilf((m_collisionbox.MaxEdge.Y - m_collisionbox.MinEdge.Y) / BS);
 			for (u16 y = 1; y <= height; y++) {
@@ -149,7 +149,7 @@ bool LocalPlayer::updateSneakNode(Map *map, const v3f &position,
 	node.getCollisionBoxes(nodemgr, &nodeboxes);
 	m_sneak_node_bb_top = getNodeBoundingBox(nodeboxes);
 
-	if (physics_override_sneak_glitch) {
+	if (physics_override.sneak_glitch) {
 		// Detect sneak ladder:
 		// Node two meters above sneak node must be solid
 		node = map->getNode(m_sneak_node + v3s16(0, 2, 0),
@@ -173,7 +173,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		m_standing_node = floatToInt(m_position, BS);
 
 	// Temporary option for old move code
-	if (!physics_override_new_move) {
+	if (!physics_override.new_move) {
 		old_move(dtime, env, pos_max_d, collision_info);
 		return;
 	}
@@ -186,7 +186,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 	// Copy parent position if local player is attached
 	if (getParent()) {
 		setPosition(m_cao->getPosition());
-		added_velocity = v3f(0.0f); // ignored
+		m_added_velocity = v3f(0.0f); // ignored
 		return;
 	}
 
@@ -202,12 +202,12 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		setPosition(position);
 
 		touching_ground = false;
-		added_velocity = v3f(0.0f); // ignored
+		m_added_velocity = v3f(0.0f); // ignored
 		return;
 	}
 
-	m_speed += added_velocity;
-	added_velocity = v3f(0.0f);
+	m_speed += m_added_velocity;
+	m_added_velocity = v3f(0.0f);
 
 	/*
 		Collision detection
@@ -227,8 +227,9 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		pp = floatToInt(position + v3f(0.0f, BS * 0.1f, 0.0f), BS);
 		node = map->getNode(pp, &is_valid_position);
 		if (is_valid_position) {
-			in_liquid = nodemgr->get(node.getContent()).isLiquid();
-			liquid_viscosity = nodemgr->get(node.getContent()).liquid_viscosity;
+			const ContentFeatures &cf = nodemgr->get(node.getContent());
+			in_liquid = cf.liquid_move_physics;
+			move_resistance = cf.move_resistance;
 		} else {
 			in_liquid = false;
 		}
@@ -238,8 +239,9 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		pp = floatToInt(position + v3f(0.0f, BS * 0.5f, 0.0f), BS);
 		node = map->getNode(pp, &is_valid_position);
 		if (is_valid_position) {
-			in_liquid = nodemgr->get(node.getContent()).isLiquid();
-			liquid_viscosity = nodemgr->get(node.getContent()).liquid_viscosity;
+			const ContentFeatures &cf = nodemgr->get(node.getContent());
+			in_liquid = cf.liquid_move_physics;
+			move_resistance = cf.move_resistance;
 		} else {
 			in_liquid = false;
 		}
@@ -252,7 +254,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 	pp = floatToInt(position + v3f(0.0f), BS);
 	node = map->getNode(pp, &is_valid_position);
 	if (is_valid_position) {
-		in_liquid_stable = nodemgr->get(node.getContent()).isLiquid();
+		in_liquid_stable = nodemgr->get(node.getContent()).liquid_move_physics;
 	} else {
 		in_liquid_stable = false;
 	}
@@ -290,7 +292,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 	float player_stepheight = (m_cao == nullptr) ? 0.0f :
 		(touching_ground ? m_cao->getStepHeight() : (0.2f * BS));
 
-	v3f accel_f;
+	v3f accel_f(0, -gravity, 0);
 	const v3f initial_position = position;
 	const v3f initial_speed = m_speed;
 
@@ -299,7 +301,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		&position, &m_speed, accel_f);
 
 	bool could_sneak = control.sneak && !free_move && !in_liquid &&
-		!is_climbing && physics_override_sneak;
+		!is_climbing && physics_override.sneak;
 
 	// Add new collisions to the vector
 	if (collision_info && !free_move) {
@@ -329,8 +331,8 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 	}
 
 	/*
-		If the player's feet touch the topside of any node, this is
-		set to true.
+		If the player's feet touch the topside of any node
+		at the END of clientstep, then this is set to true.
 
 		Player is allowed to jump when this is true.
 	*/
@@ -374,7 +376,7 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		}
 
 		if (y_diff > 0 && m_speed.Y <= 0.0f &&
-				(physics_override_sneak_glitch || y_diff < BS * 0.6f)) {
+				(physics_override.sneak_glitch || y_diff < BS * 0.6f)) {
 			// Move player to the maximal height when falling or when
 			// the ledge is climbed on the next step.
 
@@ -424,38 +426,52 @@ void LocalPlayer::move(f32 dtime, Environment *env, f32 pos_max_d,
 		camera_impact = getSpeed().Y * -1;
 	}
 
-	{
-		camera_barely_in_ceiling = false;
-		v3s16 camera_np = floatToInt(getEyePosition(), BS);
-		MapNode n = map->getNode(camera_np);
-		if (n.getContent() != CONTENT_IGNORE) {
-			if (nodemgr->get(n).walkable && nodemgr->get(n).solidness == 2)
-				camera_barely_in_ceiling = true;
-		}
-	}
-
 	/*
 		Check properties of the node on which the player is standing
 	*/
 	const ContentFeatures &f = nodemgr->get(map->getNode(m_standing_node));
 	const ContentFeatures &f1 = nodemgr->get(map->getNode(m_standing_node + v3s16(0, 1, 0)));
 
+	// We can jump from a bouncy node we collided with this clientstep,
+	// even if we are not "touching" it at the end of clientstep.
+	int standing_node_bouncy = 0;
+	if (result.collides && m_speed.Y > 0.0f) {
+		// must use result.collisions here because sometimes collision_info
+		// is passed in prepopulated with a problematic floor.
+		for (const auto &colinfo : result.collisions) {
+			if (colinfo.axis == COLLISION_AXIS_Y) {
+				// we cannot rely on m_standing_node because "sneak stuff"
+				standing_node_bouncy = itemgroup_get(nodemgr->get(map->getNode(colinfo.node_p)).groups, "bouncy");
+				if (standing_node_bouncy != 0)
+					break;
+			}
+		}
+	}
+
 	// Determine if jumping is possible
 	m_disable_jump = itemgroup_get(f.groups, "disable_jump") ||
 		itemgroup_get(f1.groups, "disable_jump");
-	m_can_jump = ((touching_ground && !is_climbing) || sneak_can_jump) && !m_disable_jump;
+	m_can_jump = ((touching_ground && !is_climbing) || sneak_can_jump || standing_node_bouncy != 0)
+			&& !m_disable_jump;
 
-	// Jump key pressed while jumping off from a bouncy block
-	if (m_can_jump && control.jump && itemgroup_get(f.groups, "bouncy") &&
-		m_speed.Y >= -0.5f * BS) {
-		float jumpspeed = movement_speed_jump * physics_override_jump;
-		if (m_speed.Y > 1.0f) {
-			// Reduce boost when speed already is high
-			m_speed.Y += jumpspeed / (1.0f + (m_speed.Y / 16.0f));
+	// Jump/Sneak key pressed while bouncing from a bouncy block
+	float jumpspeed = movement_speed_jump * physics_override.jump;
+	if (m_can_jump && (control.jump || control.sneak) && standing_node_bouncy > 0) {
+		// controllable (>0) bouncy block
+		if (!control.jump) {
+			// sneak pressed, but not jump
+			// Subjective testing indicates 1/3 bounce decrease works well.
+			jumpspeed = -m_speed.Y / 3.0f;
 		} else {
-			m_speed.Y += jumpspeed;
+			// jump pressed
+			// Reduce boost when speed already is high
+			jumpspeed = jumpspeed / (1.0f + (m_speed.Y * 2.8f / jumpspeed));
 		}
+		m_speed.Y += jumpspeed;
 		setSpeed(m_speed);
+		m_can_jump = false;
+	} else if(m_speed.Y > jumpspeed && standing_node_bouncy < 0) {
+		// uncontrollable bouncy is limited to normal jump height.
 		m_can_jump = false;
 	}
 
@@ -566,23 +582,7 @@ void LocalPlayer::applyControl(float dtime, Environment *env)
 		}
 	}
 
-	if (control.up)
-		speedH += v3f(0.0f, 0.0f, 1.0f);
-
-	if (control.down)
-		speedH -= v3f(0.0f, 0.0f, 1.0f);
-
-	if (!control.up && !control.down)
-		speedH -= v3f(0.0f, 0.0f, 1.0f) * (control.forw_move_joystick_axis / 32767.f);
-
-	if (control.left)
-		speedH += v3f(-1.0f, 0.0f, 0.0f);
-
-	if (control.right)
-		speedH += v3f(1.0f, 0.0f, 0.0f);
-
-	if (!control.left && !control.right)
-		speedH += v3f(1.0f, 0.0f, 0.0f) * (control.sidew_move_joystick_axis / 32767.f);
+	speedH = v3f(sin(control.movement_direction), 0.0f, cos(control.movement_direction));
 
 	if (m_autojump) {
 		// release autojump after a given time
@@ -639,6 +639,8 @@ void LocalPlayer::applyControl(float dtime, Environment *env)
 	else
 		speedH = speedH.normalize() * movement_speed_walk;
 
+	speedH *= control.movement_speed; /* Apply analog input */
+
 	// Acceleration increase
 	f32 incH = 0.0f; // Horizontal (X, Z)
 	f32 incV = 0.0f; // Vertical (Y)
@@ -669,8 +671,8 @@ void LocalPlayer::applyControl(float dtime, Environment *env)
 	}
 
 	// Accelerate to target speed with maximum increment
-	accelerate((speedH + speedV) * physics_override_speed,
-		incH * physics_override_speed * slip_factor, incV * physics_override_speed,
+	accelerate((speedH + speedV) * physics_override.speed,
+		incH * physics_override.speed * slip_factor, incV * physics_override.speed,
 		pitch_move);
 }
 
@@ -684,19 +686,21 @@ v3s16 LocalPlayer::getStandingNodePos()
 
 v3s16 LocalPlayer::getFootstepNodePos()
 {
+	v3f feet_pos = getPosition() + v3f(0.0f, m_collisionbox.MinEdge.Y, 0.0f);
+
 	// Emit swimming sound if the player is in liquid
 	if (in_liquid_stable)
-		return floatToInt(getPosition(), BS);
+		return floatToInt(feet_pos, BS);
 
 	// BS * 0.05 below the player's feet ensures a 1/16th height
 	// nodebox is detected instead of the node below it.
 	if (touching_ground)
-		return floatToInt(getPosition() - v3f(0.0f, BS * 0.05f, 0.0f), BS);
+		return floatToInt(feet_pos - v3f(0.0f, BS * 0.05f, 0.0f), BS);
 
 	// A larger distance below is necessary for a footstep sound
 	// when landing after a jump or fall. BS * 0.5 ensures water
 	// sounds when swimming in 1 node deep water.
-	return floatToInt(getPosition() - v3f(0.0f, BS * 0.5f, 0.0f), BS);
+	return floatToInt(feet_pos - v3f(0.0f, BS * 0.5f, 0.0f), BS);
 }
 
 v3s16 LocalPlayer::getLightPosition() const
@@ -713,8 +717,7 @@ v3f LocalPlayer::getSendSpeed()
 
 v3f LocalPlayer::getEyeOffset() const
 {
-	float eye_height = camera_barely_in_ceiling ? m_eye_height - 0.125f : m_eye_height;
-	return v3f(0.0f, BS * eye_height, 0.0f);
+	return v3f(0.0f, BS * m_eye_height, 0.0f);
 }
 
 ClientActiveObject *LocalPlayer::getParent() const
@@ -783,7 +786,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	if (getParent()) {
 		setPosition(m_cao->getPosition());
 		m_sneak_node_exists = false;
-		added_velocity = v3f(0.0f);
+		m_added_velocity = v3f(0.0f);
 		return;
 	}
 
@@ -799,12 +802,15 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 
 		touching_ground = false;
 		m_sneak_node_exists = false;
-		added_velocity = v3f(0.0f);
+		m_added_velocity = v3f(0.0f);
 		return;
 	}
 
-	m_speed += added_velocity;
-	added_velocity = v3f(0.0f);
+	m_speed += m_added_velocity;
+	m_added_velocity = v3f(0.0f);
+
+	// Apply gravity (note: this is broken, but kept since this is *old* move code)
+	m_speed.Y -= gravity * dtime;
 
 	/*
 		Collision detection
@@ -821,8 +827,9 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 		pp = floatToInt(position + v3f(0.0f, BS * 0.1f, 0.0f), BS);
 		node = map->getNode(pp, &is_valid_position);
 		if (is_valid_position) {
-			in_liquid = nodemgr->get(node.getContent()).isLiquid();
-			liquid_viscosity = nodemgr->get(node.getContent()).liquid_viscosity;
+			const ContentFeatures &cf = nodemgr->get(node.getContent());
+			in_liquid = cf.liquid_move_physics;
+			move_resistance = cf.move_resistance;
 		} else {
 			in_liquid = false;
 		}
@@ -831,8 +838,9 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 		pp = floatToInt(position + v3f(0.0f, BS * 0.5f, 0.0f), BS);
 		node = map->getNode(pp, &is_valid_position);
 		if (is_valid_position) {
-			in_liquid = nodemgr->get(node.getContent()).isLiquid();
-			liquid_viscosity = nodemgr->get(node.getContent()).liquid_viscosity;
+			const ContentFeatures &cf = nodemgr->get(node.getContent());
+			in_liquid = cf.liquid_move_physics;
+			move_resistance = cf.move_resistance;
 		} else {
 			in_liquid = false;
 		}
@@ -844,7 +852,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	pp = floatToInt(position + v3f(0.0f), BS);
 	node = map->getNode(pp, &is_valid_position);
 	if (is_valid_position)
-		in_liquid_stable = nodemgr->get(node.getContent()).isLiquid();
+		in_liquid_stable = nodemgr->get(node.getContent()).liquid_move_physics;
 	else
 		in_liquid_stable = false;
 
@@ -881,7 +889,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	*/
 	if (control.sneak && m_sneak_node_exists &&
 			!(fly_allowed && player_settings.free_move) && !in_liquid &&
-			physics_override_sneak) {
+			physics_override.sneak) {
 		f32 maxd = 0.5f * BS + sneak_max;
 		v3f lwn_f = intToFloat(m_sneak_node, BS);
 		position.X = rangelim(position.X, lwn_f.X - maxd, lwn_f.X + maxd);
@@ -920,8 +928,8 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 		m_standing_node = floatToInt(m_position, BS);
 
 	/*
-		If the player's feet touch the topside of any node, this is
-		set to true.
+		If the player's feet touch the topside of any node
+		at the END of clientstep, then this is set to true.
 
 		Player is allowed to jump when this is true.
 	*/
@@ -952,7 +960,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 		m_need_to_get_new_sneak_node = true;
 	}
 
-	if (m_need_to_get_new_sneak_node && physics_override_sneak) {
+	if (m_need_to_get_new_sneak_node && physics_override.sneak) {
 		m_sneak_node_bb_ymax = 0.0f;
 		v3s16 pos_i_bottom = floatToInt(position - v3f(0.0f, position_y_mod, 0.0f), BS);
 		v2f player_p2df(position.X, position.Z);
@@ -982,7 +990,7 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 			if (!is_valid_position || nodemgr->get(node).walkable)
 				continue;
 			// If not 'sneak_glitch' the node 2 nodes above it has to be nonwalkable
-			if (!physics_override_sneak_glitch) {
+			if (!physics_override.sneak_glitch) {
 				node = map->getNode(p + v3s16(0, 2, 0), &is_valid_position);
 				if (!is_valid_position || nodemgr->get(node).walkable)
 					continue;
@@ -1040,16 +1048,6 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 		camera_impact = getSpeed().Y * -1.0f;
 	}
 
-	{
-		camera_barely_in_ceiling = false;
-		v3s16 camera_np = floatToInt(getEyePosition(), BS);
-		MapNode n = map->getNode(camera_np);
-		if (n.getContent() != CONTENT_IGNORE) {
-			if (nodemgr->get(n).walkable && nodemgr->get(n).solidness == 2)
-				camera_barely_in_ceiling = true;
-		}
-	}
-
 	/*
 		Update the node last under the player
 	*/
@@ -1061,21 +1059,44 @@ void LocalPlayer::old_move(f32 dtime, Environment *env, f32 pos_max_d,
 	*/
 	const ContentFeatures &f = nodemgr->get(map->getNode(getStandingNodePos()));
 
+	// We can jump from a bouncy node we collided with this clientstep,
+	// even if we are not "touching" it at the end of clientstep.
+	int standing_node_bouncy = 0;
+	if (result.collides && m_speed.Y > 0.0f) {
+		// must use result.collisions here because sometimes collision_info
+		// is passed in prepopulated with a problematic floor.
+		for (const auto &colinfo : result.collisions) {
+			if (colinfo.axis == COLLISION_AXIS_Y) {
+				// we cannot rely on m_standing_node because "sneak stuff"
+				standing_node_bouncy = itemgroup_get(nodemgr->get(map->getNode(colinfo.node_p)).groups, "bouncy");
+				if (standing_node_bouncy != 0)
+					break;
+			}
+		}
+	}
+
 	// Determine if jumping is possible
 	m_disable_jump = itemgroup_get(f.groups, "disable_jump");
-	m_can_jump = touching_ground && !m_disable_jump;
+	m_can_jump = (touching_ground || standing_node_bouncy != 0) && !m_disable_jump;
 
-	// Jump key pressed while jumping off from a bouncy block
-	if (m_can_jump && control.jump && itemgroup_get(f.groups, "bouncy") &&
-			m_speed.Y >= -0.5f * BS) {
-		float jumpspeed = movement_speed_jump * physics_override_jump;
-		if (m_speed.Y > 1.0f) {
-			// Reduce boost when speed already is high
-			m_speed.Y += jumpspeed / (1.0f + (m_speed.Y / 16.0f));
+	// Jump/Sneak key pressed while bouncing from a bouncy block
+	float jumpspeed = movement_speed_jump * physics_override.jump;
+	if (m_can_jump && (control.jump || control.sneak) && standing_node_bouncy > 0) {
+		// controllable (>0) bouncy block
+		if (!control.jump) {
+			// sneak pressed, but not jump
+			// Subjective testing indicates 1/3 bounce decrease works well.
+			jumpspeed = -m_speed.Y / 3.0f;
 		} else {
-			m_speed.Y += jumpspeed;
+			// jump pressed
+			// Reduce boost when speed already is high
+			jumpspeed = jumpspeed / (1.0f + (m_speed.Y * 2.8f / jumpspeed));
 		}
+		m_speed.Y += jumpspeed;
 		setSpeed(m_speed);
+		m_can_jump = false;
+	} else if(m_speed.Y > jumpspeed && standing_node_bouncy < 0) {
+		// uncontrollable bouncy is limited to normal jump height.
 		m_can_jump = false;
 	}
 
@@ -1113,12 +1134,8 @@ void LocalPlayer::handleAutojump(f32 dtime, Environment *env,
 	if (m_autojump)
 		return;
 
-	bool control_forward = control.up ||
-		(!control.up && !control.down &&
-		control.forw_move_joystick_axis < -0.05f);
-
 	bool could_autojump =
-		m_can_jump && !control.jump && !control.sneak && control_forward;
+		m_can_jump && !control.jump && !control.sneak && control.isMoving();
 
 	if (!could_autojump)
 		return;
@@ -1157,8 +1174,10 @@ void LocalPlayer::handleAutojump(f32 dtime, Environment *env,
 		}
 	}
 
-	float jump_height = 1.1f; // TODO: better than a magic number
-	v3f jump_pos = initial_position + v3f(0.0f, jump_height * BS, 0.0f);
+	float jumpspeed = movement_speed_jump * physics_override.jump;
+	float peak_dtime = jumpspeed / gravity; // at the peak of the jump v = gt <=> t = v / g
+	float jump_height = (jumpspeed - 0.5f * gravity * peak_dtime) * peak_dtime; // s = vt - 1/2 gt^2
+	v3f jump_pos = initial_position + v3f(0.0f, jump_height, 0.0f);
 	v3f jump_speed = initial_speed;
 
 	// try at peak of jump, zero step height

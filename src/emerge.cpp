@@ -61,7 +61,9 @@ public:
 
 	void cancelPendingItems();
 
-	static void runCompletionCallbacks(
+protected:
+
+	void runCompletionCallbacks(
 		const v3s16 &pos, EmergeAction action,
 		const EmergeCallbackList &callbacks);
 
@@ -138,7 +140,7 @@ EmergeParams::EmergeParams(EmergeManager *parent, const BiomeGen *biomegen,
 //// EmergeManager
 ////
 
-EmergeManager::EmergeManager(Server *server)
+EmergeManager::EmergeManager(Server *server, MetricsBackend *mb)
 {
 	this->ndef      = server->getNodeDefManager();
 	this->biomemgr  = new BiomeManager(server);
@@ -156,29 +158,37 @@ EmergeManager::EmergeManager(Server *server)
 
 	enable_mapgen_debug_info = g_settings->getBool("enable_mapgen_debug_info");
 
+	STATIC_ASSERT(ARRLEN(emergeActionStrs) == ARRLEN(m_completed_emerge_counter),
+		enum_size_mismatches);
+	for (u32 i = 0; i < ARRLEN(m_completed_emerge_counter); i++) {
+		std::string help_str("Number of completed emerges with status ");
+		help_str.append(emergeActionStrs[i]);
+		m_completed_emerge_counter[i] = mb->addCounter(
+			"minetest_emerge_completed", help_str,
+			{{"status", emergeActionStrs[i]}}
+		);
+	}
+
 	s16 nthreads = 1;
 	g_settings->getS16NoEx("num_emerge_threads", nthreads);
 	// If automatic, leave a proc for the main thread and one for
 	// some other misc thread
-	if (nthreads == 0)
+	if (nthreads <= 0)
 		nthreads = Thread::getNumberOfProcessors() - 2;
 	if (nthreads < 1)
 		nthreads = 1;
 
-	m_qlimit_total = g_settings->getU16("emergequeue_limit_total");
+	m_qlimit_total = g_settings->getU32("emergequeue_limit_total");
 	// FIXME: these fallback values are probably not good
-	if (!g_settings->getU16NoEx("emergequeue_limit_diskonly", m_qlimit_diskonly))
+	if (!g_settings->getU32NoEx("emergequeue_limit_diskonly", m_qlimit_diskonly))
 		m_qlimit_diskonly = nthreads * 5 + 1;
-	if (!g_settings->getU16NoEx("emergequeue_limit_generate", m_qlimit_generate))
+	if (!g_settings->getU32NoEx("emergequeue_limit_generate", m_qlimit_generate))
 		m_qlimit_generate = nthreads + 1;
 
 	// don't trust user input for something very important like this
-	if (m_qlimit_total < 1)
-		m_qlimit_total = 1;
-	if (m_qlimit_diskonly < 1)
-		m_qlimit_diskonly = 1;
-	if (m_qlimit_generate < 1)
-		m_qlimit_generate = 1;
+	m_qlimit_total = rangelim(m_qlimit_total, 1, 1000000);
+	m_qlimit_diskonly = rangelim(m_qlimit_diskonly, 1, 1000000);
+	m_qlimit_generate = rangelim(m_qlimit_generate, 1, 1000000);
 
 	for (s16 i = 0; i < nthreads; i++)
 		m_threads.push_back(new EmergeThread(server, i));
@@ -205,6 +215,7 @@ EmergeManager::~EmergeManager()
 			delete m_mapgens[i];
 	}
 
+	delete biomegen;
 	delete biomemgr;
 	delete oremgr;
 	delete decomgr;
@@ -371,12 +382,6 @@ bool EmergeManager::isBlockInQueue(v3s16 pos)
 
 
 // TODO(hmmmm): Move this to ServerMap
-v3s16 EmergeManager::getContainingChunk(v3s16 blockpos)
-{
-	return getContainingChunk(blockpos, mgparams->chunksize);
-}
-
-// TODO(hmmmm): Move this to ServerMap
 v3s16 EmergeManager::getContainingChunk(v3s16 blockpos, s16 chunksize)
 {
 	s16 coff = -chunksize / 2;
@@ -399,17 +404,6 @@ int EmergeManager::getSpawnLevelAtPoint(v2s16 p)
 }
 
 
-int EmergeManager::getGroundLevelAtPoint(v2s16 p)
-{
-	if (m_mapgens.empty() || !m_mapgens[0]) {
-		errorstream << "EmergeManager: getGroundLevelAtPoint() called"
-			" before mapgen init" << std::endl;
-		return 0;
-	}
-
-	return m_mapgens[0]->getGroundLevelAtPoint(p);
-}
-
 // TODO(hmmmm): Move this to ServerMap
 bool EmergeManager::isBlockUnderground(v3s16 blockpos)
 {
@@ -425,14 +419,14 @@ bool EmergeManager::pushBlockEmergeData(
 	void *callback_param,
 	bool *entry_already_exists)
 {
-	u16 &count_peer = m_peer_queue_count[peer_requested];
+	u32 &count_peer = m_peer_queue_count[peer_requested];
 
 	if ((flags & BLOCK_EMERGE_FORCE_QUEUE) == 0) {
 		if (m_blocks_enqueued.size() >= m_qlimit_total)
 			return false;
 
 		if (peer_requested != PEER_ID_INEXISTENT) {
-			u16 qlimit_peer = (flags & BLOCK_EMERGE_ALLOW_GEN) ?
+			u32 qlimit_peer = (flags & BLOCK_EMERGE_ALLOW_GEN) ?
 				m_qlimit_generate : m_qlimit_diskonly;
 			if (count_peer >= qlimit_peer)
 				return false;
@@ -467,20 +461,18 @@ bool EmergeManager::pushBlockEmergeData(
 
 bool EmergeManager::popBlockEmergeData(v3s16 pos, BlockEmergeData *bedata)
 {
-	std::map<v3s16, BlockEmergeData>::iterator it;
-	std::unordered_map<u16, u16>::iterator it2;
-
-	it = m_blocks_enqueued.find(pos);
+	auto it = m_blocks_enqueued.find(pos);
 	if (it == m_blocks_enqueued.end())
 		return false;
 
 	*bedata = it->second;
 
-	it2 = m_peer_queue_count.find(bedata->peer_requested);
+	auto it2 = m_peer_queue_count.find(bedata->peer_requested);
 	if (it2 == m_peer_queue_count.end())
 		return false;
 
-	u16 &count_peer = it2->second;
+	u32 &count_peer = it2->second;
+
 	assert(count_peer != 0);
 	count_peer--;
 
@@ -508,6 +500,12 @@ EmergeThread *EmergeManager::getOptimalThread()
 	}
 
 	return m_threads[index];
+}
+
+void EmergeManager::reportCompletedEmerge(EmergeAction action)
+{
+	assert((size_t)action < ARRLEN(m_completed_emerge_counter));
+	m_completed_emerge_counter[(int)action]->increment();
 }
 
 
@@ -561,6 +559,8 @@ void EmergeThread::cancelPendingItems()
 void EmergeThread::runCompletionCallbacks(const v3s16 &pos, EmergeAction action,
 	const EmergeCallbackList &callbacks)
 {
+	m_emerge->reportCompletedEmerge(action);
+
 	for (size_t i = 0; i != callbacks.size(); i++) {
 		EmergeCompletionCallback callback;
 		void *param;
@@ -652,15 +652,17 @@ MapBlock *EmergeThread::finishGen(v3s16 pos, BlockMakeData *bmdata,
 		m_server->getScriptIface()->environment_OnGenerated(
 			minp, maxp, m_mapgen->blockseed);
 	} catch (LuaError &e) {
-		m_server->setAsyncFatalError("Lua: finishGen" + std::string(e.what()));
+		m_server->setAsyncFatalError(e);
 	}
 
-	/*
-		Clear generate notifier events
-	*/
-	m_mapgen->gennotify.clearEvents();
-
 	EMERGE_DBG_OUT("ended up with: " << analyze_block(block));
+
+	/*
+		Clear mapgen state
+	*/
+	assert(!m_mapgen->generating);
+	m_mapgen->gennotify.clearEvents();
+	m_mapgen->vm = nullptr;
 
 	/*
 		Activate the block
@@ -676,19 +678,19 @@ void *EmergeThread::run()
 	BEGIN_DEBUG_EXCEPTION_HANDLER
 
 	v3s16 pos;
+	std::map<v3s16, MapBlock *> modified_blocks;
 
-	m_map    = (ServerMap *)&(m_server->m_env->getMap());
+	m_map    = &m_server->m_env->getServerMap();
 	m_emerge = m_server->m_emerge;
 	m_mapgen = m_emerge->m_mapgens[id];
 	enable_mapgen_debug_info = m_emerge->enable_mapgen_debug_info;
 
 	try {
 	while (!stopRequested()) {
-		std::map<v3s16, MapBlock *> modified_blocks;
 		BlockEmergeData bedata;
 		BlockMakeData bmdata;
 		EmergeAction action;
-		MapBlock *block;
+		MapBlock *block = nullptr;
 
 		if (!popBlockEmerge(&pos, &bedata)) {
 			m_queue_event.wait();
@@ -711,6 +713,8 @@ void *EmergeThread::run()
 			}
 
 			block = finishGen(pos, &bmdata, &modified_blocks);
+			if (!block)
+				action = EMERGE_ERRORED;
 		}
 
 		runCompletionCallbacks(pos, action, bedata.callbacks);
@@ -720,6 +724,7 @@ void *EmergeThread::run()
 
 		if (!modified_blocks.empty())
 			m_server->SetBlocksNotSent(modified_blocks);
+		modified_blocks.clear();
 	}
 	} catch (VersionMismatchException &e) {
 		std::ostringstream err;
@@ -740,6 +745,8 @@ void *EmergeThread::run()
 			<< std::endl;
 		m_server->setAsyncFatalError(err.str());
 	}
+
+	cancelPendingItems();
 
 	END_DEBUG_EXCEPTION_HANDLER
 	return NULL;

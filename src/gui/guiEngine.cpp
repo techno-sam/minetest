@@ -104,16 +104,22 @@ void MenuMusicFetcher::fetchSounds(const std::string &name,
 	if(m_fetched.count(name))
 		return;
 	m_fetched.insert(name);
-	std::string base;
-	base = porting::path_share + DIR_DELIM + "sounds";
-	dst_paths.insert(base + DIR_DELIM + name + ".ogg");
-	int i;
-	for(i=0; i<10; i++)
-		dst_paths.insert(base + DIR_DELIM + name + "."+itos(i)+".ogg");
-	base = porting::path_user + DIR_DELIM + "sounds";
-	dst_paths.insert(base + DIR_DELIM + name + ".ogg");
-	for(i=0; i<10; i++)
-		dst_paths.insert(base + DIR_DELIM + name + "."+itos(i)+".ogg");
+	std::vector<fs::DirListNode> list;
+	// Reusable local function
+	auto add_paths = [&dst_paths](const std::string name, const std::string base = "") {
+		dst_paths.insert(base + name + ".ogg");
+		for (int i = 0; i < 10; i++)
+			dst_paths.insert(base + name + "." + itos(i) + ".ogg");
+	};
+	// Allow full paths
+	if (name.find(DIR_DELIM_CHAR) != std::string::npos) {
+		add_paths(name);
+	} else {
+		std::string share_prefix = porting::path_share + DIR_DELIM;
+		add_paths(name, share_prefix + "sounds" + DIR_DELIM);
+		std::string user_prefix = porting::path_user + DIR_DELIM;
+		add_paths(name, user_prefix + "sounds" + DIR_DELIM);
+	}
 }
 
 /******************************************************************************/
@@ -189,7 +195,7 @@ GUIEngine::GUIEngine(JoystickController *joystick,
 
 	try {
 		m_script->setMainMenuData(&m_data->script_data);
-		m_data->script_data.errormessage = "";
+		m_data->script_data.errormessage.clear();
 
 		if (!loadMainMenuScript()) {
 			errorstream << "No future without main menu!" << std::endl;
@@ -437,9 +443,22 @@ void GUIEngine::drawBackground(video::IVideoDriver *driver)
 		return;
 	}
 
+	// Chop background image to the smaller screen dimension
+	v2u32 bg_size = screensize;
+	v2f32 scale(
+			(f32) bg_size.X / sourcesize.X,
+			(f32) bg_size.Y / sourcesize.Y);
+	if (scale.X < scale.Y)
+		bg_size.X = (int) (scale.Y * sourcesize.X);
+	else
+		bg_size.Y = (int) (scale.X * sourcesize.Y);
+	v2s32 offset = v2s32(
+		(s32) screensize.X - (s32) bg_size.X,
+		(s32) screensize.Y - (s32) bg_size.Y
+	) / 2;
 	/* Draw background texture */
 	draw2DImageFilterScaled(driver, texture,
-		core::rect<s32>(0, 0, screensize.X, screensize.Y),
+		core::rect<s32>(offset.X, offset.Y, bg_size.X + offset.X, bg_size.Y + offset.Y),
 		core::rect<s32>(0, 0, sourcesize.X, sourcesize.Y),
 		NULL, NULL, true);
 }
@@ -603,9 +622,9 @@ void GUIEngine::updateTopLeftTextSize()
 }
 
 /******************************************************************************/
-s32 GUIEngine::playSound(const SimpleSoundSpec &spec, bool looped)
+s32 GUIEngine::playSound(const SimpleSoundSpec &spec)
 {
-	s32 handle = m_sound_manager->playSound(spec, looped);
+	s32 handle = m_sound_manager->playSound(spec);
 	return handle;
 }
 
@@ -613,11 +632,4 @@ s32 GUIEngine::playSound(const SimpleSoundSpec &spec, bool looped)
 void GUIEngine::stopSound(s32 handle)
 {
 	m_sound_manager->stopSound(handle);
-}
-
-/******************************************************************************/
-unsigned int GUIEngine::queueAsync(const std::string &serialized_func,
-		const std::string &serialized_params)
-{
-	return m_script->queueAsync(serialized_func, serialized_params);
 }

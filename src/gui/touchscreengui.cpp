@@ -28,6 +28,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "util/numeric.h"
 #include "porting.h"
 #include "client/guiscalingfilter.h"
+#include "client/renderingengine.h"
 
 #include <iostream>
 #include <algorithm>
@@ -426,7 +427,7 @@ TouchScreenGUI::TouchScreenGUI(IrrlichtDevice *device, IEventReceiver *receiver)
 	m_joystick_triggers_aux1 = g_settings->getBool("virtual_joystick_triggers_aux1");
 	m_screensize = m_device->getVideoDriver()->getScreenSize();
 	button_size = MYMIN(m_screensize.Y / 4.5f,
-			porting::getDisplayDensity() *
+			RenderingEngine::getDisplayDensity() *
 			g_settings->getFloat("hud_scaling") * 65.0f);
 }
 
@@ -668,9 +669,9 @@ void TouchScreenGUI::handleReleaseEvent(size_t evt_id)
 	if (button != after_last_element_id) {
 		// handle button events
 		handleButtonEvent(button, evt_id, false);
-	} else if (evt_id == m_move_id) {
+	} else if (m_has_move_id && evt_id == m_move_id) {
 		// handle the point used for moving view
-		m_move_id = -1;
+		m_has_move_id = false;
 
 		// if this pointer issued a mouse event issue symmetric release here
 		if (m_move_sent_as_mouse_event) {
@@ -683,6 +684,10 @@ void TouchScreenGUI::handleReleaseEvent(size_t evt_id)
 			translated->MouseInput.Control      = false;
 			translated->MouseInput.ButtonStates = 0;
 			translated->MouseInput.Event        = EMIE_LMOUSE_LEFT_UP;
+			if (m_draw_crosshair) {
+				translated->MouseInput.X = m_screensize.X / 2;
+				translated->MouseInput.Y = m_screensize.Y / 2;
+			}
 			m_receiver->OnEvent(*translated);
 			delete translated;
 		} else {
@@ -692,8 +697,8 @@ void TouchScreenGUI::handleReleaseEvent(size_t evt_id)
 	}
 
 	// handle joystick
-	else if (evt_id == m_joystick_id) {
-		m_joystick_id = -1;
+	else if (m_has_joystick_id && evt_id == m_joystick_id) {
+		m_has_joystick_id = false;
 
 		// reset joystick
 		for (unsigned int i = 0; i < 4; i++)
@@ -776,7 +781,8 @@ void TouchScreenGUI::translateEvent(const SEvent &event)
 			if ((m_fixed_joystick && dxj * dxj + dyj * dyj <= button_size * button_size * 1.5 * 1.5) ||
 					(!m_fixed_joystick && event.TouchInput.X < m_screensize.X / 3.0f)) {
 				// If we don't already have a starting point for joystick make this the one.
-				if (m_joystick_id == -1) {
+				if (!m_has_joystick_id) {
+					m_has_joystick_id           = true;
 					m_joystick_id               = event.TouchInput.ID;
 					m_joystick_has_really_moved = false;
 
@@ -796,12 +802,15 @@ void TouchScreenGUI::translateEvent(const SEvent &event)
 				}
 			} else {
 				// If we don't already have a moving point make this the moving one.
-				if (m_move_id == -1) {
+				if (!m_has_move_id) {
+					m_has_move_id              = true;
 					m_move_id                  = event.TouchInput.ID;
 					m_move_has_really_moved    = false;
 					m_move_downtime            = porting::getTimeMs();
 					m_move_downlocation        = v2s32(event.TouchInput.X, event.TouchInput.Y);
 					m_move_sent_as_mouse_event = false;
+					if (m_draw_crosshair)
+						m_move_downlocation = v2s32(m_screensize.X / 2, m_screensize.Y / 2);
 				}
 			}
 		}
@@ -819,10 +828,9 @@ void TouchScreenGUI::translateEvent(const SEvent &event)
 				v2s32(event.TouchInput.X, event.TouchInput.Y))
 			return;
 
-		if (m_move_id != -1) {
-			if ((event.TouchInput.ID == m_move_id) &&
-				(!m_move_sent_as_mouse_event)) {
-
+		if (m_has_move_id) {
+			if (event.TouchInput.ID == m_move_id &&
+					(!m_move_sent_as_mouse_event || m_draw_crosshair)) {
 				double distance = sqrt(
 						(m_pointerpos[event.TouchInput.ID].X - event.TouchInput.X) *
 						(m_pointerpos[event.TouchInput.ID].X - event.TouchInput.X) +
@@ -838,19 +846,20 @@ void TouchScreenGUI::translateEvent(const SEvent &event)
 					// update camera_yaw and camera_pitch
 					s32 dx = X - m_pointerpos[event.TouchInput.ID].X;
 					s32 dy = Y - m_pointerpos[event.TouchInput.ID].Y;
+					m_pointerpos[event.TouchInput.ID] = v2s32(X, Y);
 
 					// adapt to similar behaviour as pc screen
-					double d = g_settings->getFloat("mouse_sensitivity") * 3.0f;
+					const double d = g_settings->getFloat("mouse_sensitivity", 0.001f, 10.0f) * 3.0f;
 
 					m_camera_yaw_change -= dx * d;
 					m_camera_pitch = MYMIN(MYMAX(m_camera_pitch + (dy * d), -180), 180);
 
 					// update shootline
+					// no need to update (X, Y) when using crosshair since the shootline is not used
 					m_shootline = m_device
 							->getSceneManager()
 							->getSceneCollisionManager()
 							->getRayFromScreenCoordinates(v2s32(X, Y));
-					m_pointerpos[event.TouchInput.ID] = v2s32(X, Y);
 				}
 			} else if ((event.TouchInput.ID == m_move_id) &&
 					(m_move_sent_as_mouse_event)) {
@@ -862,7 +871,7 @@ void TouchScreenGUI::translateEvent(const SEvent &event)
 			}
 		}
 
-		if (m_joystick_id != -1 && event.TouchInput.ID == m_joystick_id) {
+		if (m_has_joystick_id && event.TouchInput.ID == m_joystick_id) {
 			s32 X = event.TouchInput.X;
 			s32 Y = event.TouchInput.Y;
 
@@ -941,7 +950,7 @@ void TouchScreenGUI::translateEvent(const SEvent &event)
 			}
 		}
 
-		if (m_move_id == -1 && m_joystick_id == -1)
+		if (!m_has_move_id && !m_has_joystick_id)
 			handleChangedButton(event);
 	}
 }
@@ -1007,11 +1016,17 @@ bool TouchScreenGUI::doubleTapDetection()
 	if (distance > (20 + m_touchscreen_threshold))
 		return false;
 
+	v2s32 mPos = v2s32(m_key_events[0].x, m_key_events[0].y);
+	if (m_draw_crosshair) {
+		mPos.X = m_screensize.X / 2;
+		mPos.Y = m_screensize.Y / 2;
+	}
+
 	auto *translated = new SEvent();
 	memset(translated, 0, sizeof(SEvent));
 	translated->EventType               = EET_MOUSE_INPUT_EVENT;
-	translated->MouseInput.X            = m_key_events[0].x;
-	translated->MouseInput.Y            = m_key_events[0].y;
+	translated->MouseInput.X            = mPos.X;
+	translated->MouseInput.Y            = mPos.Y;
 	translated->MouseInput.Shift        = false;
 	translated->MouseInput.Control      = false;
 	translated->MouseInput.ButtonStates = EMBSM_RIGHT;
@@ -1020,7 +1035,7 @@ bool TouchScreenGUI::doubleTapDetection()
 	m_shootline = m_device
 			->getSceneManager()
 			->getSceneCollisionManager()
-			->getRayFromScreenCoordinates(v2s32(m_key_events[0].x, m_key_events[0].y));
+			->getRayFromScreenCoordinates(mPos);
 
 	translated->MouseInput.Event = EMIE_RMOUSE_PRESSED_DOWN;
 	verbosestream << "TouchScreenGUI::translateEvent right click press" << std::endl;
@@ -1086,7 +1101,7 @@ void TouchScreenGUI::step(float dtime)
 			button.repeatcounter += dtime;
 
 			// in case we're moving around digging does not happen
-			if (m_move_id != -1)
+			if (m_has_move_id)
 				m_move_has_really_moved = true;
 
 			if (button.repeatcounter < button.repeatdelay)
@@ -1114,24 +1129,30 @@ void TouchScreenGUI::step(float dtime)
 	}
 
 	// if a new placed pointer isn't moved for some time start digging
-	if ((m_move_id != -1) &&
+	if (m_has_move_id &&
 			(!m_move_has_really_moved) &&
 			(!m_move_sent_as_mouse_event)) {
 
 		u64 delta = porting::getDeltaMs(m_move_downtime, porting::getTimeMs());
 
 		if (delta > MIN_DIG_TIME_MS) {
+			s32 mX = m_move_downlocation.X;
+			s32 mY = m_move_downlocation.Y;
+			if (m_draw_crosshair) {
+				mX = m_screensize.X / 2;
+				mY = m_screensize.Y / 2;
+			}
 			m_shootline = m_device
 					->getSceneManager()
 					->getSceneCollisionManager()
 					->getRayFromScreenCoordinates(
-							v2s32(m_move_downlocation.X,m_move_downlocation.Y));
+							v2s32(mX, mY));
 
 			SEvent translated;
 			memset(&translated, 0, sizeof(SEvent));
 			translated.EventType               = EET_MOUSE_INPUT_EVENT;
-			translated.MouseInput.X            = m_move_downlocation.X;
-			translated.MouseInput.Y            = m_move_downlocation.Y;
+			translated.MouseInput.X            = mX;
+			translated.MouseInput.Y            = mY;
 			translated.MouseInput.Shift        = false;
 			translated.MouseInput.Control      = false;
 			translated.MouseInput.ButtonStates = EMBSM_LEFT;

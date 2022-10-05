@@ -17,9 +17,11 @@
 
 mt_color_grey  = "#AAAAAA"
 mt_color_blue  = "#6389FF"
+mt_color_lightblue  = "#99CCFF"
 mt_color_green = "#72FF63"
 mt_color_dark_green = "#25C191"
 mt_color_orange  = "#FF8800"
+mt_color_red = "#FF3300"
 
 local menupath = core.get_mainmenu_path()
 local basepath = core.get_builtin_path()
@@ -35,7 +37,7 @@ dofile(menupath .. DIR_DELIM .. "async_event.lua")
 dofile(menupath .. DIR_DELIM .. "common.lua")
 dofile(menupath .. DIR_DELIM .. "pkgmgr.lua")
 dofile(menupath .. DIR_DELIM .. "serverlistmgr.lua")
-dofile(menupath .. DIR_DELIM .. "textures.lua")
+dofile(menupath .. DIR_DELIM .. "game_theme.lua")
 
 dofile(menupath .. DIR_DELIM .. "dlg_config_world.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_settings_advanced.lua")
@@ -43,7 +45,9 @@ dofile(menupath .. DIR_DELIM .. "dlg_contentstore.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_create_world.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_delete_content.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_delete_world.lua")
+dofile(menupath .. DIR_DELIM .. "dlg_register.lua")
 dofile(menupath .. DIR_DELIM .. "dlg_rename_modpack.lua")
+dofile(menupath .. DIR_DELIM .. "dlg_version_info.lua")
 
 local tabs = {}
 
@@ -87,10 +91,11 @@ local function init_globals()
 		core.settings:set("menu_last_game", default_game)
 	end
 
-	mm_texture.init()
+	mm_game_theme.init()
 
 	-- Create main tabview
 	local tv_main = tabview_create("maintab", {x = 12, y = 5.4}, {x = 0, y = 0})
+	-- note: size would be 15.5,7.1 in real coordinates mode
 
 	tv_main:set_autosave_tab(true)
 	tv_main:add(tabs.local_game)
@@ -113,16 +118,14 @@ local function init_globals()
 	if tv_main.current_tab == "local" then
 		local game = pkgmgr.find_by_gameid(core.settings:get("menu_last_game"))
 		if game == nil then
-			mm_texture.reset()
+			mm_game_theme.reset()
 		end
 	end
 
 	ui.set_default("maintab")
+	check_new_version()
 	tv_main:show()
-
 	ui.update()
-
-	core.sound_play("main_menu", true)
 end
 
 init_globals()

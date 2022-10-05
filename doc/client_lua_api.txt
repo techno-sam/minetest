@@ -1,4 +1,4 @@
-Minetest Lua Client Modding API Reference 5.5.0
+Minetest Lua Client Modding API Reference 5.7.0
 ================================================
 * More information at <http://www.minetest.net/>
 * Developer Wiki: <http://dev.minetest.net/>
@@ -580,6 +580,7 @@ Spatial Vectors
 * `vector.floor(v)`: returns a vector, each dimension rounded down
 * `vector.round(v)`: returns a vector, each dimension rounded to nearest int
 * `vector.apply(v, func)`: returns a vector
+* `vector.combine(v, w, func)`: returns a vector
 * `vector.equals(v1, v2)`: returns a boolean
 
 For the following functions `x` can be either a vector or a number:
@@ -896,14 +897,19 @@ Call these functions only at load time!
     * Compress a string of data.
     * `method` is a string identifying the compression method to be used.
     * Supported compression methods:
-    *     Deflate (zlib): `"deflate"`
-    * `...` indicates method-specific arguments.  Currently defined arguments are:
-    *     Deflate: `level` - Compression level, `0`-`9` or `nil`.
+        * Deflate (zlib): `"deflate"`
+        * Zstandard: `"zstd"`
+    * `...` indicates method-specific arguments. Currently defined arguments
+      are:
+        * Deflate: `level` - Compression level, `0`-`9` or `nil`.
+        * Zstandard: `level` - Compression level. Integer or `nil`. Default `3`.
+        Note any supported Zstandard compression level could be used here,
+        but these are subject to change between Zstandard versions.
 * `minetest.decompress(compressed_data, method, ...)`: returns data
-    * Decompress a string of data (using ZLib).
-    * See documentation on `minetest.compress()` for supported compression methods.
-    * currently supported.
-    * `...` indicates method-specific arguments. Currently, no methods use this.
+    * Decompress a string of data using the algorithm specified by `method`.
+    * See documentation on `minetest.compress()` for supported compression
+      methods.
+    * `...` indicates method-specific arguments. Currently, no methods use this
 * `minetest.rgba(red, green, blue[, alpha])`: returns a string
     * Each argument is a 8 Bit unsigned integer
     * Returns the ColorString from rgb or rgba values
@@ -936,6 +942,14 @@ Call these functions only at load time!
 	* Shows a formspec to the player
 * `minetest.display_chat_message(message)` returns true on success
 	* Shows a chat message to the current player.
+
+Setting-related
+---------------
+
+* `minetest.settings`: Settings object containing all of the settings from the
+  main config file (`minetest.conf`). Check lua_api.txt for class reference.
+* `minetest.setting_get_pos(name)`: Loads a setting from the main settings and
+  parses it as a position (in the format `(1,2,3)`). Returns a position or nil.
 
 Class reference
 ---------------
@@ -1030,8 +1044,8 @@ Methods:
     * returns true if player is in a liquid (This oscillates so that the player jumps a bit above the surface)
 * `is_in_liquid_stable()`
     * returns true if player is in a stable liquid (This is more stable and defines the maximum speed of the player)
-* `get_liquid_viscosity()`
-    * returns liquid viscosity (Gets the viscosity of liquid to calculate friction)
+* `get_move_resistance()`
+    * returns move resistance of current node, the higher the slower the player moves
 * `is_climbing()`
     * returns true if player is climbing
 * `swimming_vertical()`
@@ -1233,7 +1247,7 @@ It can be created via `Raycast(pos1, pos2, objects, liquids)` or
 		liquid_type = <string>,         -- A string containing "none", "flowing", or "source" *May not exist*
 		liquid_alternative_flowing = <string>, -- Alternative node for liquid *May not exist*
 		liquid_alternative_source = <string>, -- Alternative node for liquid *May not exist*
-		liquid_viscosity = <number>,    -- How fast the liquid flows *May not exist*
+		liquid_viscosity = <number>,    -- How slow the liquid flows *May not exist*
 		liquid_renewable = <boolean>,   -- Whether the liquid makes an infinite source *May not exist*
 		liquid_range = <number>,        -- How far the liquid flows *May not exist*
 		drowning = bool,                -- Whether the player will drown in the node
@@ -1248,6 +1262,7 @@ It can be created via `Raycast(pos1, pos2, objects, liquids)` or
 		},
 		legacy_facedir_simple = bool,   -- Whether to use old facedir
 		legacy_wallmounted = bool       -- Whether to use old wallmounted
+		move_resistance = <number>,     -- How slow players can move through the node *May not exist*
 	}
 ```
 
@@ -1314,6 +1329,8 @@ It can be created via `Raycast(pos1, pos2, objects, liquids)` or
     --  ^ See "HUD Element Types"
         size = { x=100, y=100 },  -- default {x=0, y=0}
     --  ^ Size of element in pixels
+        style = 0,
+    --  ^ For "text" elements sets font style: bitfield with 1 = bold, 2 = italic, 4 = monospace
 
 	node = "<nodemane (mod:example)>
 	-- Used for node name for 'node' types

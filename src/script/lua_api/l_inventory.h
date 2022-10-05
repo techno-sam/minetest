@@ -34,10 +34,7 @@ class InvRef : public ModApiBase {
 private:
 	InventoryLocation m_loc;
 
-	static const char className[];
 	static const luaL_Reg methods[];
-
-	static InvRef *checkobject(lua_State *L, int narg);
 
 	static Inventory* getinv(lua_State *L, InvRef *ref);
 
@@ -111,9 +108,9 @@ public:
 	// Creates an InvRef and leaves it on top of stack
 	// Not callable from Lua; all references are created on the C side.
 	static void create(lua_State *L, const InventoryLocation &loc);
-	static void createPlayer(lua_State *L, RemotePlayer *player);
-	static void createNodeMeta(lua_State *L, v3s16 p);
 	static void Register(lua_State *L);
+
+	static const char className[];
 };
 
 class ModApiInventory : public ModApiBase {

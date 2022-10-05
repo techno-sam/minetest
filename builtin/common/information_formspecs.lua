@@ -22,7 +22,6 @@ local LIST_FORMSPEC_DESCRIPTION = [[
 
 local F = core.formspec_escape
 local S = core.get_translator("__builtin")
-local check_player_privs = core.check_player_privs
 
 
 -- CHAT COMMANDS FORMSPEC
@@ -58,10 +57,11 @@ local function build_chatcommands_formspec(name, sel, copy)
 		.. "any entry in the list.").. "\n" ..
 		S("Double-click to copy the entry to the chat history.")
 
+	local privs = core.get_player_privs(name)
 	for i, data in ipairs(mod_cmds) do
 		rows[#rows + 1] = COLOR_BLUE .. ",0," .. F(data[1]) .. ","
 		for j, cmds in ipairs(data[2]) do
-			local has_priv = check_player_privs(name, cmds[2].privs)
+			local has_priv = privs[cmds[2].privs]
 			rows[#rows + 1] = ("%s,1,%s,%s"):format(
 				has_priv and COLOR_GREEN or COLOR_GRAY,
 				cmds[1], F(cmds[2].params))
@@ -125,30 +125,12 @@ core.register_on_player_receive_fields(function(player, formname, fields)
 	end
 end)
 
-
-local help_command = core.registered_chatcommands["help"]
-local old_help_func = help_command.func
-
-help_command.func = function(name, param)
-	local admin = core.settings:get("name")
-
-	-- If the admin ran help, put the output in the chat buffer as well to
-	-- work with the server terminal
-	if param == "privs" then
-		core.show_formspec(name, "__builtin:help_privs",
-			build_privs_formspec(name))
-		if name ~= admin then
-			return true
-		end
-	end
-	if param == "" or param == "all" then
-		core.show_formspec(name, "__builtin:help_cmds",
-			build_chatcommands_formspec(name))
-		if name ~= admin then
-			return true
-		end
-	end
-
-	return old_help_func(name, param)
+function core.show_general_help_formspec(name)
+	core.show_formspec(name, "__builtin:help_cmds",
+		build_chatcommands_formspec(name))
 end
 
+function core.show_privs_help_formspec(name)
+	core.show_formspec(name, "__builtin:help_privs",
+		build_privs_formspec(name))
+end
