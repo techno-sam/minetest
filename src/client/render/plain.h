@@ -33,6 +33,7 @@ public:
 
 	virtual void reset(PipelineContext &context) override {}
 	virtual void run(PipelineContext &context) override;
+	virtual void drawTracersAndESP();
 
 private:
 	RenderTarget *m_target {nullptr};

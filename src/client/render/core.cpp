@@ -20,7 +20,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
 #include "core.h"
 #include "plain.h"
-#include "client/shadows/dynamicshadowsrender.h"
 #include "client/camera.h"
 #include "client/client.h"
 #include "client/clientmap.h"
