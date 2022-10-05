@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include <cmath>
 #include <cassert>
 #include <vector>
+#include <algorithm>
 
 // Simple 2D bitmap class with just the functionality needed here
 class Bitmap {
@@ -95,17 +96,20 @@ void imageCleanTransparent(video::IImage *src, u32 threshold)
 
 	Bitmap newmap = bitmap;
 
+	// Cap iterations to keep runtime reasonable, for higher-res textures we can
+	// get away with filling less pixels.
+	int iter_max = 11 - std::max(dim.Width, dim.Height) / 16;
+	iter_max = std::max(iter_max, 2);
+
 	// Then repeatedly look for transparent pixels, filling them in until
-	// we're finished (capped at 50 iterations).
-	for (u32 iter = 0; iter < 50; iter++) {
+	// we're finished.
+	for (int iter = 0; iter < iter_max; iter++) {
 
 	for (u32 ctry = 0; ctry < dim.Height; ctry++)
 	for (u32 ctrx = 0; ctrx < dim.Width; ctrx++) {
 		// Skip pixels we have already processed
 		if (bitmap.get(ctrx, ctry))
 			continue;
-
-		video::SColor c = src->getPixel(ctrx, ctry);
 
 		// Sample size and total weighted r, g, b values
 		u32 ss = 0, sr = 0, sg = 0, sb = 0;
@@ -118,7 +122,7 @@ void imageCleanTransparent(video::IImage *src, u32 threshold)
 			// Ignore pixels we haven't processed
 			if (!bitmap.get(sx, sy))
 				continue;
-	
+
 			// Add RGB values weighted by alpha IF the pixel is opaque, otherwise
 			// use full weight since we want to propagate colors.
 			video::SColor d = src->getPixel(sx, sy);
@@ -131,6 +135,7 @@ void imageCleanTransparent(video::IImage *src, u32 threshold)
 
 		// Set pixel to average weighted by alpha
 		if (ss > 0) {
+			video::SColor c = src->getPixel(ctrx, ctry);
 			c.setRed(sr / ss);
 			c.setGreen(sg / ss);
 			c.setBlue(sb / ss);

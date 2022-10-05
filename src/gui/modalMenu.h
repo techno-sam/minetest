@@ -47,7 +47,6 @@ public:
 	bool canTakeFocus(gui::IGUIElement *e);
 	void draw();
 	void quitMenu();
-	void removeChildren();
 
 	virtual void regenerateGui(v2u32 screensize) = 0;
 	virtual void drawMenu() = 0;
@@ -75,10 +74,10 @@ protected:
 	v2u32 m_screensize_old;
 	float m_gui_scale;
 #ifdef __ANDROID__
-	v2s32 m_down_pos;
 	std::string m_jni_field_name;
 #endif
 #ifdef HAVE_TOUCHSCREENGUI
+	v2s32 m_down_pos;
 	bool m_touchscreen_visible = true;
 #endif
 
@@ -102,7 +101,7 @@ private:
 	// wants to launch other menus
 	bool m_allow_focus_removal = false;
 
-#ifdef __ANDROID__
+#ifdef HAVE_TOUCHSCREENGUI
 	irr_ptr<gui::IGUIElement> m_hovered;
 
 	bool simulateMouseEvent(gui::IGUIElement *target, ETOUCH_INPUT_EVENT touch_event);

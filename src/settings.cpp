@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_bloated.h"
 #include "exceptions.h"
 #include "threading/mutex_auto_lock.h"
+#include "util/numeric.h" // rangelim
 #include "util/strfnd.h"
 #include <iostream>
 #include <fstream>
@@ -49,7 +50,7 @@ SettingsHierarchy::SettingsHierarchy(Settings *fallback)
 
 Settings *SettingsHierarchy::getLayer(int layer) const
 {
-	if (layer < 0 || layer >= layers.size())
+	if (layer < 0 || layer >= (int)layers.size())
 		throw BaseException("Invalid settings layer");
 	return layers[layer];
 }
@@ -57,7 +58,7 @@ Settings *SettingsHierarchy::getLayer(int layer) const
 
 Settings *SettingsHierarchy::getParent(int layer) const
 {
-	assert(layer >= 0 && layer < layers.size());
+	assert(layer >= 0 && layer < (int)layers.size());
 	// iterate towards the origin (0) to find the next fallback layer
 	for (int i = layer - 1; i >= 0; --i) {
 		if (layers[i])
@@ -72,8 +73,8 @@ void SettingsHierarchy::onLayerCreated(int layer, Settings *obj)
 {
 	if (layer < 0)
 		throw BaseException("Invalid settings layer");
-	if (layers.size() < layer+1)
-		layers.resize(layer+1);
+	if ((int)layers.size() < layer + 1)
+		layers.resize(layer + 1);
 
 	Settings *&pos = layers[layer];
 	if (pos)
@@ -88,7 +89,7 @@ void SettingsHierarchy::onLayerCreated(int layer, Settings *obj)
 
 void SettingsHierarchy::onLayerRemoved(int layer)
 {
-	assert(layer >= 0 && layer < layers.size());
+	assert(layer >= 0 && layer < (int)layers.size());
 	layers[layer] = nullptr;
 	if (this == &g_hierarchy && layer == (int)SL_GLOBAL)
 		g_settings = nullptr;
@@ -104,8 +105,7 @@ Settings *Settings::createLayer(SettingsLayer sl, const std::string &end_tag)
 
 Settings *Settings::getLayer(SettingsLayer sl)
 {
-	sanity_check((int)sl >= 0 && sl < SL_TOTAL_COUNT);
-	return g_hierarchy.layers[(int)sl];
+	return g_hierarchy.getLayer(sl);
 }
 
 
@@ -535,13 +535,17 @@ float Settings::getFloat(const std::string &name) const
 }
 
 
+float Settings::getFloat(const std::string &name, float min, float max) const
+{
+	float val = stof(get(name));
+	return rangelim(val, min, max);
+}
+
+
 u64 Settings::getU64(const std::string &name) const
 {
-	u64 value = 0;
 	std::string s = get(name);
-	std::istringstream ss(s);
-	ss >> value;
-	return value;
+	return from_string<u64>(s);
 }
 
 
@@ -663,13 +667,19 @@ bool Settings::getNoiseParamsFromGroup(const std::string &name,
 
 bool Settings::exists(const std::string &name) const
 {
-	MutexAutoLock lock(m_mutex);
-
-	if (m_settings.find(name) != m_settings.end())
+	if (existsLocal(name))
 		return true;
 	if (auto parent = getParent())
 		return parent->exists(name);
 	return false;
+}
+
+
+bool Settings::existsLocal(const std::string &name) const
+{
+	MutexAutoLock lock(m_mutex);
+
+	return m_settings.find(name) != m_settings.end();
 }
 
 
@@ -755,6 +765,15 @@ bool Settings::getS16NoEx(const std::string &name, s16 &val) const
 	}
 }
 
+bool Settings::getU32NoEx(const std::string &name, u32 &val) const
+{
+	try {
+		val = getU32(name);
+		return true;
+	} catch (SettingNotFoundException &e) {
+		return false;
+	}
+}
 
 bool Settings::getS32NoEx(const std::string &name, s32 &val) const
 {

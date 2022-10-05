@@ -37,6 +37,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "mesh_generator_thread.h"
 #include "network/address.h"
 #include "network/peerhandler.h"
+#include "gameparams.h"
 #include <fstream>
 
 #define CLIENT_CHAT_MESSAGE_LIMIT_PER_10S 10.0f
@@ -53,6 +54,7 @@ class ISoundManager;
 class NodeDefManager;
 //class IWritableCraftDefManager;
 class ClientMediaDownloader;
+class SingleMediaDownloader;
 struct MapDrawControl;
 class ModChannelMgr;
 class MtEventManager;
@@ -126,7 +128,8 @@ public:
 			MtEventManager *event,
 			RenderingEngine *rendering_engine,
 			bool ipv6,
-			GameUI *game_ui
+			GameUI *game_ui,
+			ELoginRegister allow_login_or_register
 	);
 
 	~Client();
@@ -226,6 +229,7 @@ public:
 	void handleCommand_PlayerSpeed(NetworkPacket *pkt);
 	void handleCommand_MediaPush(NetworkPacket *pkt);
 	void handleCommand_MinimapModes(NetworkPacket *pkt);
+	void handleCommand_SetLighting(NetworkPacket *pkt);
 
 	void ProcessData(NetworkPacket *pkt);
 
@@ -245,6 +249,7 @@ public:
 	void sendDamage(u16 damage);
 	void sendRespawn();
 	void sendReady();
+	void sendHaveMedia(const std::vector<u32> &tokens);
 
 	ClientEnvironment& getEnv() { return m_env; }
 	ITextureSource *tsrc() { return getTextureSource(); }
@@ -325,25 +330,27 @@ public:
 		m_access_denied = true;
 		m_access_denied_reason = reason;
 	}
+	inline void setFatalError(const LuaError &e)
+	{
+		setFatalError(std::string("Lua: ") + e.what());
+	}
 
 	// Renaming accessDeniedReason to better name could be good as it's used to
 	// disconnect client when CSM failed.
 	const std::string &accessDeniedReason() const { return m_access_denied_reason; }
 
-	const bool itemdefReceived() const
+	bool itemdefReceived() const
 	{ return m_itemdef_received; }
-	const bool nodedefReceived() const
+	bool nodedefReceived() const
 	{ return m_nodedef_received; }
-	const bool mediaReceived() const
+	bool mediaReceived() const
 	{ return !m_media_downloader; }
-	const bool activeObjectsReceived() const
+	bool activeObjectsReceived() const
 	{ return m_activeobjects_received; }
 
 	u16 getProtoVersion()
 	{ return m_proto_ver; }
 
-	void confirmRegistration();
-	bool m_is_registration_confirmation_state = false;
 	bool m_simple_singleplayer_mode;
 
 	float mediaReceiveProgress();
@@ -380,10 +387,10 @@ public:
 	virtual scene::IAnimatedMesh* getMesh(const std::string &filename, bool cache = false);
 	const std::string* getModFile(std::string filename);
 	const std::string* getModFilename(std::string modname);
+	ModMetadataDatabase *getModStorageDatabase() override { return m_mod_storage_database; }
 
-	std::string getModStoragePath() const override;
-	bool registerModStorage(ModMetadata *meta) override;
-	void unregisterModStorage(const std::string &name) override;
+	// Migrates away old files-based mod storage if necessary
+	void migrateModStorage();
 
 	// The following set of functions is used by ClientMediaDownloader
 	// Insert a media file appropriately into the appropriate manager
@@ -403,7 +410,7 @@ public:
 	}
 
 	ClientScripting *getScript() { return m_script; }
-	const bool modsLoaded() const { return m_mods_loaded; }
+	bool modsLoaded() const { return m_mods_loaded; }
 
 	void pushToEventQueue(ClientEvent *event);
 
@@ -459,7 +466,6 @@ private:
 	static AuthMechanism choseAuthMech(const u32 mechs);
 
 	void sendInit(const std::string &playerName);
-	void promptConfirmRegistration(AuthMechanism chosen_auth_mechanism);
 	void startAuth(AuthMechanism chosen_auth_mechanism);
 	void sendDeletedBlocks(std::vector<v3s16> &blocks);
 	void sendGotBlocks(const std::vector<v3s16> &blocks);
@@ -491,6 +497,7 @@ private:
 	ParticleManager m_particle_manager;
 	std::unique_ptr<con::Connection> m_con;
 	std::string m_address_name;
+	ELoginRegister m_allow_login_or_register = ELoginRegister::Any;
 	Camera *m_camera = nullptr;
 	Minimap *m_minimap = nullptr;
 	bool m_minimap_disabled_by_server = false;
@@ -545,9 +552,13 @@ private:
 	bool m_activeobjects_received = false;
 	bool m_mods_loaded = false;
 
+	std::vector<std::string> m_remote_media_servers;
+	// Media downloader, only exists during init
 	ClientMediaDownloader *m_media_downloader;
 	// Set of media filenames pushed by server at runtime
 	std::unordered_set<std::string> m_media_pushed_files;
+	// Pending downloads of dynamic media (key: token)
+	std::vector<std::pair<u32, std::shared_ptr<SingleMediaDownloader>>> m_pending_media_downloads;
 
 	// time_of_day speed approximation for old protocol
 	bool m_time_of_day_set = false;
@@ -588,7 +599,7 @@ private:
 
 	// Client modding
 	ClientScripting *m_script = nullptr;
-	std::unordered_map<std::string, ModMetadata *> m_mod_storages;
+	ModMetadataDatabase *m_mod_storage_database = nullptr;
 	float m_mod_storage_save_timer = 10.0f;
 	std::vector<ModSpec> m_mods;
 	StringMap m_mod_vfs;

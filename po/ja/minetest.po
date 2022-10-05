@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Japanese (Minetest)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-16 18:27+0200\n"
-"PO-Revision-Date: 2021-04-08 18:26+0000\n"
+"POT-Creation-Date: 2022-07-20 21:43+0200\n"
+"PO-Revision-Date: 2022-07-31 17:28+0000\n"
 "Last-Translator: BreadW <toshiharu.uno@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/minetest/"
 "minetest/ja/>\n"
@@ -12,49 +12,43 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.6-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: builtin/client/chatcommands.lua
-#, fuzzy
 msgid "Clear the out chat queue"
-msgstr "アウトチャットキューの最大サイズ"
+msgstr "アウト チャット キューをクリアする"
 
 #: builtin/client/chatcommands.lua
-#, fuzzy
 msgid "Empty command."
-msgstr "チャットコマンド"
+msgstr "空のコマンドです。"
 
 #: builtin/client/chatcommands.lua
-#, fuzzy
 msgid "Exit to main menu"
-msgstr "メインメニュー"
+msgstr "メインメニューに戻る"
 
 #: builtin/client/chatcommands.lua
-#, fuzzy
 msgid "Invalid command: "
-msgstr "ローカルコマンド"
+msgstr "無効なコマンド： "
 
 #: builtin/client/chatcommands.lua
 msgid "Issued command: "
-msgstr ""
+msgstr "発行されたコマンド： "
 
 #: builtin/client/chatcommands.lua
-#, fuzzy
 msgid "List online players"
-msgstr "シングルプレイヤー"
+msgstr "オンラインプレーヤーを一覧表示する"
 
 #: builtin/client/chatcommands.lua
-#, fuzzy
 msgid "Online players: "
-msgstr "シングルプレイヤー"
+msgstr "オンラインプレイヤー： "
 
 #: builtin/client/chatcommands.lua
 msgid "The out chat queue is now empty."
-msgstr ""
+msgstr "アウトチャットキューは空になりました。"
 
 #: builtin/client/chatcommands.lua
 msgid "This command is disabled by server."
-msgstr ""
+msgstr "このコマンドはサーバによって無効にされています。"
 
 #: builtin/client/death_formspec.lua src/client/game.cpp
 msgid "Respawn"
@@ -64,41 +58,40 @@ msgstr "リスポーン"
 msgid "You died"
 msgstr "死んでしまった"
 
-#: builtin/client/death_formspec.lua
-#, fuzzy
-msgid "You died."
-msgstr "死んでしまった"
-
 #: builtin/common/chatcommands.lua
-#, fuzzy
 msgid "Available commands:"
-msgstr "ローカルコマンド"
+msgstr "使用可能なコマンド："
 
 #: builtin/common/chatcommands.lua
-#, fuzzy
 msgid "Available commands: "
-msgstr "ローカルコマンド"
+msgstr "使用可能なコマンド： "
 
 #: builtin/common/chatcommands.lua
 msgid "Command not available: "
-msgstr ""
+msgstr "コマンドは使用できません： "
 
 #: builtin/common/chatcommands.lua
 msgid "Get help for commands"
-msgstr ""
+msgstr "コマンドのヘルプを表示する"
 
 #: builtin/common/chatcommands.lua
 msgid ""
 "Use '.help <cmd>' to get more information, or '.help all' to list everything."
 msgstr ""
+"'.help <cmd>' を使用して詳細情報を取得するか、または '.help all' を使用してす"
+"べてを一覧表示します。"
 
 #: builtin/common/chatcommands.lua
 msgid "[all | <cmd>]"
-msgstr ""
+msgstr "[all | <cmd>]"
 
 #: builtin/fstk/dialog.lua builtin/fstk/ui.lua src/gui/modalMenu.cpp
 msgid "OK"
 msgstr "OK"
+
+#: builtin/fstk/ui.lua
+msgid "<none available>"
+msgstr "<利用できません>"
 
 #: builtin/fstk/ui.lua
 msgid "An error occurred in a Lua script:"
@@ -118,7 +111,35 @@ msgstr "再接続"
 
 #: builtin/fstk/ui.lua
 msgid "The server has requested a reconnect:"
-msgstr "サーバが再接続を要求しました:"
+msgstr "サーバーが再接続を要求しました："
+
+#: builtin/mainmenu/common.lua
+msgid "A new $1 version is available"
+msgstr "新しいバージョン $1 が利用可能"
+
+#: builtin/mainmenu/common.lua
+msgid "Client Mods"
+msgstr "クライアントMOD"
+
+#: builtin/mainmenu/common.lua
+msgid ""
+"Installed version: $1\n"
+"New version: $2\n"
+"Visit $3 to find out how to get the newest version and stay up to date with "
+"features and bugfixes."
+msgstr ""
+"インストール済みバージョン: $1\n"
+"新バージョン: $2\n"
+"$3 にアクセスして、最新バージョンを入手し、機能とバグ修正を最新の状態に保つ方"
+"法を確認してください。"
+
+#: builtin/mainmenu/common.lua
+msgid "Later"
+msgstr "あとで"
+
+#: builtin/mainmenu/common.lua
+msgid "Never"
+msgstr "しない"
 
 #: builtin/mainmenu/common.lua
 msgid "Protocol version mismatch. "
@@ -126,11 +147,15 @@ msgstr "プロトコルのバージョンが一致していません。 "
 
 #: builtin/mainmenu/common.lua
 msgid "Server enforces protocol version $1. "
-msgstr "サーバはバージョン$1のプロトコルを強制しています。 "
+msgstr "サーバーはバージョン$1のプロトコルを強制しています。 "
 
 #: builtin/mainmenu/common.lua
 msgid "Server supports protocol versions between $1 and $2. "
-msgstr "サーバは$1から$2までのプロトコルのバージョンをサポートしています。 "
+msgstr "サーバーは$1から$2までのプロトコルのバージョンをサポートしています。 "
+
+#: builtin/mainmenu/common.lua
+msgid "Visit website"
+msgstr "ウェブサイトを見る"
 
 #: builtin/mainmenu/common.lua
 msgid "We only support protocol version $1."
@@ -140,21 +165,28 @@ msgstr "プロトコルはバージョン$1のみをサポートしています�
 msgid "We support protocol versions between version $1 and $2."
 msgstr "バージョン$1から$2までのプロトコルをサポートしています。"
 
+#: builtin/mainmenu/dlg_config_world.lua
+msgid "(Enabled, has error)"
+msgstr "(有効、エラーあり)"
+
+#: builtin/mainmenu/dlg_config_world.lua
+msgid "(Unsatisfied)"
+msgstr "(不十分)"
+
 #: builtin/mainmenu/dlg_config_world.lua builtin/mainmenu/dlg_contentstore.lua
 #: builtin/mainmenu/dlg_create_world.lua
 #: builtin/mainmenu/dlg_delete_content.lua
-#: builtin/mainmenu/dlg_delete_world.lua
+#: builtin/mainmenu/dlg_delete_world.lua builtin/mainmenu/dlg_register.lua
 #: builtin/mainmenu/dlg_rename_modpack.lua
 #: builtin/mainmenu/dlg_settings_advanced.lua src/client/keycode.cpp
-#: src/gui/guiConfirmRegistration.cpp src/gui/guiKeyChangeMenu.cpp
-#: src/gui/guiPasswordChange.cpp
+#: src/gui/guiKeyChangeMenu.cpp src/gui/guiPasswordChange.cpp
 msgid "Cancel"
 msgstr "キャンセル"
 
 #: builtin/mainmenu/dlg_config_world.lua builtin/mainmenu/dlg_contentstore.lua
 #: builtin/mainmenu/tab_content.lua
 msgid "Dependencies:"
-msgstr "依存Mod:"
+msgstr "依存MOD:"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "Disable all"
@@ -162,7 +194,7 @@ msgstr "すべて無効化"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "Disable modpack"
-msgstr "Modパック無効化"
+msgstr "MODパック無効化"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "Enable all"
@@ -170,27 +202,26 @@ msgstr "すべて有効化"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "Enable modpack"
-msgstr "Modパック有効化"
+msgstr "MODパック有効化"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid ""
 "Failed to enable mod \"$1\" as it contains disallowed characters. Only "
 "characters [a-z0-9_] are allowed."
-msgstr ""
-"許可されていない文字が含まれているため、Mod \"$1\" を有効にできませんでした。"
+msgstr "許可されていない文字が含まれているため、MOD \"$1\" を有効にできませんでした。"
 "許可される文字は [a-z0-9_] のみです。"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "Find More Mods"
-msgstr "他のModを探す"
+msgstr "他のMODを探す"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "Mod:"
-msgstr "Mod:"
+msgstr "MOD:"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "No (optional) dependencies"
-msgstr "（任意）依存Modなし"
+msgstr "(任意) 依存MODなし"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "No game description provided."
@@ -198,19 +229,19 @@ msgstr "ゲームの説明がありません。"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "No hard dependencies"
-msgstr "必須依存Modなし"
+msgstr "必須依存MODなし"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "No modpack description provided."
-msgstr "Modパックの説明がありません。"
+msgstr "MODパックの説明がありません。"
 
 #: builtin/mainmenu/dlg_config_world.lua
 msgid "No optional dependencies"
-msgstr "任意依存Modなし"
+msgstr "任意依存MODなし"
 
 #: builtin/mainmenu/dlg_config_world.lua builtin/mainmenu/tab_content.lua
 msgid "Optional dependencies:"
-msgstr "任意依存Mod:"
+msgstr "任意依存MOD:"
 
 #: builtin/mainmenu/dlg_config_world.lua
 #: builtin/mainmenu/dlg_settings_advanced.lua src/gui/guiKeyChangeMenu.cpp
@@ -231,7 +262,7 @@ msgstr "「$1」はすでに存在します。上書きしますか？"
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "$1 and $2 dependencies will be installed."
-msgstr "$1 と依存Mod $2 がインストールされます。"
+msgstr "$1 と依存MOD $2 がインストールされます。"
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "$1 by $2"
@@ -251,11 +282,11 @@ msgstr "$1 ダウンロード中..."
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "$1 required dependencies could not be found."
-msgstr "$1 つの必要な依存Modが見つかりませんでした。"
+msgstr "$1 つの必要な依存MODが見つかりませんでした。"
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "$1 will be installed, and $2 dependencies will be skipped."
-msgstr "$1 がインストールされ、依存Mod $2 はスキップされます。"
+msgstr "$1 がインストールされ、依存MOD $2 はスキップされます。"
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "All packages"
@@ -286,7 +317,6 @@ msgid "Failed to download $1"
 msgstr "$1のダウンロードに失敗"
 
 #: builtin/mainmenu/dlg_contentstore.lua
-#: builtin/mainmenu/dlg_settings_advanced.lua
 msgid "Games"
 msgstr "ゲーム"
 
@@ -300,12 +330,15 @@ msgstr "$1 のインストール"
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "Install missing dependencies"
-msgstr "不足依存Modインストール"
+msgstr "不足依存MODインストール"
 
 #: builtin/mainmenu/dlg_contentstore.lua
-#: builtin/mainmenu/dlg_settings_advanced.lua
+msgid "Install: Unsupported file type or broken archive"
+msgstr "インストール: 非対応のファイル形式か、壊れたアーカイブ"
+
+#: builtin/mainmenu/dlg_contentstore.lua
 msgid "Mods"
-msgstr "Mod"
+msgstr "MOD"
 
 #: builtin/mainmenu/dlg_contentstore.lua
 msgid "No packages could be retrieved"
@@ -396,12 +429,8 @@ msgid "Decorations"
 msgstr "デコレーション"
 
 #: builtin/mainmenu/dlg_create_world.lua
-msgid "Download a game, such as Minetest Game, from minetest.net"
-msgstr "Minetest Game などのゲームを minetest.net からダウンロードしてください"
-
-#: builtin/mainmenu/dlg_create_world.lua
-msgid "Download one from minetest.net"
-msgstr "minetest.netからダウンロードしてください"
+msgid "Development Test is meant for developers."
+msgstr "Development Testは開発者用です。"
 
 #: builtin/mainmenu/dlg_create_world.lua
 msgid "Dungeons"
@@ -417,11 +446,7 @@ msgstr "空に浮かぶ大陸"
 
 #: builtin/mainmenu/dlg_create_world.lua
 msgid "Floatlands (experimental)"
-msgstr "浮遊大陸（実験的）"
-
-#: builtin/mainmenu/dlg_create_world.lua src/settings_translation_file.cpp
-msgid "Game"
-msgstr "ゲーム"
+msgstr "浮遊大陸 (実験的)"
 
 #: builtin/mainmenu/dlg_create_world.lua
 msgid "Generate non-fractal terrain: Oceans and underground"
@@ -438,6 +463,14 @@ msgstr "湿気のある川"
 #: builtin/mainmenu/dlg_create_world.lua
 msgid "Increases humidity around rivers"
 msgstr "川周辺の湿度を上げる"
+
+#: builtin/mainmenu/dlg_create_world.lua
+msgid "Install a game"
+msgstr "ゲームをインストール"
+
+#: builtin/mainmenu/dlg_create_world.lua
+msgid "Install another game"
+msgstr "ほかのゲームをインストール"
 
 #: builtin/mainmenu/dlg_create_world.lua
 msgid "Lakes"
@@ -504,8 +537,7 @@ msgstr "バイオーム間の円滑な移行"
 msgid ""
 "Structures appearing on the terrain (no effect on trees and jungle grass "
 "created by v6)"
-msgstr ""
-"地形上に現れる構造物（v6によって生成された木やジャングルの草に影響なし）"
+msgstr "地形上に現れる構造物 (v6によって生成された木やジャングルの草に影響なし)"
 
 #: builtin/mainmenu/dlg_create_world.lua
 msgid "Structures appearing on the terrain, typically trees and plants"
@@ -540,10 +572,6 @@ msgid "Very large caverns deep in the underground"
 msgstr "地下深くにある非常に大きな洞窟"
 
 #: builtin/mainmenu/dlg_create_world.lua
-msgid "Warning: The Development Test is meant for developers."
-msgstr "警告: The Development Testは開発者用です。"
-
-#: builtin/mainmenu/dlg_create_world.lua
 msgid "World name"
 msgstr "ワールド名"
 
@@ -573,21 +601,50 @@ msgstr "pkgmgr: パス\"$1\"は無効"
 msgid "Delete World \"$1\"?"
 msgstr "ワールド「$1」を削除しますか？"
 
+#: builtin/mainmenu/dlg_register.lua src/gui/guiPasswordChange.cpp
+msgid "Confirm Password"
+msgstr "パスワードの確認"
+
+#: builtin/mainmenu/dlg_register.lua
+msgid "Joining $1"
+msgstr "$1 に参加する"
+
+#: builtin/mainmenu/dlg_register.lua
+msgid "Missing name"
+msgstr "名前が見つかりません"
+
+#: builtin/mainmenu/dlg_register.lua builtin/mainmenu/tab_local.lua
+#: builtin/mainmenu/tab_online.lua
+msgid "Name"
+msgstr "名前"
+
+#: builtin/mainmenu/dlg_register.lua builtin/mainmenu/tab_local.lua
+#: builtin/mainmenu/tab_online.lua
+msgid "Password"
+msgstr "パスワード"
+
+#: builtin/mainmenu/dlg_register.lua
+msgid "Passwords do not match"
+msgstr "パスワードが一致しない"
+
+#: builtin/mainmenu/dlg_register.lua builtin/mainmenu/tab_online.lua
+msgid "Register"
+msgstr "登録"
+
 #: builtin/mainmenu/dlg_rename_modpack.lua
 msgid "Accept"
 msgstr "決定"
 
 #: builtin/mainmenu/dlg_rename_modpack.lua
 msgid "Rename Modpack:"
-msgstr "Modパック名を変更:"
+msgstr "MODパック名を変更:"
 
 #: builtin/mainmenu/dlg_rename_modpack.lua
 msgid ""
 "This modpack has an explicit name given in its modpack.conf which will "
 "override any renaming here."
-msgstr ""
-"このModパックは、modpack.conf に明示的な名前が付けられており、ここでの名前変"
-"更をすべて上書きします。"
+msgstr "このMODパックは、modpack.conf "
+"に明示的な名前が付けられており、ここでの名前変更をすべて上書きします。"
 
 #: builtin/mainmenu/dlg_settings_advanced.lua
 msgid "(No description of setting given)"
@@ -604,6 +661,14 @@ msgstr "< 設定ページに戻る"
 #: builtin/mainmenu/dlg_settings_advanced.lua
 msgid "Browse"
 msgstr "参照"
+
+#: builtin/mainmenu/dlg_settings_advanced.lua
+msgid "Content: Games"
+msgstr "コンテンツ: ゲーム"
+
+#: builtin/mainmenu/dlg_settings_advanced.lua
+msgid "Content: Mods"
+msgstr "コンテンツ: MOD"
 
 #: builtin/mainmenu/dlg_settings_advanced.lua builtin/mainmenu/tab_settings.lua
 msgid "Disabled"
@@ -630,7 +695,7 @@ msgid "Offset"
 msgstr "オフセット"
 
 #: builtin/mainmenu/dlg_settings_advanced.lua
-msgid "Persistance"
+msgid "Persistence"
 msgstr "永続性"
 
 #: builtin/mainmenu/dlg_settings_advanced.lua
@@ -661,7 +726,7 @@ msgstr "ディレクトリの選択"
 msgid "Select file"
 msgstr "ファイルの選択"
 
-#: builtin/mainmenu/dlg_settings_advanced.lua
+#: builtin/mainmenu/dlg_settings_advanced.lua src/settings_translation_file.cpp
 msgid "Show technical names"
 msgstr "技術名称を表示"
 
@@ -726,7 +791,7 @@ msgstr "$1 (有効)"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "$1 mods"
-msgstr "$1 Mod"
+msgstr "$1 MOD"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Failed to install $1 to $2"
@@ -734,23 +799,15 @@ msgstr "$2へ$1をインストールできませんでした"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Install Mod: Unable to find real mod name for: $1"
-msgstr "Modインストール: 実際のMod名が見つかりません: $1"
+msgstr "MODインストール: 実際のMOD名が見つかりません: $1"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Install Mod: Unable to find suitable folder name for modpack $1"
-msgstr "Modインストール: Modパック $1 に適したフォルダ名が見つかりません"
-
-#: builtin/mainmenu/pkgmgr.lua
-msgid "Install: Unsupported file type \"$1\" or broken archive"
-msgstr "インストール: \"$1\"は非対応のファイル形式か、壊れたアーカイブです"
-
-#: builtin/mainmenu/pkgmgr.lua
-msgid "Install: file: \"$1\""
-msgstr "インストール: ファイル: \"$1\""
+msgstr "MODインストール: MODパック $1 に適したフォルダ名が見つかりません"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Unable to find a valid mod or modpack"
-msgstr "有効なModまたはModパックが見つかりません"
+msgstr "有効なMODまたはMODパックが見つかりません"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Unable to install a $1 as a texture pack"
@@ -762,11 +819,11 @@ msgstr "ゲームを$1としてインストールすることができません"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Unable to install a mod as a $1"
-msgstr "Modを$1としてインストールすることができません"
+msgstr "MODを$1としてインストールすることができません"
 
 #: builtin/mainmenu/pkgmgr.lua
 msgid "Unable to install a modpack as a $1"
-msgstr "Modパックを$1としてインストールすることができません"
+msgstr "MODパックを$1としてインストールすることができません"
 
 #: builtin/mainmenu/serverlistmgr.lua src/client/game.cpp
 msgid "Loading..."
@@ -774,24 +831,23 @@ msgstr "読み込み中..."
 
 #: builtin/mainmenu/serverlistmgr.lua
 msgid "Public server list is disabled"
-msgstr "公開サーバ一覧は無効"
+msgstr "公開サーバー一覧は無効"
 
 #: builtin/mainmenu/serverlistmgr.lua
 msgid "Try reenabling public serverlist and check your internet connection."
-msgstr "インターネット接続を確認し、公開サーバ一覧を再有効化してください。"
+msgstr "インターネット接続を確認し、公開サーバー一覧を再有効化してください。"
 
 #: builtin/mainmenu/tab_about.lua
 msgid "About"
-msgstr ""
+msgstr "情報"
 
 #: builtin/mainmenu/tab_about.lua
 msgid "Active Contributors"
 msgstr "活動中の貢献者"
 
 #: builtin/mainmenu/tab_about.lua
-#, fuzzy
 msgid "Active renderer:"
-msgstr "アクティブなオブジェクトの送信範囲"
+msgstr "アクティブなレンダラー："
 
 #: builtin/mainmenu/tab_about.lua
 msgid "Core Developers"
@@ -806,7 +862,7 @@ msgid ""
 "Opens the directory that contains user-provided worlds, games, mods,\n"
 "and texture packs in a file manager / explorer."
 msgstr ""
-"ファイルマネージャー/エクスプローラーで、ワールド、ゲーム、Mod、\n"
+"ファイルマネージャー/エクスプローラーで、ワールド、ゲーム、MOD、\n"
 "およびテクスチャパックを含むディレクトリを開きます。"
 
 #: builtin/mainmenu/tab_about.lua
@@ -816,6 +872,10 @@ msgstr "以前の貢献者"
 #: builtin/mainmenu/tab_about.lua
 msgid "Previous Core Developers"
 msgstr "以前の開発者"
+
+#: builtin/mainmenu/tab_about.lua
+msgid "Share debug log"
+msgstr "デバッグログを共有"
 
 #: builtin/mainmenu/tab_content.lua
 msgid "Browse online content"
@@ -839,7 +899,7 @@ msgstr "インストール済みのパッケージ:"
 
 #: builtin/mainmenu/tab_content.lua
 msgid "No dependencies."
-msgstr "依存Modなし。"
+msgstr "依存MODなし。"
 
 #: builtin/mainmenu/tab_content.lua
 msgid "No package description available"
@@ -859,7 +919,7 @@ msgstr "テクスチャパック使用"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Announce Server"
-msgstr "公開サーバ"
+msgstr "公開サーバー"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Bind Address"
@@ -879,15 +939,11 @@ msgstr "ゲームホスト"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Host Server"
-msgstr "ホストサーバ"
+msgstr "ホストサーバー"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Install games from ContentDB"
 msgstr "コンテンツDBからゲームをインストール"
-
-#: builtin/mainmenu/tab_local.lua builtin/mainmenu/tab_online.lua
-msgid "Name"
-msgstr "名前"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "New"
@@ -896,10 +952,6 @@ msgstr "新規作成"
 #: builtin/mainmenu/tab_local.lua
 msgid "No world created or selected!"
 msgstr "ワールドが作成または選択されていません！"
-
-#: builtin/mainmenu/tab_local.lua builtin/mainmenu/tab_online.lua
-msgid "Password"
-msgstr "パスワード"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Play Game"
@@ -911,7 +963,7 @@ msgstr "ポート"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Select Mods"
-msgstr "Modを選択"
+msgstr "MODを選択"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Select World:"
@@ -919,24 +971,19 @@ msgstr "ワールドを選択:"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Server Port"
-msgstr "サーバのポート"
+msgstr "サーバーのポート"
 
 #: builtin/mainmenu/tab_local.lua
 msgid "Start Game"
 msgstr "ゲームスタート"
 
 #: builtin/mainmenu/tab_online.lua
-#, fuzzy
 msgid "Address"
-msgstr "- アドレス: "
+msgstr "アドレス"
 
 #: builtin/mainmenu/tab_online.lua src/client/keycode.cpp
 msgid "Clear"
 msgstr "Clear"
-
-#: builtin/mainmenu/tab_online.lua
-msgid "Connect"
-msgstr "接続"
 
 #: builtin/mainmenu/tab_online.lua
 msgid "Creative mode"
@@ -944,44 +991,48 @@ msgstr "クリエイティブモード"
 
 #. ~ PvP = Player versus Player
 #: builtin/mainmenu/tab_online.lua
-#, fuzzy
 msgid "Damage / PvP"
-msgstr "ダメージ"
+msgstr "ダメージ / PvP"
 
 #: builtin/mainmenu/tab_online.lua
-msgid "Del. Favorite"
-msgstr "お気に入り削除"
-
-#: builtin/mainmenu/tab_online.lua
-#, fuzzy
 msgid "Favorites"
 msgstr "お気に入り"
 
 #: builtin/mainmenu/tab_online.lua
 msgid "Incompatible Servers"
-msgstr ""
+msgstr "互換性のないサーバ"
 
 #: builtin/mainmenu/tab_online.lua
 msgid "Join Game"
 msgstr "ゲームに参加"
 
 #: builtin/mainmenu/tab_online.lua
+msgid "Login"
+msgstr "ログイン"
+
+#: builtin/mainmenu/tab_online.lua
 msgid "Ping"
 msgstr "応答速度"
 
 #: builtin/mainmenu/tab_online.lua
-#, fuzzy
 msgid "Public Servers"
-msgstr "公開サーバ"
+msgstr "公開サーバー"
 
 #: builtin/mainmenu/tab_online.lua
 msgid "Refresh"
-msgstr ""
+msgstr "再読込"
 
 #: builtin/mainmenu/tab_online.lua
-#, fuzzy
+msgid "Remove favorite"
+msgstr "お気に入りを削除"
+
+#: builtin/mainmenu/tab_online.lua
 msgid "Server Description"
-msgstr "サーバ説明"
+msgstr "サーバーの説明"
+
+#: builtin/mainmenu/tab_settings.lua
+msgid "(game support required)"
+msgstr "(ゲームサポート必須)"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "2x"
@@ -1024,13 +1075,12 @@ msgid "Connected Glass"
 msgstr "ガラスを繋げる"
 
 #: builtin/mainmenu/tab_settings.lua src/settings_translation_file.cpp
-#, fuzzy
 msgid "Dynamic shadows"
-msgstr "フォントの影"
+msgstr "動的な影"
 
 #: builtin/mainmenu/tab_settings.lua
-msgid "Dynamic shadows: "
-msgstr ""
+msgid "Dynamic shadows:"
+msgstr "動的な影:"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Fancy Leaves"
@@ -1038,15 +1088,15 @@ msgstr "綺麗な葉"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "High"
-msgstr ""
+msgstr "強め"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Low"
-msgstr ""
+msgstr "弱め"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Medium"
-msgstr ""
+msgstr "普通"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Mipmap"
@@ -1102,7 +1152,7 @@ msgstr "シェーダー"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Shaders (experimental)"
-msgstr "シェーダー（実験的）"
+msgstr "シェーダー (実験的)"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Shaders (unavailable)"
@@ -1120,29 +1170,25 @@ msgstr "滑らかな光"
 msgid "Texturing:"
 msgstr "テクスチャリング:"
 
-#: builtin/mainmenu/tab_settings.lua
-msgid "To enable shaders the OpenGL driver needs to be used."
-msgstr "シェーダーを有効にするにはOpenGLのドライバを使用する必要があります。"
-
 #: builtin/mainmenu/tab_settings.lua src/settings_translation_file.cpp
 msgid "Tone Mapping"
 msgstr "トーンマッピング"
 
 #: builtin/mainmenu/tab_settings.lua
-msgid "Touchthreshold: (px)"
-msgstr "タッチのしきい値: (px)"
+msgid "Touch threshold (px):"
+msgstr "タッチのしきい値 (px):"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Trilinear Filter"
 msgstr "トライリニアフィルタ"
 
 #: builtin/mainmenu/tab_settings.lua
-msgid "Ultra High"
-msgstr ""
+msgid "Very High"
+msgstr "とても強く"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Very Low"
-msgstr ""
+msgstr "とても弱く"
 
 #: builtin/mainmenu/tab_settings.lua
 msgid "Waving Leaves"
@@ -1157,6 +1203,10 @@ msgid "Waving Plants"
 msgstr "揺れる草花"
 
 #: src/client/client.cpp
+msgid "Connection aborted (protocol error?)."
+msgstr "接続が中断されました (プロトコル エラー？)。"
+
+#: src/client/client.cpp src/client/game.cpp
 msgid "Connection timed out."
 msgstr "接続がタイムアウトしました。"
 
@@ -1185,8 +1235,8 @@ msgid "Connection error (timed out?)"
 msgstr "接続エラー (タイムアウト？)"
 
 #: src/client/clientlauncher.cpp
-msgid "Could not find or load game \""
-msgstr "以下のゲームが見つからないか読み込めません \""
+msgid "Could not find or load game: "
+msgstr "ゲームが見つからないか読み込めません: "
 
 #: src/client/clientlauncher.cpp
 msgid "Invalid gamespec."
@@ -1229,14 +1279,6 @@ msgid "- Address: "
 msgstr "- アドレス: "
 
 #: src/client/game.cpp
-msgid "- Creative Mode: "
-msgstr "- クリエイティブモード: "
-
-#: src/client/game.cpp
-msgid "- Damage: "
-msgstr "- ダメージ: "
-
-#: src/client/game.cpp
 msgid "- Mode: "
 msgstr "- モード: "
 
@@ -1246,7 +1288,7 @@ msgstr "- ポート: "
 
 #: src/client/game.cpp
 msgid "- Public: "
-msgstr "- 公開サーバ: "
+msgstr "- 公開サーバー: "
 
 #. ~ PvP = Player versus Player
 #: src/client/game.cpp
@@ -1255,7 +1297,16 @@ msgstr "- PvP: "
 
 #: src/client/game.cpp
 msgid "- Server Name: "
-msgstr "- サーバ名: "
+msgstr "- サーバー名: "
+
+#: src/client/game.cpp
+msgid "A serialization error occurred:"
+msgstr "シリアライズエラーが発生しました:"
+
+#: src/client/game.cpp
+#, c-format
+msgid "Access denied. Reason: %s"
+msgstr "アクセスが拒否されました。理由: %s"
 
 #: src/client/game.cpp
 msgid "Automatic forward disabled"
@@ -1266,12 +1317,32 @@ msgid "Automatic forward enabled"
 msgstr "自動前進 有効"
 
 #: src/client/game.cpp
+msgid "Block bounds hidden"
+msgstr "ブロック境界線を非表示"
+
+#: src/client/game.cpp
+msgid "Block bounds shown for all blocks"
+msgstr "すべてのブロックにブロック境界線を表示"
+
+#: src/client/game.cpp
+msgid "Block bounds shown for current block"
+msgstr "現在のブロックにブロック境界を表示"
+
+#: src/client/game.cpp
+msgid "Block bounds shown for nearby blocks"
+msgstr "近くのブロックにブロック境界を表示"
+
+#: src/client/game.cpp
 msgid "Camera update disabled"
 msgstr "カメラ更新 無効"
 
 #: src/client/game.cpp
 msgid "Camera update enabled"
 msgstr "カメラ更新 有効"
+
+#: src/client/game.cpp
+msgid "Can't show block bounds (disabled by mod or game)"
+msgstr "ブロック境界を表示できない (MODやゲームで無効化されている)"
 
 #: src/client/game.cpp
 msgid "Change Password"
@@ -1286,12 +1357,20 @@ msgid "Cinematic mode enabled"
 msgstr "映画風モード 有効"
 
 #: src/client/game.cpp
+msgid "Client disconnected"
+msgstr "クライアントが切断されました"
+
+#: src/client/game.cpp
 msgid "Client side scripting is disabled"
 msgstr "クライアント側のスクリプトは無効"
 
 #: src/client/game.cpp
 msgid "Connecting to server..."
-msgstr "サーバに接続中..."
+msgstr "サーバーに接続中..."
+
+#: src/client/game.cpp
+msgid "Connection failed for unknown reason"
+msgstr "未知の理由で接続に失敗しました"
 
 #: src/client/game.cpp
 msgid "Continue"
@@ -1331,12 +1410,17 @@ msgstr ""
 "- %s: チャット\n"
 
 #: src/client/game.cpp
+#, c-format
+msgid "Couldn't resolve address: %s"
+msgstr "アドレスを解決できませんでした: %s"
+
+#: src/client/game.cpp
 msgid "Creating client..."
 msgstr "クライアントを作成中..."
 
 #: src/client/game.cpp
 msgid "Creating server..."
-msgstr "サーバを作成中..."
+msgstr "サーバーを作成中..."
 
 #: src/client/game.cpp
 msgid "Debug info and profiler graph hidden"
@@ -1385,6 +1469,11 @@ msgstr "視野無制限 無効"
 #: src/client/game.cpp
 msgid "Enabled unlimited viewing range"
 msgstr "視野無制限 有効"
+
+#: src/client/game.cpp
+#, c-format
+msgid "Error creating client: %s"
+msgstr "クライアント作成中にエラー: %s"
 
 #: src/client/game.cpp
 msgid "Exit to Menu"
@@ -1436,7 +1525,7 @@ msgstr "ポーズメニュー"
 
 #: src/client/game.cpp
 msgid "Hosting server"
-msgstr "ホスティングサーバ"
+msgstr "ホスティングサーバー"
 
 #: src/client/game.cpp
 msgid "Item definitions..."
@@ -1456,12 +1545,11 @@ msgstr "MiB/秒"
 
 #: src/client/game.cpp
 msgid "Minimap currently disabled by game or mod"
-msgstr "ミニマップは現在ゲームまたはModにより無効"
+msgstr "ミニマップは現在ゲームまたはMODにより無効"
 
 #: src/client/game.cpp
-#, fuzzy
 msgid "Multiplayer"
-msgstr "シングルプレイヤー"
+msgstr "マルチプレイヤー"
 
 #: src/client/game.cpp
 msgid "Noclip mode disabled"
@@ -1501,7 +1589,7 @@ msgstr "観測記録グラフ 表示"
 
 #: src/client/game.cpp
 msgid "Remote server"
-msgstr "リモートサーバ"
+msgstr "リモートサーバー"
 
 #: src/client/game.cpp
 msgid "Resolving address..."
@@ -1537,6 +1625,21 @@ msgstr "消音 取り消し"
 
 #: src/client/game.cpp
 #, c-format
+msgid "The server is probably running a different version of %s."
+msgstr "サーバーが別のバージョン %s を実行している可能性があります。"
+
+#: src/client/game.cpp
+#, c-format
+msgid "Unable to connect to %s because IPv6 is disabled"
+msgstr "IPv6が無効なため、%sに接続できません"
+
+#: src/client/game.cpp
+#, c-format
+msgid "Unable to listen on %s because IPv6 is disabled"
+msgstr "IPv6が無効なため、%sでリッスンできません"
+
+#: src/client/game.cpp
+#, c-format
 msgid "Viewing range changed to %d"
 msgstr "視野を %d に変更"
 
@@ -1561,7 +1664,7 @@ msgstr "ワイヤーフレーム 表示"
 
 #: src/client/game.cpp
 msgid "Zoom currently disabled by game or mod"
-msgstr "ズームは現在ゲームまたはModにより無効"
+msgstr "ズームは現在ゲームまたはMODにより無効"
 
 #: src/client/game.cpp
 msgid "ok"
@@ -1626,7 +1729,7 @@ msgstr "Execute"
 
 #: src/client/keycode.cpp
 msgid "Help"
-msgstr "Help"
+msgstr "ヘルプ"
 
 #: src/client/keycode.cpp
 msgid "Home"
@@ -1646,7 +1749,7 @@ msgstr "Esc"
 
 #: src/client/keycode.cpp
 msgid "IME Mode Change"
-msgstr "IME Mode Change"
+msgstr "IMEモード変更"
 
 #: src/client/keycode.cpp
 msgid "IME Nonconvert"
@@ -1869,36 +1972,19 @@ msgstr "ミニマップ 表面モード、ズーム x%d"
 msgid "Minimap in texture mode"
 msgstr "ミニマップ テクスチャモード"
 
-#: src/gui/guiConfirmRegistration.cpp src/gui/guiPasswordChange.cpp
-msgid "Passwords do not match!"
-msgstr "パスワードが一致しません！"
+#: src/gui/guiChatConsole.cpp
+msgid "Failed to open webpage"
+msgstr "ウェブページを開けませんでした"
 
-#: src/gui/guiConfirmRegistration.cpp
-msgid "Register and Join"
-msgstr "参加登録"
-
-#: src/gui/guiConfirmRegistration.cpp
-#, c-format
-msgid ""
-"You are about to join this server with the name \"%s\" for the first time.\n"
-"If you proceed, a new account using your credentials will be created on this "
-"server.\n"
-"Please retype your password and click 'Register and Join' to confirm account "
-"creation, or click 'Cancel' to abort."
-msgstr ""
-"あなたはこのサーバ に名前 \"%s\" で初めて参加しようとしています。\n"
-"続行する場合、あなたの情報が新しいアカウントとしてこのサーバに作成されま"
-"す。\n"
-"あなたのパスワードを再入力してから '参加登録' をクリックしてアカウント作成す"
-"るか、\n"
-"キャンセルをクリックして中断してください。"
+#: src/gui/guiChatConsole.cpp
+msgid "Opening webpage"
+msgstr "ウェブページを開いています"
 
 #: src/gui/guiFormSpecMenu.cpp
 msgid "Proceed"
 msgstr "決定"
 
 #: src/gui/guiKeyChangeMenu.cpp
-#, fuzzy
 msgid "\"Aux1\" = climb down"
 msgstr "\"スペシャル\" = 降りる"
 
@@ -1912,7 +1998,7 @@ msgstr "自動ジャンプ"
 
 #: src/gui/guiKeyChangeMenu.cpp
 msgid "Aux1"
-msgstr ""
+msgstr "Aux1"
 
 #: src/gui/guiKeyChangeMenu.cpp
 msgid "Backward"
@@ -1920,13 +2006,13 @@ msgstr "後退"
 
 #: src/gui/guiKeyChangeMenu.cpp
 msgid "Block bounds"
-msgstr ""
+msgstr "ブロック境界線表示切替"
 
 #: src/gui/guiKeyChangeMenu.cpp
 msgid "Change camera"
 msgstr "視点変更"
 
-#: src/gui/guiKeyChangeMenu.cpp
+#: src/gui/guiKeyChangeMenu.cpp src/settings_translation_file.cpp
 msgid "Chat"
 msgstr "チャット"
 
@@ -1979,10 +2065,8 @@ msgid "Key already in use"
 msgstr "キーが重複しています"
 
 #: src/gui/guiKeyChangeMenu.cpp
-msgid "Keybindings. (If this menu screws up, remove stuff from minetest.conf)"
-msgstr ""
-"キー設定です。 (このメニューで失敗する場合は minetest.conf から該当する設定を"
-"削除してください)"
+msgid "Keybindings."
+msgstr "キーバインド。"
 
 #: src/gui/guiKeyChangeMenu.cpp
 msgid "Local command"
@@ -2053,16 +2137,16 @@ msgid "Change"
 msgstr "変更"
 
 #: src/gui/guiPasswordChange.cpp
-msgid "Confirm Password"
-msgstr "パスワードの確認"
-
-#: src/gui/guiPasswordChange.cpp
 msgid "New Password"
 msgstr "新しいパスワード"
 
 #: src/gui/guiPasswordChange.cpp
 msgid "Old Password"
 msgstr "古いパスワード"
+
+#: src/gui/guiPasswordChange.cpp
+msgid "Passwords do not match!"
+msgstr "パスワードが一致しません！"
 
 #: src/gui/guiVolumeChange.cpp
 msgid "Exit"
@@ -2073,14 +2157,9 @@ msgid "Muted"
 msgstr "消音"
 
 #: src/gui/guiVolumeChange.cpp
-msgid "Sound Volume: "
-msgstr "音量: "
-
-#. ~ Imperative, as in "Enter/type in text".
-#. Don't forget the space.
-#: src/gui/modalMenu.cpp
-msgid "Enter "
-msgstr "エンター "
+#, c-format
+msgid "Sound Volume: %d%%"
+msgstr "音量: %d%%"
 
 #. ~ DO NOT TRANSLATE THIS LITERALLY!
 #. This is a special string which needs to contain the translation's
@@ -2088,6 +2167,16 @@ msgstr "エンター "
 #: src/network/clientpackethandler.cpp src/script/lua_api/l_client.cpp
 msgid "LANG_CODE"
 msgstr "ja"
+
+#: src/network/clientpackethandler.cpp
+msgid ""
+"Name is not registered. To create an account on this server, click 'Register'"
+msgstr "名前が登録されていません。このサーバーにアカウントを作成するには「登録」をク"
+"リック。"
+
+#: src/network/clientpackethandler.cpp
+msgid "Name is taken. Please choose another name"
+msgstr "名前は使われています。他の名前に変えてください"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -2098,15 +2187,14 @@ msgstr ""
 "無効にした場合、最初に触れた位置がバーチャルパッドの中心になります。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "(Android) Use virtual joystick to trigger \"Aux1\" button.\n"
 "If enabled, virtual joystick will also tap \"Aux1\" button when out of main "
 "circle."
 msgstr ""
-"(Android) バーチャルパッドを使用して\"aux\"ボタンを起動します。\n"
+"(Android) バーチャルパッドを使用して\"Aux1\"ボタンを起動します。\n"
 "有効にした場合、バーチャルパッドはメインサークルから外れたときにも\n"
-"\"aux\"ボタンをタップします。"
+"\"Aux1\"ボタンをタップします。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -2119,8 +2207,8 @@ msgid ""
 "situations.\n"
 "Range roughly -2 to 2. Multiply by 'scale' for offset in nodes."
 msgstr ""
-"（X,Y,Z）ワールドの中心からのフラクタルの「スケール」単位のオフセット。\n"
-"目的のポイントを（0,0）に移動して適切なスポーンポイントを作成したり、\n"
+"(X,Y,Z) ワールドの中心からのフラクタルの「スケール」単位のオフセット。\n"
+"目的のポイントを (0,0) に移動して適切なスポーンポイントを作成したり、\n"
 "「スケール」を増やして目的のポイントに「ズームイン」したりするために\n"
 "使用できます。\n"
 "既定のパラメータを使用してマンデルブロ集合の適切なスポーンポイントに\n"
@@ -2205,7 +2293,7 @@ msgid ""
 "a value range of approximately -2.0 to 2.0."
 msgstr ""
 "浮遊大陸の構造を定義する3Dノイズ。\n"
-"既定から変更すると、ノイズの「スケール」（規定では 0.7）の調整が\n"
+"既定から変更すると、ノイズの「スケール」 (規定では 0.7) の調整が\n"
 "必要になる場合があり、このノイズの値の範囲は約 -2.0 ~ 2.0 で\n"
 "浮遊大陸の先細りが最も良く機能します。"
 
@@ -2250,6 +2338,10 @@ msgstr ""
 "interlacedはシェーダーが有効である必要があることに注意してください。"
 
 #: src/settings_translation_file.cpp
+msgid "3d"
+msgstr "3D"
+
+#: src/settings_translation_file.cpp
 msgid ""
 "A chosen map seed for a new map, leave empty for random.\n"
 "Will be overridden when creating a new world in the main menu."
@@ -2259,11 +2351,11 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid "A message to be displayed to all clients when the server crashes."
-msgstr "サーバクラッシュ時に全てのクライアントへ表示するメッセージ。"
+msgstr "サーバークラッシュ時にすべてのクライアントへ表示するメッセージ。"
 
 #: src/settings_translation_file.cpp
 msgid "A message to be displayed to all clients when the server shuts down."
-msgstr "サーバ終了時に全てのクライアントへ表示するメッセージ。"
+msgstr "サーバー終了時にすべてのクライアントへ表示するメッセージ。"
 
 #: src/settings_translation_file.cpp
 msgid "ABM interval"
@@ -2287,7 +2379,7 @@ msgstr "重力加速度、1秒あたりのノード数/秒です。"
 
 #: src/settings_translation_file.cpp
 msgid "Active Block Modifiers"
-msgstr "アクティブブロックモディファイヤー（ABM）"
+msgstr "アクティブブロックモディファイヤー (ABM)"
 
 #: src/settings_translation_file.cpp
 msgid "Active block management interval"
@@ -2308,7 +2400,7 @@ msgid ""
 "Note that the address field in the main menu overrides this setting."
 msgstr ""
 "接続先のアドレスです。\n"
-"ローカルサーバを起動する際は空白に設定してください。\n"
+"ローカルサーバーを起動する際は空白に設定してください。\n"
 "メインメニューのアドレス欄はこの設定を上書きすることに注意してください。"
 
 #: src/settings_translation_file.cpp
@@ -2323,6 +2415,11 @@ msgstr ""
 "4kスクリーンなどのための、画面の解像度の設定です (非X11/Android環境のみ)。"
 
 #: src/settings_translation_file.cpp
+msgid "Adjust the detected display density, used for scaling UI elements."
+msgstr ""
+"検出されたディスプレイの密度を調整し、UI要素のスケーリングに使用します。"
+
+#: src/settings_translation_file.cpp
 #, c-format
 msgid ""
 "Adjusts the density of the floatland layer.\n"
@@ -2334,8 +2431,12 @@ msgstr ""
 "浮遊大陸層の密度を調整します。\n"
 "密度を高めるために値を増やします。正または負の値を指定できます。\n"
 "値 = 0.0: 50% が浮遊大陸です。\n"
-"値 = 2.0（'mgv7_np_floatland' によって高くなる場合があります、常に\n"
-"念のためテスト）浮遊大陸層を密に作成します。"
+"値 = 2.0 ('mgv7_np_floatland' によって高くなる場合があります、常に\n"
+"念のためテスト) 浮遊大陸層を密に作成します。"
+
+#: src/settings_translation_file.cpp
+msgid "Admin name"
+msgstr "管理者名"
 
 #: src/settings_translation_file.cpp
 msgid "Advanced"
@@ -2356,8 +2457,8 @@ msgstr ""
 "自然な夜の光にはほとんど影響を与えません。"
 
 #: src/settings_translation_file.cpp
-msgid "Always fly and fast"
-msgstr "飛行時に加速する"
+msgid "Always fly fast"
+msgstr "常に高速で飛行"
 
 #: src/settings_translation_file.cpp
 msgid "Ambient occlusion gamma"
@@ -2377,11 +2478,11 @@ msgstr "異方性フィルタリング"
 
 #: src/settings_translation_file.cpp
 msgid "Announce server"
-msgstr "サーバを公開"
+msgstr "サーバーを公開"
 
 #: src/settings_translation_file.cpp
 msgid "Announce to this serverlist."
-msgstr "このサーバ一覧に告知します。"
+msgstr "このサーバー一覧に告知します。"
 
 #: src/settings_translation_file.cpp
 msgid "Append item name"
@@ -2425,14 +2526,18 @@ msgid ""
 "optimization.\n"
 "Stated in mapblocks (16 nodes)."
 msgstr ""
-"この距離でサーバはどのブロックをクライアントへ送信するかを積極的に\n"
+"この距離でサーバーはどのブロックをクライアントへ送信するかを積極的に\n"
 "最適化します。\n"
-"小さい値に設定すると、レンダリングの視覚的な不具合を犠牲にして、\n"
+"小さい値に設定すると、描画の視覚的な不具合を犠牲にして、\n"
 "パフォーマンスが大幅に向上する可能性があります(いくつかのブロックは\n"
-"水中や洞窟、時には陸の上でもレンダリングされません)。\n"
+"水中や洞窟、時には陸の上でも描画されません)。\n"
 "max_block_send_distance より大きい値に設定すると、この最適化は\n"
 "無効になります。 \n"
 "マップブロック(16ノード)で表記。"
+
+#: src/settings_translation_file.cpp
+msgid "Audio"
+msgstr "オーディオ"
 
 #: src/settings_translation_file.cpp
 msgid "Automatic forward key"
@@ -2444,7 +2549,7 @@ msgstr "自動的に1ノードの障害物をジャンプします。"
 
 #: src/settings_translation_file.cpp
 msgid "Automatically report to the serverlist."
-msgstr "サーバ一覧に自動的に報告します。"
+msgstr "サーバー一覧に自動的に報告します。"
 
 #: src/settings_translation_file.cpp
 msgid "Autosave screen size"
@@ -2455,14 +2560,12 @@ msgid "Autoscaling mode"
 msgstr "自動拡大縮小モード"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Aux1 key"
-msgstr "ジャンプキー"
+msgstr "Aux1キー"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Aux1 key for climbing/descending"
-msgstr "降りるためのスペシャルキー"
+msgstr "昇降用のAux1キー"
 
 #: src/settings_translation_file.cpp
 msgid "Backward key"
@@ -2475,10 +2578,6 @@ msgstr "基準地上レベル"
 #: src/settings_translation_file.cpp
 msgid "Base terrain height."
 msgstr "基準地形の高さ。"
-
-#: src/settings_translation_file.cpp
-msgid "Basic"
-msgstr "基本"
 
 #: src/settings_translation_file.cpp
 msgid "Basic privileges"
@@ -2501,8 +2600,8 @@ msgid "Bind address"
 msgstr "バインドアドレス"
 
 #: src/settings_translation_file.cpp
-msgid "Biome API temperature and humidity noise parameters"
-msgstr "バイオームAPIの温度と湿度のノイズパラメータ"
+msgid "Biome API noise parameters"
+msgstr "バイオームAPIのノイズパラメータ"
 
 #: src/settings_translation_file.cpp
 msgid "Biome noise"
@@ -2511,6 +2610,10 @@ msgstr "バイオームノイズ"
 #: src/settings_translation_file.cpp
 msgid "Block send optimize distance"
 msgstr "ブロック送信最適化距離"
+
+#: src/settings_translation_file.cpp
+msgid "Bobbing"
+msgstr "上下の揺れ"
 
 #: src/settings_translation_file.cpp
 msgid "Bold and italic font path"
@@ -2535,6 +2638,10 @@ msgstr "プレイヤーの位置に設置"
 #: src/settings_translation_file.cpp
 msgid "Builtin"
 msgstr "ビルトイン"
+
+#: src/settings_translation_file.cpp
+msgid "Camera"
+msgstr "カメラ"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -2614,9 +2721,12 @@ msgstr ""
 "0.0は最小光レベル、1.0は最大光レベルです。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Chat command time message threshold"
-msgstr "チャットメッセージキックのしきい値"
+msgstr "チャットコマンド時間切れメッセージのしきい値"
+
+#: src/settings_translation_file.cpp
+msgid "Chat commands"
+msgstr "チャットコマンド"
 
 #: src/settings_translation_file.cpp
 msgid "Chat font size"
@@ -2651,8 +2761,8 @@ msgid "Chat toggle key"
 msgstr "チャット切替キー"
 
 #: src/settings_translation_file.cpp
-msgid "Chatcommands"
-msgstr "チャットコマンド"
+msgid "Chat weblinks"
+msgstr "チャットのウェブリンク"
 
 #: src/settings_translation_file.cpp
 msgid "Chunk size"
@@ -2671,12 +2781,19 @@ msgid "Clean transparent textures"
 msgstr "テクスチャの透過を削除"
 
 #: src/settings_translation_file.cpp
+msgid ""
+"Clickable weblinks (middle-click or Ctrl+left-click) enabled in chat console "
+"output."
+msgstr "チャットコンソールの出力で、クリック可能なウェブリンク "
+"(中クリックまたはCtrl+左クリック) を有効になります。"
+
+#: src/settings_translation_file.cpp
 msgid "Client"
 msgstr "クライアント"
 
 #: src/settings_translation_file.cpp
 msgid "Client and Server"
-msgstr "クライアントとサーバ"
+msgstr "クライアントとサーバー"
 
 #: src/settings_translation_file.cpp
 msgid "Client modding"
@@ -2689,6 +2806,10 @@ msgstr "クライアント側での改造制限"
 #: src/settings_translation_file.cpp
 msgid "Client side node lookup range restriction"
 msgstr "クライアント側のノード参照範囲の制限"
+
+#: src/settings_translation_file.cpp
+msgid "Client-side Modding"
+msgstr "クライアント側の改造"
 
 #: src/settings_translation_file.cpp
 msgid "Climbing speed"
@@ -2715,9 +2836,8 @@ msgid "Colored fog"
 msgstr "色つきの霧"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Colored shadows"
-msgstr "色つきの霧"
+msgstr "色つきの影"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -2750,13 +2870,37 @@ msgid ""
 "Comma-separated list of trusted mods that are allowed to access insecure\n"
 "functions even when mod security is on (via request_insecure_environment())."
 msgstr ""
-"Modのセキュリティが有効の場合でも (request_insecure_environment() \n"
+"MODのセキュリティが有効の場合でも (request_insecure_environment() \n"
 "を介して) 安全でない機能へのアクセスが許可されている信頼できる\n"
-"Modのコンマ区切りリスト。"
+"MODのコンマ区切りリスト。"
 
 #: src/settings_translation_file.cpp
 msgid "Command key"
 msgstr "コマンドキー"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"Compression level to use when saving mapblocks to disk.\n"
+"-1 - use default compression level\n"
+"0 - least compression, fastest\n"
+"9 - best compression, slowest"
+msgstr ""
+"マップブロックをディスクに保存するときに使用する圧縮レベル。\n"
+"-1 - 規定の圧縮レベルを使用\n"
+"0 - 最小の圧縮、最も速い\n"
+"9 - 最高の圧縮、最も遅い"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"Compression level to use when sending mapblocks to the client.\n"
+"-1 - use default compression level\n"
+"0 - least compression, fastest\n"
+"9 - best compression, slowest"
+msgstr ""
+"マップブロックをクライアントに送信するときに使用する圧縮レベル。\n"
+"-1 - 規定の圧縮レベルを使用\n"
+"0 - 最小の圧縮、最も速い\n"
+"9 - 最高の圧縮、最も遅い"
 
 #: src/settings_translation_file.cpp
 msgid "Connect glass"
@@ -2764,7 +2908,7 @@ msgstr "ガラスを繋げる"
 
 #: src/settings_translation_file.cpp
 msgid "Connect to external media server"
-msgstr "外部メディアサーバに接続"
+msgstr "外部メディアサーバーに接続"
 
 #: src/settings_translation_file.cpp
 msgid "Connects glass if supported by node."
@@ -2781,6 +2925,10 @@ msgstr "コンソール色"
 #: src/settings_translation_file.cpp
 msgid "Console height"
 msgstr "コンソールの高さ"
+
+#: src/settings_translation_file.cpp
+msgid "Content Repository"
+msgstr "コンテンツリポジトリ"
 
 #: src/settings_translation_file.cpp
 msgid "ContentDB Flag Blacklist"
@@ -2821,8 +2969,12 @@ msgstr ""
 "72 = 20分、360 = 4分、1 = 24時間、0 = 昼/夜/変更されません。"
 
 #: src/settings_translation_file.cpp
-msgid "Controls sinking speed in liquid."
-msgstr "液体中の沈降速度を制御します。"
+msgid ""
+"Controls sinking speed in liquid when idling. Negative values will cause\n"
+"you to rise instead."
+msgstr ""
+"アイドリング時の液体中沈下速度を制御します。負の値は\n"
+"代わりに浮上します。"
 
 #: src/settings_translation_file.cpp
 msgid "Controls steepness/depth of lake depressions."
@@ -2857,10 +3009,10 @@ msgstr "十字カーソルの透過度"
 #: src/settings_translation_file.cpp
 msgid ""
 "Crosshair alpha (opaqueness, between 0 and 255).\n"
-"Also controls the object crosshair color"
+"This also applies to the object crosshair."
 msgstr ""
-"十字カーソルの透過度（不透明、0～255の間）。\n"
-"オブジェクト十字カーソルの色も制御"
+"十字カーソルの透過度 (不透明、0～255の間)。\n"
+"これはオブジェクトの十字カーソルにも適用されます。"
 
 #: src/settings_translation_file.cpp
 msgid "Crosshair color"
@@ -2871,7 +3023,7 @@ msgid ""
 "Crosshair color (R,G,B).\n"
 "Also controls the object crosshair color"
 msgstr ""
-"十字カーソルの色（R,G,B）。\n"
+"十字カーソルの色 (R,G,B)。\n"
 "オブジェクト十字カーソルの色も制御"
 
 #: src/settings_translation_file.cpp
@@ -2895,16 +3047,16 @@ msgid "Debug log level"
 msgstr "デバッグログのレベル"
 
 #: src/settings_translation_file.cpp
+msgid "Debugging"
+msgstr "デバッグ"
+
+#: src/settings_translation_file.cpp
 msgid "Dec. volume key"
 msgstr "音量を下げるキー"
 
 #: src/settings_translation_file.cpp
-msgid "Decrease this to increase liquid resistance to movement."
-msgstr "この値を小さくすると、移動時の液体抵抗が増加します。"
-
-#: src/settings_translation_file.cpp
 msgid "Dedicated server step"
-msgstr "専用サーバステップ"
+msgstr "専用サーバーステップ"
 
 #: src/settings_translation_file.cpp
 msgid "Default acceleration"
@@ -2940,10 +3092,14 @@ msgstr "既定のスタック数"
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Define shadow filtering quality\n"
-"This simulates the soft shadows effect by applying a PCF or poisson disk\n"
+"Define shadow filtering quality.\n"
+"This simulates the soft shadows effect by applying a PCF or Poisson disk\n"
 "but also uses more resources."
 msgstr ""
+"影フィルタの品質を定義します。\n"
+"これは、PCFまたはポアソンディスクを適用することで、やわらない影効果をシミュ"
+"レートするものです。\n"
+"しかし、より多くのリソースを消費します。"
 
 #: src/settings_translation_file.cpp
 msgid "Defines areas where trees have apples."
@@ -3002,7 +3158,7 @@ msgid ""
 "Delay between mesh updates on the client in ms. Increasing this will slow\n"
 "down the rate of mesh updates, thus reducing jitter on slower clients."
 msgstr ""
-"クライアント上のメッシュ更新間の遅延（ミリ秒）。これを大きくすると\n"
+"クライアント上のメッシュ更新間の遅延 (ミリ秒)。これを大きくすると\n"
 "メッシュの更新速度が遅くなり、低速のクライアントのジッタが減少します。"
 
 #: src/settings_translation_file.cpp
@@ -3029,7 +3185,7 @@ msgstr "これ以下の深さで大きな洞窟が見つかります。"
 msgid ""
 "Description of server, to be displayed when players join and in the "
 "serverlist."
-msgstr "サーバの説明。プレイヤーが参加したときとサーバ一覧に表示されます。"
+msgstr "サーバーの説明。プレイヤーが参加したときとサーバー一覧に表示されます。"
 
 #: src/settings_translation_file.cpp
 msgid "Desert noise threshold"
@@ -3048,6 +3204,10 @@ msgid "Desynchronize block animation"
 msgstr "ブロックのアニメーションの非同期化"
 
 #: src/settings_translation_file.cpp
+msgid "Developer Options"
+msgstr "開発者向けオプション"
+
+#: src/settings_translation_file.cpp
 msgid "Dig key"
 msgstr "掘削キー"
 
@@ -3064,8 +3224,20 @@ msgid "Disallow empty passwords"
 msgstr "空のパスワードを許可しない"
 
 #: src/settings_translation_file.cpp
+msgid "Display Density Scaling Factor"
+msgstr "ディスプレイ密度スケーリング係数"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"Distance in nodes at which transparency depth sorting is enabled\n"
+"Use this to limit the performance impact of transparency depth sorting"
+msgstr ""
+"透明度の深さの並べ替えが有効になっているノードの距離\n"
+"これを使用して、透明度の深さの並べ替えによるパフォーマンスへの影響を制限"
+
+#: src/settings_translation_file.cpp
 msgid "Domain name of server, to be displayed in the serverlist."
-msgstr "サーバ一覧に表示されるサーバのドメイン名。"
+msgstr "サーバー一覧に表示されるサーバーのドメイン名。"
 
 #: src/settings_translation_file.cpp
 msgid "Double tap jump for fly"
@@ -3100,7 +3272,7 @@ msgid ""
 "Enable IPv6 support (for both client and server).\n"
 "Required for IPv6 connections to work at all."
 msgstr ""
-"IPv6サポートを有効にします（クライアントとサーバーの両方に対して）。\n"
+"IPv6サポートを有効にします (クライアントとサーバーの両方に対して)。\n"
 "機能するためにはIPv6接続が必要です。"
 
 #: src/settings_translation_file.cpp
@@ -3113,9 +3285,21 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Enable colored shadows. \n"
+"Enable Poisson disk filtering.\n"
+"On true uses Poisson disk to make \"soft shadows\". Otherwise uses PCF "
+"filtering."
+msgstr ""
+"ポアソンディスクによるフィルタリングを有効にします。\n"
+"true の場合、ポアソンディスクを使用して「やわらない影」を作ります。それ以外の"
+"場合は、PCFフィルタリングを使用します。"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"Enable colored shadows.\n"
 "On true translucent nodes cast colored shadows. This is expensive."
 msgstr ""
+"色つきの影を有効にします。\n"
+"真の半透明ノードでは、色つきの影を落とします。これは負荷が大きいです。"
 
 #: src/settings_translation_file.cpp
 msgid "Enable console window"
@@ -3130,39 +3314,24 @@ msgid "Enable joysticks"
 msgstr "ジョイスティック作動"
 
 #: src/settings_translation_file.cpp
+msgid "Enable joysticks. Requires a restart to take effect"
+msgstr "ジョイスティックを有効にします。変更には再起動が必要"
+
+#: src/settings_translation_file.cpp
 msgid "Enable mod channels support."
-msgstr "Modチャンネルのサポートを有効にします。"
+msgstr "MODチャンネルのサポートを有効にします。"
 
 #: src/settings_translation_file.cpp
 msgid "Enable mod security"
-msgstr "Modのセキュリティを有効化"
+msgstr "MODのセキュリティを有効化"
 
 #: src/settings_translation_file.cpp
 msgid "Enable players getting damage and dying."
 msgstr "プレイヤーがダメージを受けて死亡するのを有効にします。"
 
 #: src/settings_translation_file.cpp
-msgid ""
-"Enable poisson disk filtering.\n"
-"On true uses poisson disk to make \"soft shadows\". Otherwise uses PCF "
-"filtering."
-msgstr ""
-
-#: src/settings_translation_file.cpp
 msgid "Enable random user input (only used for testing)."
 msgstr "ランダムなユーザー入力を有効にします (テストにのみ使用)。"
-
-#: src/settings_translation_file.cpp
-msgid "Enable register confirmation"
-msgstr "登録確認を有効化"
-
-#: src/settings_translation_file.cpp
-msgid ""
-"Enable register confirmation when connecting to server.\n"
-"If disabled, new account will be registered automatically."
-msgstr ""
-"サーバへの接続時に登録確認を有効にします。\n"
-"無効にすると、新しいアカウントが自動的に登録されます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3173,6 +3342,10 @@ msgstr ""
 "速度や異なる見た目のために無効にしてください。"
 
 #: src/settings_translation_file.cpp
+msgid "Enable split login/register"
+msgstr "ログインと登録を分ける"
+
+#: src/settings_translation_file.cpp
 msgid ""
 "Enable to disallow old clients from connecting.\n"
 "Older clients are compatible in the sense that they will not crash when "
@@ -3181,7 +3354,7 @@ msgid ""
 "expecting."
 msgstr ""
 "古いクライアントが接続できないようにします。\n"
-"古いクライアントは新しいサーバに接続してもクラッシュしないという\n"
+"古いクライアントは新しいサーバーに接続してもクラッシュしないという\n"
 "意味で互換性がありますが、期待しているすべての新機能をサポート\n"
 "しているわけではありません。"
 
@@ -3192,9 +3365,9 @@ msgid ""
 "textures)\n"
 "when connecting to the server."
 msgstr ""
-"リモートメディアサーバの使用を有効にします (サーバによって提供\n"
+"リモートメディアサーバーの使用を有効にします (サーバーによって提供\n"
 "されている場合)。\n"
-"リモートサーバはサーバに接続するときにメディア (例えば、テクスチャ) を\n"
+"リモートサーバはサーバーに接続するときにメディア (例えば、テクスチャ) を\n"
 "ダウンロードするための非常に高速な方法を提供します。"
 
 #: src/settings_translation_file.cpp
@@ -3260,6 +3433,19 @@ msgstr ""
 "この設定を変更するには再起動が必要です。"
 
 #: src/settings_translation_file.cpp
+msgid ""
+"Enables tradeoffs that reduce CPU load or increase rendering performance\n"
+"at the expense of minor visual glitches that do not impact game playability."
+msgstr ""
+"ゲームのプレイアビリティに影響を与えない小さな視覚的な不具合を犠牲にして\n"
+"CPU負荷を軽減するか、レンダリングパフォーマンスを向上させるトレードオフを有効"
+"にします。"
+
+#: src/settings_translation_file.cpp
+msgid "Engine profiler"
+msgstr "エンジンの観測記録"
+
+#: src/settings_translation_file.cpp
 msgid "Engine profiling data print interval"
 msgstr "エンジンプロファイリングデータの出力間隔"
 
@@ -3280,8 +3466,12 @@ msgstr ""
 "値 = 1.0は、均一で線形な先細りを作成します。\n"
 "値 > 1.0は、規定の分離された浮遊大陸に適した滑らかな先細りを\n"
 "作成します。\n"
-"値 < 1.0（例 0.25）は、より明確な表面レベルで平坦な低地を\n"
+"値 < 1.0 (例 0.25) は、より明確な表面レベルで平坦な低地を\n"
 "作成し、密な浮遊大陸層に適しています。"
+
+#: src/settings_translation_file.cpp
+msgid "FPS"
+msgstr "FPS"
 
 #: src/settings_translation_file.cpp
 msgid "FPS when unfocused or paused"
@@ -3320,13 +3510,12 @@ msgid "Fast movement"
 msgstr "高速移動モード"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "Fast movement (via the \"Aux1\" key).\n"
 "This requires the \"fast\" privilege on the server."
 msgstr ""
-"高速移動 (\"スペシャル\"キーによる)。\n"
-"これにはサーバ上に \"fast\" 特権が必要です。"
+"高速移動 (\"Aux1\"キーによる)。\n"
+"これにはサーバー上に \"fast\" 特権が必要です。"
 
 #: src/settings_translation_file.cpp
 msgid "Field of view"
@@ -3343,7 +3532,7 @@ msgid ""
 "Multiplayer Tab."
 msgstr ""
 "client/serverlist/ フォルダ内のファイルで、ゲームに参加タブで表示されている\n"
-"お気に入りのサーバが含まれています。"
+"お気に入りのサーバーが含まれています。"
 
 #: src/settings_translation_file.cpp
 msgid "Filler depth"
@@ -3358,21 +3547,21 @@ msgid "Filmic tone mapping"
 msgstr "フィルム調トーンマッピング"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "Filtered textures can blend RGB values with fully-transparent neighbors,\n"
 "which PNG optimizers usually discard, often resulting in dark or\n"
 "light edges to transparent textures. Apply a filter to clean that up\n"
 "at texture load time. This is automatically enabled if mipmapping is enabled."
 msgstr ""
-"フィルタ処理されたテクスチャはRGB値と完全に透明な隣り合うものと混ぜる\n"
-"ことができます。PNGオプティマイザは通常これを破棄します。その結果、\n"
-"透明なテクスチャに対して暗いまたは明るいエッジが生じることがあります。\n"
-"このフィルタを適用してテクスチャ読み込み時にそれをきれいにします。"
+"フィルタ処理されたテクスチャは、RGB値を完全に透明な隣り合うものと\n"
+"混ぜることができます。これはPNGオプティマイザーが通常廃棄するもので、\n"
+"透過テクスチャの端が暗くなったり明るくなったりすることがよくあります。\n"
+"テクスチャの読み込み時にフィルタを適用してそれをきれいにします。\n"
+"これはミップマッピングが有効な場合に自動的に有効になります。"
 
 #: src/settings_translation_file.cpp
-msgid "Filtering"
-msgstr "フィルタリング"
+msgid "Filtering and Antialiasing"
+msgstr "フィルタリングとアンチエイリアス"
 
 #: src/settings_translation_file.cpp
 msgid "First of 4 2D noises that together define hill/mountain range height."
@@ -3439,6 +3628,10 @@ msgid "Fog toggle key"
 msgstr "霧表示切り替えキー"
 
 #: src/settings_translation_file.cpp
+msgid "Font"
+msgstr "フォント"
+
+#: src/settings_translation_file.cpp
 msgid "Font bold by default"
 msgstr "既定で太字のフォント"
 
@@ -3459,20 +3652,41 @@ msgid "Font size"
 msgstr "フォントの大きさ"
 
 #: src/settings_translation_file.cpp
-msgid "Font size of the default font in point (pt)."
-msgstr "既定のフォントのフォント サイズ (pt)。"
+msgid "Font size divisible by"
+msgstr "割り切れるフォントサイズ"
 
 #: src/settings_translation_file.cpp
-msgid "Font size of the monospace font in point (pt)."
-msgstr "固定幅フォントのフォントサイズ (pt)。"
+msgid "Font size of the default font where 1 unit = 1 pixel at 96 DPI"
+msgstr "96 DPIで1ユニット＝1ピクセルとなる既定のフォントのフォントサイズ"
+
+#: src/settings_translation_file.cpp
+msgid "Font size of the monospace font where 1 unit = 1 pixel at 96 DPI"
+msgstr "96 DPIで1ユニット＝1ピクセルとなる固定幅フォントのフォントサイズ"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Font size of the recent chat text and chat prompt in point (pt).\n"
 "Value 0 will use the default font size."
 msgstr ""
-"最近のチャットテキストとチャットプロンプトのフォントサイズ（ポイント）。\n"
+"最近のチャットテキストとチャットプロンプトのフォントサイズ (pt)。\n"
 "値 0 は規定のフォントサイズを使用します。"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"For pixel-style fonts that do not scale well, this ensures that font sizes "
+"used\n"
+"with this font will always be divisible by this value, in pixels. For "
+"instance,\n"
+"a pixel font 16 pixels tall should have this set to 16, so it will only ever "
+"be\n"
+"sized 16, 32, 48, etc., so a mod requesting a size of 25 will get 32."
+msgstr ""
+"拡大縮小がうまくいかないピクセルスタイルのフォントの場合、このフォントで\n"
+"使用されるフォントサイズは、常にこの値で割り切れます。例えば高さ16ピクセル"
+"の\n"
+"ピクセルフォントの場合、この値を16に設定すると、16、32、48などのサイズにし"
+"か\n"
+"なりませんので、25のサイズを要求したMODは32を取得します。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3534,11 +3748,7 @@ msgstr "フラクタルの種類"
 
 #: src/settings_translation_file.cpp
 msgid "Fraction of the visible distance at which fog starts to be rendered"
-msgstr "霧がレンダリングされ始める可視距離の割合"
-
-#: src/settings_translation_file.cpp
-msgid "FreeType fonts"
-msgstr "フリータイプフォント"
+msgstr "霧が描画され始める可視距離の割合"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3564,12 +3774,12 @@ msgid ""
 "player is looking. (This can avoid mobs suddenly disappearing from view)"
 msgstr ""
 "クライアントがどれくらいの距離のオブジェクトを知っているか、\n"
-"マップブロック（16ノード）で定めます。\n"
+"マップブロック (16ノード) で定めます。\n"
 "\n"
-"これを active_block_range よりも大きく設定すると、サーバは\n"
+"これを active_block_range よりも大きく設定すると、サーバーは\n"
 "この距離までプレーヤーが見ている方向に\n"
-"アクティブなオブジェクトを維持します。（これによりモブが突然\n"
-"視野から消えるのを避けることができます）"
+"アクティブなオブジェクトを維持します。(これによりモブが突然\n"
+"視野から消えるのを避けることができます)"
 
 #: src/settings_translation_file.cpp
 msgid "Full screen"
@@ -3592,6 +3802,18 @@ msgid "GUI scaling filter txr2img"
 msgstr "GUI拡大縮小フィルタ txr2img"
 
 #: src/settings_translation_file.cpp
+msgid "GUIs"
+msgstr "GUI"
+
+#: src/settings_translation_file.cpp
+msgid "Gamepads"
+msgstr "ゲームパッド"
+
+#: src/settings_translation_file.cpp
+msgid "General"
+msgstr "一般"
+
+#: src/settings_translation_file.cpp
 msgid "Global callbacks"
 msgstr "グローバルコールバック"
 
@@ -3599,10 +3821,10 @@ msgstr "グローバルコールバック"
 msgid ""
 "Global map generation attributes.\n"
 "In Mapgen v6 the 'decorations' flag controls all decorations except trees\n"
-"and junglegrass, in all other mapgens this flag controls all decorations."
+"and jungle grass, in all other mapgens this flag controls all decorations."
 msgstr ""
-"グローバルマップ生成属性。\n"
-"マップジェネレータv6では、'decorations' フラグは木とジャングルの草を\n"
+"全体的なマップ生成属性。\n"
+"マップジェネレータv6では、'decorations' フラグで木とジャングルの草を\n"
 "除くすべての装飾を制御しますが、他のすべてのマップジェネレータでは\n"
 "このフラグがすべての装飾を制御します。"
 
@@ -3627,6 +3849,14 @@ msgid "Graphics"
 msgstr "グラフィック"
 
 #: src/settings_translation_file.cpp
+msgid "Graphics Effects"
+msgstr "グラフィック効果"
+
+#: src/settings_translation_file.cpp
+msgid "Graphics and Audio"
+msgstr "グラフィックとオーディオ"
+
+#: src/settings_translation_file.cpp
 msgid "Gravity"
 msgstr "重力"
 
@@ -3640,11 +3870,15 @@ msgstr "地上ノイズ"
 
 #: src/settings_translation_file.cpp
 msgid "HTTP mods"
-msgstr "HTTP Mod"
+msgstr "HTTP MOD"
 
 #: src/settings_translation_file.cpp
-msgid "HUD scale factor"
-msgstr "HUDの倍率"
+msgid "HUD"
+msgstr "HUD"
+
+#: src/settings_translation_file.cpp
+msgid "HUD scaling"
+msgstr "HUDのサイズ"
 
 #: src/settings_translation_file.cpp
 msgid "HUD toggle key"
@@ -3659,8 +3893,8 @@ msgid ""
 msgstr ""
 "非推奨の Lua API 呼び出しの処理：\n"
 "-    none: 非推奨の呼び出しを記録しない\n"
-"-    log: 非推奨の呼び出しのバックトレースを模倣して記録します（既定値）。\n"
-"-    error: 非推奨の呼び出しの使用を中止します（Mod開発者に推奨）。"
+"-    log: 非推奨の呼び出しのバックトレースを模倣して記録します (既定値)。\n"
+"-    error: 非推奨の呼び出しの使用を中止します (MOD開発者に推奨)。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3685,10 +3919,9 @@ msgid "Heat noise"
 msgstr "熱ノイズ"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "Height component of the initial window size. Ignored in fullscreen mode."
-msgstr "ウィンドウ高さの初期値。"
+msgstr "初期ウィンドウサイズの高さ。フルスクリーンモードでは無視されます。"
 
 #: src/settings_translation_file.cpp
 msgid "Height noise"
@@ -3724,7 +3957,7 @@ msgstr "丘陵性4ノイズ"
 
 #: src/settings_translation_file.cpp
 msgid "Homepage of server, to be displayed in the serverlist."
-msgstr "サーバ一覧に表示されるサーバのホームページ。"
+msgstr "サーバー一覧に表示されるサーバのホームページ。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3902,11 +4135,21 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid ""
-"How much the server will wait before unloading unused mapblocks.\n"
+"How long the server will wait before unloading unused mapblocks, stated in "
+"seconds.\n"
 "Higher value is smoother, but will use more RAM."
 msgstr ""
-"未使用のマップブロックをアンロードするまでにサーバが待機する量。\n"
+"未使用のマップブロックをアンロードするまでにサーバーが待機する時間を秒単位で"
+"定めます。\n"
 "値が大きいほど滑らかになりますが、より多くのRAMが使用されます。"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"How much you are slowed down when moving inside a liquid.\n"
+"Decrease this to increase liquid resistance to movement."
+msgstr ""
+"液体の中を移動するときに、どれくらい速度を低下させるかです。\n"
+"これを小さくすると、液体の動きに対する抵抗が大きくなります。"
 
 #: src/settings_translation_file.cpp
 msgid "How wide to make rivers."
@@ -3930,7 +4173,7 @@ msgstr "IPv6"
 
 #: src/settings_translation_file.cpp
 msgid "IPv6 server"
-msgstr "IPv6 サーバ"
+msgstr "IPv6 サーバー"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3941,13 +4184,12 @@ msgstr ""
 "スリープ状態で制限します。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "If disabled, \"Aux1\" key is used to fly fast if both fly and fast mode are\n"
 "enabled."
 msgstr ""
 "無効になっている場合、飛行モードと高速移動モードの両方が有効になって\n"
-"いると、\"スペシャル\"キーを使用して高速で飛行することができます。"
+"いると、\"Aux1\"キーを使用して高速で飛行できます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3957,7 +4199,7 @@ msgid ""
 "invisible\n"
 "so that the utility of noclip mode is reduced."
 msgstr ""
-"有効にすると、サーバはプレーヤーの目の位置に基づいてマップブロック\n"
+"有効にすると、サーバーはプレーヤーの目の位置に基づいてマップブロック\n"
 "オクルージョンカリングを実行します。これによりクライアントに送信される\n"
 "ブロック数を50〜80％減らすことができます。すり抜けモードの有用性が\n"
 "減るように、クライアントはもはや目に見えないものを受け取りません。"
@@ -3973,14 +4215,21 @@ msgstr ""
 "これにはサーバー上に \"noclip\" 特権が必要です。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "If enabled, \"Aux1\" key instead of \"Sneak\" key is used for climbing down "
 "and\n"
 "descending."
 msgstr ""
-"有効にすると、降りるときや水中を潜るとき \"スニーク\" キーの代りに \n"
-"\"スペシャル\" キーが使用されます。"
+"有効にすると、降りるとき \"スニーク\" キーの代りに \n"
+"\"Aux1\" キーが使用されます。"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"If enabled, account registration is separate from login in the UI.\n"
+"If disabled, new accounts will be registered automatically when logging in."
+msgstr ""
+"有効にした場合、アカウント登録はログインとは別になります。\n"
+"無効にした場合、新しいアカウントはログイン時に自動的に登録されます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -3988,7 +4237,7 @@ msgid ""
 "This option is only read when server starts."
 msgstr ""
 "有効にした場合、ロールバックのために行動が記録されます。\n"
-"このオプションはサーバ起動時にのみ読み込まれます。"
+"このオプションはサーバー起動時にのみ読み込まれます。"
 
 #: src/settings_translation_file.cpp
 msgid "If enabled, disable cheat prevention in multiplayer."
@@ -3999,7 +4248,7 @@ msgid ""
 "If enabled, invalid world data won't cause the server to shut down.\n"
 "Only enable this if you know what you are doing."
 msgstr ""
-"有効にした場合、無効なワールドデータによってサーバがシャットダウン\n"
+"有効にした場合、無効なワールドデータによってサーバーがシャットダウン\n"
 "することはありません。\n"
 "自分がしていることがわかっている場合のみこれを有効にします。"
 
@@ -4010,10 +4259,11 @@ msgid ""
 msgstr "有効にすると、飛行中または水泳中にプレーヤーのピッチ方向に移動します。"
 
 #: src/settings_translation_file.cpp
-msgid "If enabled, new players cannot join with an empty password."
-msgstr ""
-"有効にした場合、新しいプレイヤーは空のパスワードでゲームに参加する\n"
-"ことはできません。"
+msgid ""
+"If enabled, players cannot join without a password or change theirs to an "
+"empty password."
+msgstr "有効にすると、プレーヤーはパスワードなしで参加したり、空のパスワードに変更す"
+"ることはできません。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -4039,6 +4289,8 @@ msgid ""
 "If the execution of a chat command takes longer than this specified time in\n"
 "seconds, add the time information to the chat command message"
 msgstr ""
+"チャットコマンドの実行が、この指定された時間 (秒) よりも長くかかる場合は\n"
+"チャットコマンドのメッセージに時間の情報を追加"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -4059,10 +4311,6 @@ msgstr "これを設定すると、プレーヤーが常に与えられた場所
 #: src/settings_translation_file.cpp
 msgid "Ignore world errors"
 msgstr "ワールドエラーを無視"
-
-#: src/settings_translation_file.cpp
-msgid "In-Game"
-msgstr "ゲーム"
 
 #: src/settings_translation_file.cpp
 msgid "In-game chat console background alpha (opaqueness, between 0 and 255)."
@@ -4093,7 +4341,7 @@ msgstr ""
 "これは通常、コア/ビルトイン貢献者にのみ必要"
 
 #: src/settings_translation_file.cpp
-msgid "Instrument chatcommands on registration."
+msgid "Instrument chat commands on registration."
 msgstr "チャットコマンドが登録されるとすぐに計測します。"
 
 #: src/settings_translation_file.cpp
@@ -4108,14 +4356,14 @@ msgstr ""
 msgid ""
 "Instrument the action function of Active Block Modifiers on registration."
 msgstr ""
-"アクティブブロックモディファイヤー（ABM）のアクション関数が\n"
+"アクティブブロックモディファイヤー (ABM) のアクション関数が\n"
 "登録されるとすぐに計測します。"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Instrument the action function of Loading Block Modifiers on registration."
 msgstr ""
-"ローディングブロックモディファイヤー（LBM）のアクション関数が\n"
+"ローディングブロックモディファイヤー (LBM) のアクション関数が\n"
 "登録されるとすぐに計測します。"
 
 #: src/settings_translation_file.cpp
@@ -4123,16 +4371,12 @@ msgid "Instrument the methods of entities on registration."
 msgstr "エンティティのメソッドを登録するとすぐに計測します。"
 
 #: src/settings_translation_file.cpp
-msgid "Instrumentation"
-msgstr "計測器"
-
-#: src/settings_translation_file.cpp
 msgid "Interval of saving important changes in the world, stated in seconds."
-msgstr "ワールドで重要な変化を保存する秒単位の間隔。"
+msgstr "ワールドで重要な変化を保存する間隔を秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
-msgid "Interval of sending time of day to clients."
-msgstr "クライアントに時刻を送信する間隔。"
+msgid "Interval of sending time of day to clients, stated in seconds."
+msgstr "クライアントに時刻を送信する間隔を秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
 msgid "Inventory items animations"
@@ -4187,7 +4431,7 @@ msgid "Joystick button repetition interval"
 msgstr "ジョイスティックボタンの繰り返し間隔"
 
 #: src/settings_translation_file.cpp
-msgid "Joystick deadzone"
+msgid "Joystick dead zone"
 msgstr "ジョイスティックのデッドゾーン"
 
 #: src/settings_translation_file.cpp
@@ -4989,6 +5233,10 @@ msgstr ""
 "html#a54da2a0e231901735e3da1b0edf72eb3"
 
 #: src/settings_translation_file.cpp
+msgid "Keyboard and Mouse"
+msgstr "キーボードとマウス"
+
+#: src/settings_translation_file.cpp
 msgid "Kick players who sent more than X messages per 10 seconds."
 msgstr "10秒あたりにXメッセージ以上送信したプレイヤーをキックします。"
 
@@ -5048,8 +5296,10 @@ msgstr "左キー"
 msgid ""
 "Length of a server tick and the interval at which objects are generally "
 "updated over\n"
-"network."
-msgstr "サーバの間隔の長さとオブジェクトが通常ネットワーク上で更新される間隔。"
+"network, stated in seconds."
+msgstr ""
+"サーバーが時を刻む間隔とオブジェクトが通常ネットワーク上で更新される間隔を\n"
+"秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5060,16 +5310,20 @@ msgstr ""
 "揺れる液体 を有効にする必要があります。"
 
 #: src/settings_translation_file.cpp
-msgid "Length of time between Active Block Modifier (ABM) execution cycles"
-msgstr "アクティブブロックモディファイヤー（ABM）実行サイクル間の時間の長さ"
+msgid ""
+"Length of time between Active Block Modifier (ABM) execution cycles, stated "
+"in seconds."
+msgstr "アクティブブロックモディファイヤー (ABM) "
+"実行サイクル間の時間の長さを秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
-msgid "Length of time between NodeTimer execution cycles"
-msgstr "ノードタイマー実行サイクル間の時間の長さ"
+msgid "Length of time between NodeTimer execution cycles, stated in seconds."
+msgstr "ノードタイマー実行サイクル間の時間の長さを秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
-msgid "Length of time between active block management cycles"
-msgstr "アクティブなブロックの管理サイクル間の時間の長さ"
+msgid ""
+"Length of time between active block management cycles, stated in seconds."
+msgstr "アクティブなブロック管理サイクル間の時間の長さを秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5080,16 +5334,18 @@ msgid ""
 "-    warning\n"
 "-    action\n"
 "-    info\n"
-"-    verbose"
+"-    verbose\n"
+"-    trace"
 msgstr ""
-"debug.txt に書き込まれるログ記録のレベル:\n"
-"-    <nothing> (ログ記録なし)\n"
+"debug.txt に書き込まれるログのレベル:\n"
+"-    <nothing> (ログなし)\n"
 "-    none (レベルがないメッセージ)\n"
 "-    error\n"
 "-    warning\n"
 "-    action\n"
 "-    info\n"
-"-    verbose"
+"-    verbose\n"
+"-    trace"
 
 #: src/settings_translation_file.cpp
 msgid "Light curve boost"
@@ -5116,6 +5372,10 @@ msgid "Light curve low gradient"
 msgstr "光度曲線の低勾配"
 
 #: src/settings_translation_file.cpp
+msgid "Lighting"
+msgstr "光度"
+
+#: src/settings_translation_file.cpp
 msgid ""
 "Limit of map generation, in nodes, in all 6 directions from (0, 0, 0).\n"
 "Only mapchunks completely within the mapgen limit are generated.\n"
@@ -5134,9 +5394,9 @@ msgid ""
 "Only has an effect if compiled with cURL."
 msgstr ""
 "並列HTTPリクエストの数を制限します。影響:\n"
-"-    サーバが remote_media 設定を使用している場合はメディアの取得。\n"
-"-    サーバ一覧のダウンロードとサーバの公開。\n"
-"-    メインメニューで実行されたダウンロード（例えば、コンテンツ）。\n"
+"-    サーバーが remote_media 設定を使用している場合はメディアの取得。\n"
+"-    サーバー一覧のダウンロードとサーバの公開。\n"
+"-    メインメニューで実行されたダウンロード (例えば、コンテンツ)。\n"
 "cURLでコンパイルされた場合にのみ効果があります。"
 
 #: src/settings_translation_file.cpp
@@ -5179,11 +5439,11 @@ msgid ""
 msgstr ""
 "ゲームの観測記録を読み込んで、ゲームの観測データを収集します。\n"
 "集められた観測記録にアクセスするための /profiler コマンドを提供します。\n"
-"Mod開発者やサーバオペレーターに役立ちます。"
+"MOD開発者やサーバーオペレーターに役立ちます。"
 
 #: src/settings_translation_file.cpp
 msgid "Loading Block Modifiers"
-msgstr "ローディングブロックモディファイヤー（LBM）"
+msgstr "ローディングブロックモディファイヤー (LBM)"
 
 #: src/settings_translation_file.cpp
 msgid "Lower Y limit of dungeons."
@@ -5293,9 +5553,8 @@ msgid "Map save interval"
 msgstr "マップ保存間隔"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
-msgid "Map update time"
-msgstr "液体の更新間隔"
+msgid "Map shadows update frames"
+msgstr "地図の影の更新フレーム"
 
 #: src/settings_translation_file.cpp
 msgid "Mapblock limit"
@@ -5311,7 +5570,7 @@ msgstr "メッシュ生成のマップブロックキャッシュサイズ(MB)"
 
 #: src/settings_translation_file.cpp
 msgid "Mapblock unload timeout"
-msgstr "マップブロックアンロードタイムアウト"
+msgstr "マップブロック破棄タイムアウト"
 
 #: src/settings_translation_file.cpp
 msgid "Mapgen Carpathian"
@@ -5409,7 +5668,7 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid "Maximum distance to render shadows."
-msgstr ""
+msgstr "影を描画する最大距離。"
 
 #: src/settings_translation_file.cpp
 msgid "Maximum forceloaded blocks"
@@ -5536,25 +5795,22 @@ msgstr ""
 "キューを無効にするには 0、サイズを無制限にするには -1 を指定します。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "Maximum time a file download (e.g. a mod download) may take, stated in "
 "milliseconds."
-msgstr "ファイルダウンロード (例: Modのダウンロード)の最大経過時間。"
+msgstr "ファイルダウンロード (MODのダウンロードなど) "
+"にかかる最大時間をミリ秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Maximum time an interactive request (e.g. server list fetch) may take, "
 "stated in milliseconds."
-msgstr ""
+msgstr "インタラクティブリクエスト (サーバー一覧の取得など) "
+"にかかる最大時間をミリ秒単位で定めます。"
 
 #: src/settings_translation_file.cpp
 msgid "Maximum users"
 msgstr "最大ユーザー数"
-
-#: src/settings_translation_file.cpp
-msgid "Menus"
-msgstr "メニュー"
 
 #: src/settings_translation_file.cpp
 msgid "Mesh cache"
@@ -5605,12 +5861,24 @@ msgid "Mipmapping"
 msgstr "ミップマッピング"
 
 #: src/settings_translation_file.cpp
-msgid "Mod channels"
-msgstr "Modチャンネル"
+msgid "Misc"
+msgstr "その他"
 
 #: src/settings_translation_file.cpp
-msgid "Modifies the size of the hudbar elements."
-msgstr "HUDバー要素のサイズを変更します。"
+msgid "Mod Profiler"
+msgstr "MODの観測記録"
+
+#: src/settings_translation_file.cpp
+msgid "Mod Security"
+msgstr "MODのセキュリティ"
+
+#: src/settings_translation_file.cpp
+msgid "Mod channels"
+msgstr "MODのチャンネル"
+
+#: src/settings_translation_file.cpp
+msgid "Modifies the size of the HUD elements."
+msgstr "HUD要素のサイズを変更します。"
 
 #: src/settings_translation_file.cpp
 msgid "Monospace font path"
@@ -5619,6 +5887,10 @@ msgstr "固定幅フォントのパス"
 #: src/settings_translation_file.cpp
 msgid "Monospace font size"
 msgstr "固定幅フォントのサイズ"
+
+#: src/settings_translation_file.cpp
+msgid "Monospace font size divisible by"
+msgstr "割り切れる固定幅フォントのサイズ"
 
 #: src/settings_translation_file.cpp
 msgid "Mountain height noise"
@@ -5683,22 +5955,18 @@ msgid ""
 "When starting from the main menu, this is overridden."
 msgstr ""
 "プレイヤーの名前。\n"
-"サーバを実行している場合、この名前で接続しているクライアントは管理者\n"
+"サーバーを実行している場合、この名前で接続しているクライアントは管理者\n"
 "です。\n"
 "メインメニューから起動すると、これは上書きされます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Name of the server, to be displayed when players join and in the serverlist."
-msgstr "プレイヤーが参加したときにサーバ一覧に表示されるサーバの名前。"
+msgstr "プレイヤーが参加したときにサーバー一覧に表示されるサーバーの名前。"
 
 #: src/settings_translation_file.cpp
 msgid "Near plane"
 msgstr "近くの面"
-
-#: src/settings_translation_file.cpp
-msgid "Network"
-msgstr "ネットワーク"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5707,6 +5975,10 @@ msgid ""
 msgstr ""
 "待機するネットワークポート (UDP)。\n"
 "メインメニューから起動すると、この値は上書きされます。"
+
+#: src/settings_translation_file.cpp
+msgid "Networking"
+msgstr "ネットワーク"
 
 #: src/settings_translation_file.cpp
 msgid "New users need to input this password."
@@ -5719,6 +5991,10 @@ msgstr "すり抜けモード"
 #: src/settings_translation_file.cpp
 msgid "Noclip key"
 msgstr "すり抜けモード切替キー"
+
+#: src/settings_translation_file.cpp
+msgid "Node and Entity Highlighting"
+msgstr "ノードとエンティティのハイライト"
 
 #: src/settings_translation_file.cpp
 msgid "Node highlighting"
@@ -5764,16 +6040,12 @@ msgstr ""
 #: src/settings_translation_file.cpp
 msgid ""
 "Number of extra blocks that can be loaded by /clearobjects at once.\n"
-"This is a trade-off between sqlite transaction overhead and\n"
+"This is a trade-off between SQLite transaction overhead and\n"
 "memory consumption (4096=100MB, as a rule of thumb)."
 msgstr ""
-"一度に /clearobjects によってロードできる追加ブロックの数。\n"
+"/clearobjects によって一度に読み込みできる追加ブロックの数です。\n"
 "これは、SQLiteトランザクションのオーバーヘッドとメモリ消費の間の\n"
-"トレードオフです (経験則として、4096 = 100MB)。"
-
-#: src/settings_translation_file.cpp
-msgid "Online Content Repository"
-msgstr "オンラインコンテンツリポジトリ"
+"トレードオフです (大体 4096 = 100MB)。"
 
 #: src/settings_translation_file.cpp
 msgid "Opaque liquids"
@@ -5782,7 +6054,7 @@ msgstr "不透明な液体"
 #: src/settings_translation_file.cpp
 msgid ""
 "Opaqueness (alpha) of the shadow behind the default font, between 0 and 255."
-msgstr "既定のフォントの影の不透明度（透過）は0から255の間です。"
+msgstr "既定のフォントの影の不透明度 (透過) は0から255の間です。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5794,20 +6066,17 @@ msgstr ""
 "フォームスペックが開かれているときはポーズメニューを開きません。"
 
 #: src/settings_translation_file.cpp
+msgid "Optional override for chat weblink color."
+msgstr "チャットのウェブリンクの色を上書きするオプションです。"
+
+#: src/settings_translation_file.cpp
 msgid ""
-"Path of the fallback font.\n"
-"If “freetype” setting is enabled: Must be a TrueType font.\n"
-"If “freetype” setting is disabled: Must be a bitmap or XML vectors font.\n"
+"Path of the fallback font. Must be a TrueType font.\n"
 "This font will be used for certain languages or if the default font is "
 "unavailable."
 msgstr ""
-"フォールバックフォントのパス。\n"
-"「フリータイプフォント」が有効な場合：TrueTypeフォントでなければなりませ"
-"ん。\n"
-"「フリータイプフォント」が無効な場合：ビットマップまたはXMLベクターフォント\n"
-"でなければなりません。\n"
-"このフォントは特定の言語で使用されるか、規定のフォントが使用できない\n"
-"ときに使用されます。"
+"フォールバックフォントのパス。TrueType フォントでなければなりません。\n"
+"このフォントは特定の言語か、規定のフォントが使用できないときに使用されます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5833,30 +6102,18 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Path to the default font.\n"
-"If “freetype” setting is enabled: Must be a TrueType font.\n"
-"If “freetype” setting is disabled: Must be a bitmap or XML vectors font.\n"
+"Path to the default font. Must be a TrueType font.\n"
 "The fallback font will be used if the font cannot be loaded."
 msgstr ""
-"既定のフォントのパス。\n"
-"「フリータイプフォント」が有効な場合：TrueTypeフォントでなければなりませ"
-"ん。\n"
-"「フリータイプフォント」が無効な場合：ビットマップまたはXMLベクターフォント\n"
-"でなければなりません。\n"
+"既定のフォントのパス。TrueType フォントでなければなりません。\n"
 "このフォールバックフォントはフォントが読み込めないときに使用されます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Path to the monospace font.\n"
-"If “freetype” setting is enabled: Must be a TrueType font.\n"
-"If “freetype” setting is disabled: Must be a bitmap or XML vectors font.\n"
+"Path to the monospace font. Must be a TrueType font.\n"
 "This font is used for e.g. the console and profiler screen."
 msgstr ""
-"固定幅フォントのパス。\n"
-"「フリータイプフォント」が有効な場合：TrueTypeフォントでなければなりませ"
-"ん。\n"
-"「フリータイプフォント」が無効な場合：ビットマップまたはXMLベクターフォント\n"
-"でなければなりません。\n"
+"固定幅フォントのパス。TrueType フォントでなければなりません。\n"
 "このフォントはコンソールや観測記録画面などで使用されます。"
 
 #: src/settings_translation_file.cpp
@@ -5900,10 +6157,6 @@ msgstr ""
 "これにはサーバー上に \"fly\" 特権が必要です。"
 
 #: src/settings_translation_file.cpp
-msgid "Player name"
-msgstr "プレイヤー名"
-
-#: src/settings_translation_file.cpp
 msgid "Player transfer distance"
 msgstr "プレイヤー転送距離"
 
@@ -5912,9 +6165,8 @@ msgid "Player versus player"
 msgstr "プレイヤー対プレイヤー"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Poisson filtering"
-msgstr "バイリニアフィルタリング"
+msgstr "ポアソンフィルタリング"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5934,7 +6186,7 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid "Prevent mods from doing insecure things like running shell commands."
-msgstr "Modがシェルコマンドを実行するような安全でないことをするのを防ぎます。"
+msgstr "MODがシェルコマンドを実行するような安全でないことをするのを防ぎます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -5957,25 +6209,21 @@ msgid "Profiler toggle key"
 msgstr "観測記録表示切替キー"
 
 #: src/settings_translation_file.cpp
-msgid "Profiling"
-msgstr "プロファイリング"
-
-#: src/settings_translation_file.cpp
 msgid "Prometheus listener address"
 msgstr "プロメテウスリスナーのアドレス"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Prometheus listener address.\n"
-"If minetest is compiled with ENABLE_PROMETHEUS option enabled,\n"
+"If Minetest is compiled with ENABLE_PROMETHEUS option enabled,\n"
 "enable metrics listener for Prometheus on that address.\n"
-"Metrics can be fetch on http://127.0.0.1:30000/metrics"
+"Metrics can be fetched on http://127.0.0.1:30000/metrics"
 msgstr ""
 "プロメテウスリスナーのアドレス。\n"
-"minetest が ENABLE_PROMETHEUS オプションを有効にしてコンパイルされている場"
+"Minetest が ENABLE_PROMETHEUS オプションを有効にしてコンパイルされている場"
 "合、\n"
 "そのアドレスのプロメテウスのメトリックスリスナーを有効にします。\n"
-"メトリックは http://127.0.0.1:30000/metrics で取得可能"
+"メトリックスは http://127.0.0.1:30000/metrics で取得可能"
 
 #: src/settings_translation_file.cpp
 msgid "Proportion of large caves that contain liquid."
@@ -6048,10 +6296,10 @@ msgid ""
 "csm_restriction_noderange)\n"
 "READ_PLAYERINFO: 32 (disable get_player_names call client-side)"
 msgstr ""
-"サーバで特定のクライアント側機能へのアクセスを制限します。\n"
+"サーバーで特定のクライアント側機能へのアクセスを制限します。\n"
 "以下の byteflags を合わせてクライアント側の機能を制限するか、制限なしの\n"
 "場合は 0 に設定します。\n"
-"LOAD_CLIENT_MODS: 1 (クライアント提供のModの読み込みを無効)\n"
+"LOAD_CLIENT_MODS: 1 (クライアント提供のMODの読み込みを無効)\n"
 "CHAT_MESSAGES: 2 (クライアント側での send_chat_message 呼び出しを無効)\n"
 "READ_ITEMDEFS: 4 (クライアント側での get_item_def 呼び出しを無効)\n"
 "READ_NODEDEFS: 8 (クライアント側での get_node_def 呼び出しを無効)\n"
@@ -6137,7 +6385,7 @@ msgstr "ウィンドウサイズ変更時に自動的に保存します。"
 
 #: src/settings_translation_file.cpp
 msgid "Saving map received from server"
-msgstr "サーバから受信したマップ保存"
+msgstr "サーバーから受信したマップ保存"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6152,6 +6400,10 @@ msgstr ""
 "これは、画像が整数以外のサイズで拡大縮小されるときにいくつかの\n"
 "エッジピクセルをぼかすことを犠牲にして、粗いエッジの一部を滑らかにし、\n"
 "縮小するときにピクセルを混合します。"
+
+#: src/settings_translation_file.cpp
+msgid "Screen"
+msgstr "画面"
 
 #: src/settings_translation_file.cpp
 msgid "Screen height"
@@ -6184,6 +6436,10 @@ msgstr ""
 "既定の品質には 0 を使用します。"
 
 #: src/settings_translation_file.cpp
+msgid "Screenshots"
+msgstr "スクリーンショット"
+
+#: src/settings_translation_file.cpp
 msgid "Seabed noise"
 msgstr "海底ノイズ"
 
@@ -6194,10 +6450,6 @@ msgstr "一緒に丘陵/山岳地帯の高さを定義する2Dノイズ4つの�
 #: src/settings_translation_file.cpp
 msgid "Second of two 3D noises that together define tunnels."
 msgstr "トンネルを定義する2つの3Dノイズのうちの2番目。"
-
-#: src/settings_translation_file.cpp
-msgid "Security"
-msgstr "セキュリティ"
 
 #: src/settings_translation_file.cpp
 msgid "See https://www.sqlite.org/pragma.html#pragma_synchronous"
@@ -6258,40 +6510,56 @@ msgstr ""
 "18 = 4D \"Mandelbulb\" ジュリア集合。"
 
 #: src/settings_translation_file.cpp
-msgid "Server / Singleplayer"
-msgstr "サーバ / シングルプレイヤー"
+msgid "Server"
+msgstr "サーバー"
+
+#: src/settings_translation_file.cpp
+msgid "Server Gameplay"
+msgstr "サーバーのゲームプレイ"
+
+#: src/settings_translation_file.cpp
+msgid "Server Security"
+msgstr "サーバーのセキュリティ"
 
 #: src/settings_translation_file.cpp
 msgid "Server URL"
-msgstr "サーバURL"
+msgstr "サーバーURL"
 
 #: src/settings_translation_file.cpp
 msgid "Server address"
-msgstr "サーバアドレス"
+msgstr "サーバーアドレス"
 
 #: src/settings_translation_file.cpp
 msgid "Server description"
-msgstr "サーバ説明"
+msgstr "サーバー説明"
 
 #: src/settings_translation_file.cpp
 msgid "Server name"
-msgstr "サーバ名"
+msgstr "サーバー名"
 
 #: src/settings_translation_file.cpp
 msgid "Server port"
-msgstr "サーバポート"
+msgstr "サーバーポート"
 
 #: src/settings_translation_file.cpp
 msgid "Server side occlusion culling"
-msgstr "サーバ側のオクルージョンカリング"
+msgstr "サーバー側のオクルージョンカリング"
+
+#: src/settings_translation_file.cpp
+msgid "Server/Env Performance"
+msgstr "サーバー/環境のパフォーマンス"
 
 #: src/settings_translation_file.cpp
 msgid "Serverlist URL"
-msgstr "サーバ一覧URL"
+msgstr "サーバー一覧URL"
+
+#: src/settings_translation_file.cpp
+msgid "Serverlist and MOTD"
+msgstr "サーバー一覧とその日のメッセージ"
 
 #: src/settings_translation_file.cpp
 msgid "Serverlist file"
-msgstr "サーバ一覧ファイル"
+msgstr "サーバー一覧ファイル"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6302,44 +6570,46 @@ msgstr ""
 "変更後は再起動が必要です。"
 
 #: src/settings_translation_file.cpp
-msgid "Set the maximum character length of a chat message sent by clients."
-msgstr "クライアントから送信されるチャットメッセージの最大文字数を設定します。"
+msgid ""
+"Set the maximum length of a chat message (in characters) sent by clients."
+msgstr "クライアントから送信されるチャットメッセージの最大長 (文字数) を設定します。"
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Set the shadow strength.\n"
+"Set the shadow strength gamma.\n"
+"Adjusts the intensity of in-game dynamic shadows.\n"
 "Lower value means lighter shadows, higher value means darker shadows."
 msgstr ""
-
-#: src/settings_translation_file.cpp
-msgid ""
-"Set the shadow update time.\n"
-"Lower value means shadows and map updates faster, but it consume more "
-"resources.\n"
-"Minimun value 0.001 seconds max value 0.2 seconds"
-msgstr ""
+"影の強さのガンマを設定します。\n"
+"ゲーム内の動的な影の強度を調整します。\n"
+"低い値は明るい影を意味し、高い値は暗い影を意味します。"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Set the soft shadow radius size.\n"
-"Lower values mean sharper shadows bigger values softer.\n"
-"Minimun value 1.0 and max value 10.0"
+"Lower values mean sharper shadows, bigger values mean softer shadows.\n"
+"Minimum value: 1.0; maximum value: 15.0"
 msgstr ""
+"やわらかい影の半径サイズを設定します。\n"
+"値が小さいほどシャープな影、大きいほどやわらない影になります。\n"
+"最小値: 1.0、最大値: 15.0"
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Set the tilt of Sun/Moon orbit in degrees\n"
+"Set the tilt of Sun/Moon orbit in degrees.\n"
 "Value of 0 means no tilt / vertical orbit.\n"
-"Minimun value 0.0 and max value 60.0"
+"Minimum value: 0.0; maximum value: 60.0"
 msgstr ""
+"太陽/月の軌道の傾きを度数で設定します。\n"
+"0 は傾きのない垂直な軌道です。\n"
+"最小値: 0.0、最大値: 60.0"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "Set to true to enable Shadow Mapping.\n"
 "Requires shaders to be enabled."
 msgstr ""
-"有効にすると葉が揺れます。\n"
+"有効にすると影を映します。\n"
 "シェーダーが有効である必要があります。"
 
 #: src/settings_translation_file.cpp
@@ -6355,7 +6625,7 @@ msgid ""
 "Set to true to enable waving liquids (like water).\n"
 "Requires shaders to be enabled."
 msgstr ""
-"有効にすると液体が揺れます（水のような）。\n"
+"有効にすると液体が揺れます (水のような)。\n"
 "シェーダーが有効である必要があります。"
 
 #: src/settings_translation_file.cpp
@@ -6372,6 +6642,9 @@ msgid ""
 "On false, 16 bits texture will be used.\n"
 "This can cause much more artifacts in the shadow."
 msgstr ""
+"影のテクスチャの品質を 32 ビットに設定します。\n"
+"false の場合、16ビットのテクスチャが使用されます。\n"
+"これは、影がさら不自然になる可能性があります。"
 
 #: src/settings_translation_file.cpp
 msgid "Shader path"
@@ -6389,34 +6662,30 @@ msgstr ""
 "これはOpenGLビデオバックエンドでのみ機能します。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Shadow filter quality"
-msgstr "スクリーンショットの品質"
+msgstr "影フィルタの品質"
 
 #: src/settings_translation_file.cpp
 msgid "Shadow map max distance in nodes to render shadows"
-msgstr ""
+msgstr "影を描画するためのノードの最大距離"
 
 #: src/settings_translation_file.cpp
 msgid "Shadow map texture in 32 bits"
-msgstr ""
+msgstr "32ビットの影投影テクスチャ"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Shadow map texture size"
-msgstr "最小テクスチャサイズ"
+msgstr "影投影テクスチャサイズ"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "Shadow offset (in pixels) of the default font. If 0, then shadow will not be "
 "drawn."
-msgstr ""
-"既定のフォントの影のオフセット（ピクセル単位）。 0の場合、影は描画されませ"
-"ん。"
+msgstr "既定のフォントの影のオフセット (ピクセル単位)。 0の場合、影は描画されません。"
 
 #: src/settings_translation_file.cpp
-msgid "Shadow strength"
-msgstr ""
+msgid "Shadow strength gamma"
+msgstr "影の強さのガンマ"
 
 #: src/settings_translation_file.cpp
 msgid "Shape of the minimap. Enabled = round, disabled = square."
@@ -6439,12 +6708,12 @@ msgstr ""
 "変更後は再起動が必要です。"
 
 #: src/settings_translation_file.cpp
-msgid "Show nametag backgrounds by default"
-msgstr "既定でネームタグの背景を表示"
+msgid "Show name tag backgrounds by default"
+msgstr "ネームタグの背景を既定で表示"
 
 #: src/settings_translation_file.cpp
 msgid "Shutdown message"
-msgstr "サーバ終了時のメッセージ"
+msgstr "サーバー終了時のメッセージ"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6456,7 +6725,7 @@ msgid ""
 "recommended."
 msgstr ""
 "マップジェネレータによって生成されたマップチャンクのサイズで、\n"
-"マップブロック（16ノード）で表されます。\n"
+"マップブロック (16ノード) で表されます。\n"
 "警告！: この値を5より大きくすることには利点がなく、いくつかの危険が\n"
 "あります。この値を減らすと洞窟とダンジョンの密度が上がります。\n"
 "この値を変更するのは特別な用途のためです。変更しないでおくことを\n"
@@ -6474,7 +6743,7 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid "Sky Body Orbit Tilt"
-msgstr ""
+msgstr "天体の軌道傾斜角"
 
 #: src/settings_translation_file.cpp
 msgid "Slice w"
@@ -6534,9 +6803,8 @@ msgid "Sneaking speed, in nodes per second."
 msgstr "スニーク時の速度、1秒あたりのノード数です。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Soft shadow radius"
-msgstr "フォントの影の透過"
+msgstr "やわらない影半径"
 
 #: src/settings_translation_file.cpp
 msgid "Sound"
@@ -6561,8 +6829,20 @@ msgid ""
 "items."
 msgstr ""
 "既定のノード、アイテム、ツールのスタック数を指定します。\n"
-"Mod またはゲームは、特定の（またはすべての）アイテムのスタック数を\n"
+"MOD またはゲームは、特定の (またはすべての) アイテムのスタック数を\n"
 "明示的に設定する場合があることに注意してください。"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"Spread a complete update of shadow map over given amount of frames.\n"
+"Higher values might make shadows laggy, lower values\n"
+"will consume more resources.\n"
+"Minimum value: 1; maximum value: 16"
+msgstr ""
+"影の描画の完全な更新を指定されたフレーム数に広げます。\n"
+"値を大きくすると影が遅延することがあり、値を小さくすると\n"
+"より多くのリソースを消費します。\n"
+"最小値: 1、最大値: 16"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6631,8 +6911,8 @@ msgstr ""
 "（上部の先細り開始点）より上に設定されている場合にのみ配置されます。\n"
 "***警告、サーバーのパフォーマンスへの潜在的な危険性***：\n"
 "水の配置を有効にする場合、浮遊大陸を密な層にするために\n"
-"'mgv7_floatland_density' を2.0（または 'mgv7_np_floatland' に応じて他の必要な"
-"値）に\n"
+"'mgv7_floatland_density' を2.0 (または 'mgv7_np_floatland' "
+"に応じて他の必要な値) に\n"
 "設定して、サーバーに集中する極端な水の流れを避け、下の世界表面への大規模な\n"
 "洪水を避けるようにテストする必要があります。"
 
@@ -6643,6 +6923,10 @@ msgstr "SQLite同期"
 #: src/settings_translation_file.cpp
 msgid "Temperature variation for biomes."
 msgstr "バイオームの温度変動。"
+
+#: src/settings_translation_file.cpp
+msgid "Temporary Settings"
+msgstr "一時的な設定"
 
 #: src/settings_translation_file.cpp
 msgid "Terrain alternative noise"
@@ -6696,8 +6980,11 @@ msgstr "テクスチャパス"
 msgid ""
 "Texture size to render the shadow map on.\n"
 "This must be a power of two.\n"
-"Bigger numbers create better shadowsbut it is also more expensive."
+"Bigger numbers create better shadows but it is also more expensive."
 msgstr ""
+"影を描画するためのテクスチャサイズです。\n"
+"これは2の累乗でなければなりません。\n"
+"数字が大きいほどより良い影ができますが、負荷も高くなります。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6712,7 +6999,7 @@ msgstr ""
 "ことができます。\n"
 "前者のモードは、機械、家具などのようなものに適していますが、\n"
 "後者のモードは階段やマイクロブロックを周囲の環境に合わせやすくします。\n"
-"しかし、この機能は新しく、古いサーバでは使用できない可能性があります。\n"
+"しかし、この機能は新しく、古いサーバーでは使用できない可能性があります。\n"
 "このオプションを使用すると特定のノードタイプに適用できます。ただし、\n"
 "これは実験的なものであり、正しく機能しない可能性があります。"
 
@@ -6721,7 +7008,7 @@ msgid "The URL for the content repository"
 msgstr "コンテンツリポジトリのURL"
 
 #: src/settings_translation_file.cpp
-msgid "The deadzone of the joystick"
+msgid "The dead zone of the joystick"
 msgstr "ジョイスティックのデッドゾーン"
 
 #: src/settings_translation_file.cpp
@@ -6760,12 +7047,12 @@ msgstr ""
 "揺れる液体の表面の最大高さ。\n"
 "4.0 =波高は2ノードです。\n"
 "0.0 =波はまったく動きません。\n"
-"既定は1.0（1/2ノード）です。\n"
+"既定は1.0 (1/2ノード) です。\n"
 "揺れる液体 を有効にする必要があります。"
 
 #: src/settings_translation_file.cpp
 msgid "The network interface that the server listens on."
-msgstr "サーバが待機しているネットワークインターフェース。"
+msgstr "サーバがー待機しているネットワークインターフェース。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6773,7 +7060,7 @@ msgid ""
 "See /privs in game for a full list on your server and mod configuration."
 msgstr ""
 "新規ユーザーが自動的に取得する特権。\n"
-"サーバとModの構成の完全なリストについては、ゲーム内の /privs を参照\n"
+"サーバーとMODの構成の完全なリストについては、ゲーム内の /privs を参照\n"
 "してください。"
 
 #: src/settings_translation_file.cpp
@@ -6787,13 +7074,12 @@ msgid ""
 "This should be configured together with active_object_send_range_blocks."
 msgstr ""
 "アクティブブロックの対象となる各プレイヤーの周囲のブロックの量の半径、\n"
-"マップブロック（16ノード）で定めます。\n"
+"マップブロック (16ノード) で定めます。\n"
 "アクティブブロックのオブジェクトはロードされ、ABMが実行されます。\n"
-"これはアクティブオブジェクト（モブ）が維持される最小範囲でもあります。\n"
+"これはアクティブオブジェクト (モブ) が維持される最小範囲でもあります。\n"
 "これは active_object_send_range_blocks と一緒に設定する必要があります。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "The rendering back-end.\n"
 "A restart is required after changing this.\n"
@@ -6802,17 +7088,18 @@ msgid ""
 "On other platforms, OpenGL is recommended.\n"
 "Shaders are supported by OpenGL (desktop only) and OGLES2 (experimental)"
 msgstr ""
-"Irrlichtのレンダリングバックエンド。\n"
+"レンダリングのバックエンドです。\n"
 "変更後は再起動が必要です。\n"
-"注意：Android の場合、よくわからない場合は OGLES1 を使用してください！\n"
-"そうしないとアプリの起動に失敗することがあります。\n"
-"その他のプラットフォームでは、OpenGL が推奨されています。\n"
-"シェーダーは OpenGL（デスクトップのみ）と OGLES2（実験的）でサポート"
+"注：Androidでは、不明な場合はOGRES1を使用してください！そうしないとアプリの起"
+"動に失敗することがあります。\n"
+"その他のプラットフォームでは、OpenGLを推奨します。\n"
+"シェーダーは、OpenGL (デスクトップのみ) とOGRES2 (実験的) "
+"でサポートされています。"
 
 #: src/settings_translation_file.cpp
 msgid ""
 "The sensitivity of the joystick axes for moving the\n"
-"ingame view frustum around."
+"in-game view frustum around."
 msgstr "ゲーム内の視錐台を動かすためのジョイスティック軸の感度。"
 
 #: src/settings_translation_file.cpp
@@ -6822,7 +7109,7 @@ msgid ""
 "setting is 0.25 to 4.0 inclusive. If the value is out of range it will be\n"
 "set to the nearest valid value."
 msgstr ""
-"ノードのアンビエントオクルージョンシェーディングの強度（暗さ）。\n"
+"ノードのアンビエントオクルージョンシェーディングの強度 (暗さ)。\n"
 "低いほど暗く、高いほど明るくなります。設定の有効範囲は 0.25～4.0 です。\n"
 "値が範囲外の場合は、最も近い有効な値に設定されます。"
 
@@ -6841,7 +7128,7 @@ msgid ""
 "(as a fraction of the ABM Interval)"
 msgstr ""
 "ABM が各ステップで実行できる時間予算\n"
-"（ABM間隔の一部として）"
+"(ABM間隔の一部として)"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6884,7 +7171,7 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid "Time of day when a new world is started, in millihours (0-23999)."
-msgstr "新しいワールドが開始される時刻。ミリ時間単位（0〜23999）。"
+msgstr "新しいワールドが開始される時刻。ミリ時間単位 (0〜23999)。"
 
 #: src/settings_translation_file.cpp
 msgid "Time send interval"
@@ -6895,10 +7182,9 @@ msgid "Time speed"
 msgstr "時間の速さ"
 
 #: src/settings_translation_file.cpp
-msgid "Timeout for client to remove unused map data from memory."
-msgstr ""
-"クライアントがメモリから未使用のマップデータを削除するための\n"
-"タイムアウト。"
+msgid "Timeout for client to remove unused map data from memory, in seconds."
+msgstr "クライアントがメモリから未使用のマップデータを削除するためのタイムアウト "
+"(秒単位)。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -6924,6 +7210,18 @@ msgid "Touch screen threshold"
 msgstr "タッチスクリーンのしきい値"
 
 #: src/settings_translation_file.cpp
+msgid "Touchscreen"
+msgstr "タッチスクリーン"
+
+#: src/settings_translation_file.cpp
+msgid "Tradeoffs for performance"
+msgstr "パフォーマンスのためのトレードオフ"
+
+#: src/settings_translation_file.cpp
+msgid "Transparency Sorting Distance"
+msgstr "透明度の並べ替え距離"
+
+#: src/settings_translation_file.cpp
 msgid "Trees noise"
 msgstr "木のノイズ"
 
@@ -6943,11 +7241,11 @@ msgstr ""
 
 #: src/settings_translation_file.cpp
 msgid "Trusted mods"
-msgstr "信頼するMod"
+msgstr "信頼するMOD"
 
 #: src/settings_translation_file.cpp
 msgid "URL to the server list displayed in the Multiplayer Tab."
-msgstr "ゲームに参加タブで表示されるサーバ一覧へのURL。"
+msgstr "ゲームに参加タブで表示されるサーバー一覧へのURL。"
 
 #: src/settings_translation_file.cpp
 msgid "Undersampling"
@@ -6972,7 +7270,7 @@ msgstr "無制限のプレーヤー転送距離"
 
 #: src/settings_translation_file.cpp
 msgid "Unload unused server data"
-msgstr "未使用のサーバデータをアンロード"
+msgstr "未使用のサーバーデータを破棄"
 
 #: src/settings_translation_file.cpp
 msgid "Upper Y limit of dungeons."
@@ -7000,14 +7298,13 @@ msgstr "テクスチャを拡大縮小する場合はバイリニアフィルタ
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Use mip mapping to scale textures. May slightly increase performance,\n"
+"Use mipmapping to scale textures. May slightly increase performance,\n"
 "especially when using a high resolution texture pack.\n"
 "Gamma correct downscaling is not supported."
 msgstr ""
 "ミップマッピングを使用してテクスチャを拡大縮小します。特に高解像度の\n"
 "テクスチャパックを使用する場合は、パフォーマンスがわずかに向上する\n"
-"可能性があります。\n"
-"ガンマ補正縮小はサポートされていません。"
+"可能性があります。ガンマ補正縮小はサポートされていません。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -7019,11 +7316,11 @@ msgid ""
 "If set to 0, MSAA is disabled.\n"
 "A restart is required after changing this option."
 msgstr ""
-"マルチサンプルアンチエイリアス（MSAA）を使用して、ブロックエッジを滑らかにし"
-"ます。\n"
+"マルチサンプルアンチエイリアス (MSAA) "
+"を使用して、ブロックエッジを滑らかにします。\n"
 "このアルゴリズムは、画像を鮮明に保ちながら3Dビューポートを滑らかにします。\n"
 "しかし、それはテクスチャの内部には影響しません\n"
-"（これは、透明なテクスチャで特に目立ちます）。\n"
+"(これは、透明なテクスチャで特に目立ちます)。\n"
 "シェーダーを無効にすると、ノード間に可視スペースが表示されます。\n"
 "0 に設定すると、MSAAは無効になります。\n"
 "このオプションを変更した場合、再起動が必要です。"
@@ -7031,6 +7328,10 @@ msgstr ""
 #: src/settings_translation_file.cpp
 msgid "Use trilinear filtering when scaling textures."
 msgstr "テクスチャを拡大縮小する場合はトライリニアフィルタリングを使用します。"
+
+#: src/settings_translation_file.cpp
+msgid "User Interfaces"
+msgstr "ユーザーインターフェース"
 
 #: src/settings_translation_file.cpp
 msgid "VBO"
@@ -7129,9 +7430,8 @@ msgid "Viewing range"
 msgstr "視野"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Virtual joystick triggers Aux1 button"
-msgstr "バーチャルパッドでauxボタン動作"
+msgstr "バーチャルパッドで Aux1 ボタン動作"
 
 #: src/settings_translation_file.cpp
 msgid "Volume"
@@ -7208,6 +7508,10 @@ msgid "Waving plants"
 msgstr "揺れる草花"
 
 #: src/settings_translation_file.cpp
+msgid "Weblink color"
+msgstr "ウェブリンクの色"
+
+#: src/settings_translation_file.cpp
 msgid ""
 "When gui_scaling_filter is true, all GUI images need to be\n"
 "filtered in software, but some images are generated directly\n"
@@ -7231,46 +7535,35 @@ msgstr ""
 "ビデオドライバのときは、古い拡大縮小方法に戻ります。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid ""
 "When using bilinear/trilinear/anisotropic filters, low-resolution textures\n"
 "can be blurred, so automatically upscale them with nearest-neighbor\n"
 "interpolation to preserve crisp pixels. This sets the minimum texture size\n"
 "for the upscaled textures; higher values look sharper, but require more\n"
-"memory.  Powers of 2 are recommended. This setting is ONLY applies if\n"
+"memory. Powers of 2 are recommended. This setting is ONLY applied if\n"
 "bilinear/trilinear/anisotropic filtering is enabled.\n"
 "This is also used as the base node texture size for world-aligned\n"
 "texture autoscaling."
 msgstr ""
 "バイリニア/トライリニア/異方性フィルタを使用すると、低解像度の\n"
 "テクスチャがぼやける可能性があるため、鮮明なピクセルを保持するために\n"
-"最近傍補間を使用して自動的にそれらを拡大します。\n"
-"これは拡大されたテクスチャのための最小テクスチャサイズを設定します。\n"
-"より高い値はよりシャープに見えますが、より多くのメモリを必要とします。\n"
-"2のべき乗が推奨されます。これを1より高く設定すると、\n"
-"バイリニア/トライリニア/異方性フィルタリングが有効になっていない限り、\n"
-"目に見える効果がない場合があります。\n"
+"最近傍補間を使用して自動的にそれらを拡大します。これは拡大されたテクスチャ"
+"の\n"
+"ための最小テクスチャサイズを設定します。より高い値はよりシャープに見えます"
+"が、\n"
+"より多くのメモリを必要とします。2の累乗が推奨されます。この設定は、\n"
+"バイリニア/トライリニア/異方性フィルタリングが有効の場合にのみ適用されま"
+"す。\n"
 "これは整列テクスチャの自動スケーリング用の基準ノードテクスチャサイズと\n"
 "しても使用されます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
-"Whether FreeType fonts are used, requires FreeType support to be compiled "
-"in.\n"
-"If disabled, bitmap and XML vectors fonts are used instead."
-msgstr ""
-"フリータイプフォントを使用するかどうかは、フリータイプをサポートして\n"
-"コンパイルされている必要があります。 \n"
-"無効にした場合、代わりにビットマップおよび XML ベクターフォントが使用されま"
-"す。"
-
-#: src/settings_translation_file.cpp
-msgid ""
-"Whether nametag backgrounds should be shown by default.\n"
+"Whether name tag backgrounds should be shown by default.\n"
 "Mods may still set a background."
 msgstr ""
-"既定でネームタグの背景を表示するかどうかです。\n"
-"Modで背景を設定することもできます。"
+"ネームタグの背景を既定で表示するかどうかです。\n"
+"MODで背景を設定することもできます。"
 
 #: src/settings_translation_file.cpp
 msgid "Whether node texture animations should be desynchronized per mapblock."
@@ -7297,7 +7590,7 @@ msgid ""
 msgstr ""
 "(Luaが)クラッシュした際にクライアントに再接続を要求するかどうかの\n"
 "設定です。\n"
-"サーバが自動で再起動されるように設定されているならば true に設定\n"
+"サーバーが自動で再起動されるように設定されているならば true に設定\n"
 "してください。"
 
 #: src/settings_translation_file.cpp
@@ -7312,9 +7605,22 @@ msgid ""
 "pause menu."
 msgstr ""
 "音をミュートするかどうか。サウンドシステムが無効になっていない限り\n"
-"（enable_sound = false）、いつでもミュートを解除できます。\n"
+"(enable_sound = false)、いつでもミュートを解除できます。\n"
 "ゲーム内ではミュートキーを使用するかポーズメニューを使用して、\n"
 "ミュート状態を切り替えることができます。"
+
+#: src/settings_translation_file.cpp
+msgid ""
+"Whether to show technical names.\n"
+"Affects mods and texture packs in the Content and Select Mods menus, as well "
+"as\n"
+"setting names in All Settings.\n"
+"Controlled by the checkbox in the \"All settings\" menu."
+msgstr ""
+"技術名を表示するかどうか。\n"
+"コンテンツとMOD選択メニューのMODとテクスチャパック、および\n"
+"すべての設定の設定名に影響します。\n"
+"「すべての設定」メニューのチェックボックスで制御されます。"
 
 #: src/settings_translation_file.cpp
 msgid ""
@@ -7324,9 +7630,8 @@ msgstr ""
 "(F5を押すのと同じ効果)。"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "Width component of the initial window size. Ignored in fullscreen mode."
-msgstr "ウィンドウ幅の初期値。"
+msgstr "初期ウィンドウサイズの幅。フルスクリーンモードでは無視されます。"
 
 #: src/settings_translation_file.cpp
 msgid "Width of the selection box lines around nodes."
@@ -7428,45 +7733,26 @@ msgid "Y-level of seabed."
 msgstr "海底のYレベル。"
 
 #: src/settings_translation_file.cpp
-msgid ""
-"ZLib compression level to use when saving mapblocks to disk.\n"
-"-1 - Zlib's default compression level\n"
-"0 - no compresson, fastest\n"
-"9 - best compression, slowest\n"
-"(levels 1-3 use Zlib's \"fast\" method, 4-9 use the normal method)"
-msgstr ""
-"マップブロックをディスクに保存するときに使用する ZLib圧縮レベル。\n"
-"-1 - Zlib の規定の圧縮レベル\n"
-"0 - 圧縮なし、最速\n"
-"9 - 最高の圧縮、最も遅い\n"
-"（レベル 1〜3 はZlibの「高速」方式を使用し、4〜9 は通常方式を使用）"
-
-#: src/settings_translation_file.cpp
-msgid ""
-"ZLib compression level to use when sending mapblocks to the client.\n"
-"-1 - Zlib's default compression level\n"
-"0 - no compresson, fastest\n"
-"9 - best compression, slowest\n"
-"(levels 1-3 use Zlib's \"fast\" method, 4-9 use the normal method)"
-msgstr ""
-"マップブロックをクライアントに送信するときに使用する ZLib圧縮レベル。\n"
-"-1 - Zlib の規定の圧縮レベル\n"
-"0 - 圧縮なし、最速\n"
-"9 - 最高の圧縮、最も遅い\n"
-"（レベル 1〜3 はZlibの「高速」方式を使用し、4〜9 は通常方式を使用）"
+msgid "cURL"
+msgstr "cURL"
 
 #: src/settings_translation_file.cpp
 msgid "cURL file download timeout"
 msgstr "cURLファイルダウンロードタイムアウト"
 
 #: src/settings_translation_file.cpp
-#, fuzzy
 msgid "cURL interactive timeout"
-msgstr "cURLタイムアウト"
+msgstr "cURL インタラクティブタイムアウト"
 
 #: src/settings_translation_file.cpp
 msgid "cURL parallel limit"
 msgstr "cURL並行処理制限"
+
+#~ msgid "- Creative Mode: "
+#~ msgstr "- クリエイティブモード: "
+
+#~ msgid "- Damage: "
+#~ msgstr "- ダメージ: "
 
 #~ msgid ""
 #~ "0 = parallax occlusion with slope information (faster).\n"
@@ -7494,6 +7780,9 @@ msgstr "cURL並行処理制限"
 
 #~ msgid "Back"
 #~ msgstr "戻る"
+
+#~ msgid "Basic"
+#~ msgstr "基本"
 
 #~ msgid "Bits per pixel (aka color depth) in fullscreen mode."
 #~ msgstr "フルスクリーンモードでのビット数(色深度)。"
@@ -7526,6 +7815,12 @@ msgstr "cURL並行処理制限"
 
 #~ msgid "Configure"
 #~ msgstr "設定"
+
+#~ msgid "Connect"
+#~ msgstr "接続"
+
+#~ msgid "Controls sinking speed in liquid."
+#~ msgstr "液体中の沈降速度を制御します。"
 
 #~ msgid ""
 #~ "Controls the density of mountain-type floatlands.\n"
@@ -7570,6 +7865,9 @@ msgstr "cURL並行処理制限"
 #~ "テクスチャのサンプリング手順を定義します。\n"
 #~ "値が大きいほど、法線マップが滑らかになります。"
 
+#~ msgid "Del. Favorite"
+#~ msgstr "お気に入り削除"
+
 #~ msgid ""
 #~ "Deprecated, define and locate cave liquids using biome definitions "
 #~ "instead.\n"
@@ -7579,11 +7877,21 @@ msgstr "cURL並行処理制限"
 #~ "す。\n"
 #~ "大きな洞窟内の溶岩のY高さ上限。"
 
+#~ msgid "Download a game, such as Minetest Game, from minetest.net"
+#~ msgstr ""
+#~ "Minetest Game などのゲームを minetest.net からダウンロードしてください"
+
+#~ msgid "Download one from minetest.net"
+#~ msgstr "minetest.netからダウンロードしてください"
+
 #~ msgid "Downloading and installing $1, please wait..."
 #~ msgstr "$1をインストールしています、お待ちください..."
 
 #~ msgid "Enable VBO"
 #~ msgstr "VBOを有効化"
+
+#~ msgid "Enable register confirmation"
+#~ msgstr "登録確認を有効化"
 
 #~ msgid ""
 #~ "Enables bumpmapping for textures. Normalmaps need to be supplied by the "
@@ -7612,6 +7920,9 @@ msgstr "cURL並行処理制限"
 #~ "視差遮蔽マッピングを有効にします。\n"
 #~ "シェーダーが有効である必要があります。"
 
+#~ msgid "Enter "
+#~ msgstr "エンター "
+
 #~ msgid ""
 #~ "Experimental option, might cause visible spaces between blocks\n"
 #~ "when set to higher number than 0."
@@ -7631,6 +7942,9 @@ msgstr "cURL並行処理制限"
 #~ msgid "Fallback font size"
 #~ msgstr "フォールバックフォントの大きさ"
 
+#~ msgid "Filtering"
+#~ msgstr "フィルタリング"
+
 #~ msgid "Floatland base height noise"
 #~ msgstr "浮遊大陸の基準高さノイズ"
 
@@ -7643,8 +7957,14 @@ msgstr "cURL並行処理制限"
 #~ msgid "Font size of the fallback font in point (pt)."
 #~ msgstr "フォールバックフォントのフォント サイズ (pt)。"
 
+#~ msgid "FreeType fonts"
+#~ msgstr "フリータイプフォント"
+
 #~ msgid "Full screen BPP"
 #~ msgstr "フルスクリーンのBPP"
+
+#~ msgid "Game"
+#~ msgstr "ゲーム"
 
 #~ msgid "Gamma"
 #~ msgstr "ガンマ"
@@ -7655,11 +7975,29 @@ msgstr "cURL並行処理制限"
 #~ msgid "Generate normalmaps"
 #~ msgstr "法線マップの生成"
 
+#~ msgid "HUD scale factor"
+#~ msgstr "HUDの倍率"
+
 #~ msgid "High-precision FPU"
 #~ msgstr "高精度FPU"
 
 #~ msgid "IPv6 support."
 #~ msgstr "IPv6 サポート。"
+
+#~ msgid "In-Game"
+#~ msgstr "ゲーム"
+
+#~ msgid "Install: file: \"$1\""
+#~ msgstr "インストール: ファイル: \"$1\""
+
+#~ msgid "Instrumentation"
+#~ msgstr "計測器"
+
+#~ msgid ""
+#~ "Keybindings. (If this menu screws up, remove stuff from minetest.conf)"
+#~ msgstr ""
+#~ "キー設定です。 (このメニューで失敗する場合は minetest.conf から該当する設"
+#~ "定を削除してください)"
 
 #~ msgid "Lava depth"
 #~ msgstr "溶岩の深さ"
@@ -7679,6 +8017,9 @@ msgstr "cURL並行処理制限"
 #~ msgid "Makes DirectX work with LuaJIT. Disable if it causes troubles."
 #~ msgstr ""
 #~ "DirectX を LuaJIT と連携させます。問題がある場合は無効にしてください。"
+
+#~ msgid "Menus"
+#~ msgstr "メニュー"
 
 #~ msgid "Minimap in radar mode, Zoom x2"
 #~ msgstr "ミニマップ レーダーモード、ズーム x2"
@@ -7751,6 +8092,12 @@ msgstr "cURL並行処理制限"
 #~ msgid "Path to save screenshots at."
 #~ msgstr "スクリーンショットを保存するパス。"
 
+#~ msgid "Player name"
+#~ msgstr "プレイヤー名"
+
+#~ msgid "Profiling"
+#~ msgstr "プロファイリング"
+
 #~ msgid "Projecting dungeons"
 #~ msgstr "突出するダンジョン"
 
@@ -7762,6 +8109,20 @@ msgstr "cURL並行処理制限"
 
 #~ msgid "Select Package File:"
 #~ msgstr "パッケージファイルを選択:"
+
+#~ msgid "Server / Singleplayer"
+#~ msgstr "サーバー / シングルプレイヤー"
+
+#~ msgid ""
+#~ "Set the shadow update time.\n"
+#~ "Lower value means shadows and map updates faster, but it consume more "
+#~ "resources.\n"
+#~ "Minimun value 0.001 seconds max value 0.2 seconds"
+#~ msgstr ""
+#~ "影の更新時間を設定します。\n"
+#~ "値が小さいほど影やマップの更新が速くなりますが、リソースを多く消費しま"
+#~ "す。\n"
+#~ "最小値0.001秒、最大値0.2秒"
 
 #~ msgid "Shadow limit"
 #~ msgstr "影の制限"
@@ -7791,6 +8152,10 @@ msgstr "cURL並行処理制限"
 #~ msgid "This font will be used for certain languages."
 #~ msgstr "このフォントは特定の言語で使用されます。"
 
+#~ msgid "To enable shaders the OpenGL driver needs to be used."
+#~ msgstr ""
+#~ "シェーダーを有効にするにはOpenGLのドライバを使用する必要があります。"
+
 #~ msgid "Toggle Cinematic"
 #~ msgstr "映画風モード切替"
 
@@ -7810,6 +8175,16 @@ msgstr "cURL並行処理制限"
 #~ msgid "Waving water"
 #~ msgstr "揺れる水"
 
+#~ msgid ""
+#~ "Whether FreeType fonts are used, requires FreeType support to be compiled "
+#~ "in.\n"
+#~ "If disabled, bitmap and XML vectors fonts are used instead."
+#~ msgstr ""
+#~ "フリータイプフォントを使用するかどうかは、フリータイプをサポートして\n"
+#~ "コンパイルされている必要があります。 \n"
+#~ "無効にした場合、代わりにビットマップおよび XML ベクターフォントが使用され"
+#~ "ます。"
+
 #~ msgid "Whether dungeons occasionally project from the terrain."
 #~ msgstr "ダンジョンが時折地形から突出するかどうか。"
 
@@ -7824,6 +8199,25 @@ msgstr "cURL並行処理制限"
 
 #~ msgid "Yes"
 #~ msgstr "はい"
+
+#, c-format
+#~ msgid ""
+#~ "You are about to join this server with the name \"%s\" for the first "
+#~ "time.\n"
+#~ "If you proceed, a new account using your credentials will be created on "
+#~ "this server.\n"
+#~ "Please retype your password and click 'Register and Join' to confirm "
+#~ "account creation, or click 'Cancel' to abort."
+#~ msgstr ""
+#~ "あなたはこのサーバ ーに名前 \"%s\" ではじめて参加しようとしています。\n"
+#~ "続行する場合、あなたの情報が新しいアカウントとしてこのサーバーに作成されま"
+#~ "す。\n"
+#~ "あなたのパスワードを再入力してから '参加登録' をクリックしてアカウント作成"
+#~ "するか、\n"
+#~ "キャンセルをクリックして中断してください。"
+
+#~ msgid "You died."
+#~ msgstr "あなたは死にました。"
 
 #~ msgid "needs_fallback_font"
 #~ msgstr "yes"

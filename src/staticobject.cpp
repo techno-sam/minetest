@@ -28,15 +28,16 @@ StaticObject::StaticObject(const ServerActiveObject *s_obj, const v3f &pos_):
 	s_obj->getStaticData(&data);
 }
 
-void StaticObject::serialize(std::ostream &os)
+void StaticObject::serialize(std::ostream &os) const
 {
 	// type
 	writeU8(os, type);
 	// pos
-	writeV3F1000(os, pos);
+	writeV3F1000(os, clampToF1000(pos));
 	// data
 	os<<serializeString16(data);
 }
+
 void StaticObject::deSerialize(std::istream &is, u8 version)
 {
 	// type
@@ -49,6 +50,29 @@ void StaticObject::deSerialize(std::istream &is, u8 version)
 
 void StaticObjectList::serialize(std::ostream &os)
 {
+	// Check for problems first
+	auto problematic = [] (StaticObject &obj) -> bool {
+		if (obj.data.size() > U16_MAX) {
+			errorstream << "StaticObjectList::serialize(): "
+				"object has excessive static data (" << obj.data.size() <<
+				"), deleting it." << std::endl;
+			return true;
+		}
+		return false;
+	};
+	for (auto it = m_stored.begin(); it != m_stored.end(); ) {
+		if (problematic(*it))
+			it = m_stored.erase(it);
+		else
+			it++;
+	}
+	for (auto it = m_active.begin(); it != m_active.end(); ) {
+		if (problematic(it->second))
+			it = m_active.erase(it);
+		else
+			it++;
+	}
+
 	// version
 	u8 version = 0;
 	writeU8(os, version);

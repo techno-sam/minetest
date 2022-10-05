@@ -20,6 +20,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes.h" // must be included before anything irrlicht, see comment in the file
 #include "irrlicht.h" // createDevice
 #include "irrlichttypes_extrabloated.h"
+#include "benchmark/benchmark.h"
 #include "chat_interface.h"
 #include "debug.h"
 #include "unittest/test.h"
@@ -38,6 +39,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "player.h"
 #include "porting.h"
 #include "network/socket.h"
+#include "mapblock.h"
 #if USE_CURSES
 	#include "terminal_chat_console.h"
 #endif
@@ -60,15 +62,24 @@ extern "C" {
 #endif
 }
 
-#if !defined(SERVER) && \
-	(IRRLICHT_VERSION_MAJOR == 1) && \
-	(IRRLICHT_VERSION_MINOR == 8) && \
-	(IRRLICHT_VERSION_REVISION == 2)
-	#error "Irrlicht 1.8.2 is known to be broken - please update Irrlicht to version >= 1.8.3"
+#if !defined(__cpp_rtti) || !defined(__cpp_exceptions)
+#error Minetest cannot be built without exceptions or RTTI
+#endif
+
+#if defined(__MINGW32__) && !defined(__MINGW64__) && !defined(__clang__) && \
+	(__GNUC__ < 11 || (__GNUC__ == 11 && __GNUC_MINOR__ < 1))
+// see e.g. https://github.com/minetest/minetest/issues/10137
+#warning ==================================
+#warning 32-bit MinGW gcc before 11.1 has known issues with crashes on thread exit, you should upgrade.
+#warning ==================================
 #endif
 
 #define DEBUGFILE "debug.txt"
 #define DEFAULT_SERVER_PORT 30000
+
+#define ENV_NO_COLOR "NO_COLOR"
+#define ENV_CLICOLOR "CLICOLOR"
+#define ENV_CLICOLOR_FORCE "CLICOLOR_FORCE"
 
 typedef std::map<std::string, ValueSpec> OptionList;
 
@@ -76,6 +87,7 @@ typedef std::map<std::string, ValueSpec> OptionList;
  * Private functions
  **********************************************************************/
 
+static void get_env_opts(Settings &args);
 static bool get_cmdline_opts(int argc, char *argv[], Settings *cmd_args);
 static void set_allowed_options(OptionList *allowed_options);
 
@@ -111,6 +123,7 @@ static bool determine_subgame(GameParams *game_params);
 
 static bool run_dedicated_server(const GameParams &game_params, const Settings &cmd_args);
 static bool migrate_map_database(const GameParams &game_params, const Settings &cmd_args);
+static bool recompress_map_database(const GameParams &game_params, const Settings &cmd_args, const Address &addr);
 
 /**********************************************************************/
 
@@ -128,6 +141,7 @@ int main(int argc, char *argv[])
 	g_logger.addOutputMaxLevel(&stderr_output, LL_ACTION);
 
 	Settings cmd_args;
+	get_env_opts(cmd_args);
 	bool cmd_args_ok = get_cmdline_opts(argc, argv, &cmd_args);
 	if (!cmd_args_ok
 			|| cmd_args.getFlag("help")
@@ -205,7 +219,19 @@ int main(int argc, char *argv[])
 		return 1;
 #endif
 	}
+
+	// Run benchmarks
+	if (cmd_args.getFlag("run-benchmarks")) {
+#if BUILD_BENCHMARKS
+		return run_benchmarks();
+#else
+		errorstream << "Benchmark support is not enabled in this binary. "
+			<< "If you want to enable it, compile project with BUILD_BENCHMARKS=1 flag."
+			<< std::endl;
+		return 1;
 #endif
+	}
+#endif // __ANDROID__
 
 	GameStartData game_params;
 #ifdef SERVER
@@ -249,6 +275,29 @@ int main(int argc, char *argv[])
  *****************************************************************************/
 
 
+static void get_env_opts(Settings &args)
+{
+	// CLICOLOR is a de-facto standard option for colors <https://bixense.com/clicolors/>
+	// CLICOLOR != 0: ANSI colors are supported (auto-detection, this is the default)
+	// CLICOLOR == 0: ANSI colors are NOT supported
+	const char *clicolor = std::getenv(ENV_CLICOLOR);
+	if (clicolor && std::string(clicolor) == "0") {
+		args.set("color", "never");
+	}
+	// NO_COLOR only specifies that no color is allowed.
+	// Implemented according to <http://no-color.org/>
+	const char *no_color = std::getenv(ENV_NO_COLOR);
+	if (no_color && no_color[0]) {
+		args.set("color", "never");
+	}
+	// CLICOLOR_FORCE is another option, which should turn on colors "no matter what".
+	const char *clicolor_force = std::getenv(ENV_CLICOLOR_FORCE);
+	if (clicolor_force && std::string(clicolor_force) != "0") {
+		// should ALWAYS have colors, so we ignore tty (no "auto")
+		args.set("color", "always");
+	}
+}
+
 static bool get_cmdline_opts(int argc, char *argv[], Settings *cmd_args)
 {
 	set_allowed_options(&allowed_options);
@@ -270,6 +319,8 @@ static void set_allowed_options(OptionList *allowed_options)
 			_("Set network port (UDP)"))));
 	allowed_options->insert(std::make_pair("run-unittests", ValueSpec(VALUETYPE_FLAG,
 			_("Run the unit tests and exit"))));
+	allowed_options->insert(std::make_pair("run-benchmarks", ValueSpec(VALUETYPE_FLAG,
+			_("Run the benchmarks and exit"))));
 	allowed_options->insert(std::make_pair("map-dir", ValueSpec(VALUETYPE_STRING,
 			_("Same as --world (deprecated)"))));
 	allowed_options->insert(std::make_pair("world", ValueSpec(VALUETYPE_STRING,
@@ -300,8 +351,12 @@ static void set_allowed_options(OptionList *allowed_options)
 		_("Migrate from current players backend to another (Only works when using minetestserver or with --server)"))));
 	allowed_options->insert(std::make_pair("migrate-auth", ValueSpec(VALUETYPE_STRING,
 		_("Migrate from current auth backend to another (Only works when using minetestserver or with --server)"))));
+	allowed_options->insert(std::make_pair("migrate-mod-storage", ValueSpec(VALUETYPE_STRING,
+		_("Migrate from current mod storage backend to another (Only works when using minetestserver or with --server)"))));
 	allowed_options->insert(std::make_pair("terminal", ValueSpec(VALUETYPE_FLAG,
 			_("Feature an interactive terminal (Only works when using minetestserver or with --server)"))));
+	allowed_options->insert(std::make_pair("recompress", ValueSpec(VALUETYPE_FLAG,
+			_("Recompress the blocks of the given map database."))));
 #ifndef SERVER
 	allowed_options->insert(std::make_pair("speedtests", ValueSpec(VALUETYPE_FLAG,
 			_("Run speed tests"))));
@@ -429,7 +484,7 @@ static bool setup_log_params(const Settings &cmd_args)
 			color_mode = color_mode_env;
 #endif
 	}
-	if (color_mode != "") {
+	if (!color_mode.empty()) {
 		if (color_mode == "auto") {
 			Logger::color_mode = LOG_COLOR_AUTO;
 		} else if (color_mode == "always") {
@@ -442,14 +497,6 @@ static bool setup_log_params(const Settings &cmd_args)
 		}
 	}
 
-	// If trace is enabled, enable logging of certain things
-	if (cmd_args.getFlag("trace")) {
-		dstream << _("Enabling trace level debug output") << std::endl;
-		g_logger.setTraceEnabled(true);
-		dout_con_ptr = &verbosestream; // This is somewhat old
-		socket_enable_debug_output = true; // Sockets doesn't use log.h
-	}
-
 	// In certain cases, output info level on stderr
 	if (cmd_args.getFlag("info") || cmd_args.getFlag("verbose") ||
 			cmd_args.getFlag("trace") || cmd_args.getFlag("speedtests"))
@@ -458,6 +505,12 @@ static bool setup_log_params(const Settings &cmd_args)
 	// In certain cases, output verbose level on stderr
 	if (cmd_args.getFlag("verbose") || cmd_args.getFlag("trace"))
 		g_logger.addOutput(&stderr_output, LL_VERBOSE);
+
+	if (cmd_args.getFlag("trace")) {
+		dstream << _("Enabling trace level debug output") << std::endl;
+		g_logger.addOutput(&stderr_output, LL_TRACE);
+		socket_enable_debug_output = true;
+	}
 
 	return true;
 }
@@ -474,7 +527,7 @@ static bool create_userdata_path()
 	}
 #else
 	// Create user data directory
-	success = fs::CreateDir(porting::path_user);
+	success = fs::CreateAllDirs(porting::path_user);
 #endif
 
 	return success;
@@ -533,7 +586,7 @@ static void startup_message()
 static bool read_config_file(const Settings &cmd_args)
 {
 	// Path of configuration file in use
-	sanity_check(g_settings_path == "");	// Sanity check
+	sanity_check(g_settings_path.empty());	// Sanity check
 
 	if (cmd_args.exists("config")) {
 		bool r = g_settings->readConfigFile(cmd_args.get("config").c_str());
@@ -588,7 +641,7 @@ static void init_log_streams(const Settings &cmd_args)
 		warningstream << "Deprecated use of debug_log_level with an "
 			"integer value; please update your configuration." << std::endl;
 		static const char *lev_name[] =
-			{"", "error", "action", "info", "verbose"};
+			{"", "error", "action", "info", "verbose", "trace"};
 		int lev_i = atoi(conf_loglev.c_str());
 		if (lev_i < 0 || lev_i >= (int)ARRLEN(lev_name)) {
 			warningstream << "Supplied invalid debug_log_level!"
@@ -740,7 +793,7 @@ static bool auto_select_world(GameParams *game_params)
 		           << world_path << "]" << std::endl;
 	}
 
-	assert(world_path != "");	// Post-condition
+	assert(!world_path.empty());	// Post-condition
 	game_params->world_path = world_path;
 	return true;
 }
@@ -796,7 +849,7 @@ static bool determine_subgame(GameParams *game_params)
 {
 	SubgameSpec gamespec;
 
-	assert(game_params->world_path != "");	// Pre-condition
+	assert(!game_params->world_path.empty());	// Pre-condition
 
 	// If world doesn't exist
 	if (!game_params->world_path.empty()
@@ -875,7 +928,7 @@ static bool run_dedicated_server(const GameParams &game_params, const Settings &
 		return false;
 	}
 
-	// Database migration
+	// Database migration/compression
 	if (cmd_args.exists("migrate"))
 		return migrate_map_database(game_params, cmd_args);
 
@@ -884,6 +937,12 @@ static bool run_dedicated_server(const GameParams &game_params, const Settings &
 
 	if (cmd_args.exists("migrate-auth"))
 		return ServerEnvironment::migrateAuthDatabase(game_params, cmd_args);
+
+	if (cmd_args.exists("migrate-mod-storage"))
+		return Server::migrateModStorageDatabase(game_params, cmd_args);
+
+	if (cmd_args.getFlag("recompress"))
+		return recompress_map_database(game_params, cmd_args, bind_addr);
 
 	if (cmd_args.exists("terminal")) {
 #if USE_CURSES
@@ -1032,5 +1091,69 @@ static bool migrate_map_database(const GameParams &game_params, const Settings &
 	else
 		actionstream << "world.mt updated" << std::endl;
 
+	return true;
+}
+
+static bool recompress_map_database(const GameParams &game_params, const Settings &cmd_args, const Address &addr)
+{
+	Settings world_mt;
+	const std::string world_mt_path = game_params.world_path + DIR_DELIM + "world.mt";
+
+	if (!world_mt.readConfigFile(world_mt_path.c_str())) {
+		errorstream << "Cannot read world.mt at " << world_mt_path << std::endl;
+		return false;
+	}
+	const std::string &backend = world_mt.get("backend");
+	Server server(game_params.world_path, game_params.game_spec, false, addr, false);
+	MapDatabase *db = ServerMap::createDatabase(backend, game_params.world_path, world_mt);
+
+	u32 count = 0;
+	u64 last_update_time = 0;
+	bool &kill = *porting::signal_handler_killstatus();
+	const u8 serialize_as_ver = SER_FMT_VER_HIGHEST_WRITE;
+
+	// This is ok because the server doesn't actually run
+	std::vector<v3s16> blocks;
+	db->listAllLoadableBlocks(blocks);
+	db->beginSave();
+	std::istringstream iss(std::ios_base::binary);
+	std::ostringstream oss(std::ios_base::binary);
+	for (auto it = blocks.begin(); it != blocks.end(); ++it) {
+		if (kill) return false;
+
+		std::string data;
+		db->loadBlock(*it, &data);
+		if (data.empty()) {
+			errorstream << "Failed to load block " << PP(*it) << std::endl;
+			return false;
+		}
+
+		iss.str(data);
+		iss.clear();
+
+		MapBlock mb(nullptr, v3s16(0,0,0), &server);
+		u8 ver = readU8(iss);
+		mb.deSerialize(iss, ver, true);
+
+		oss.str("");
+		oss.clear();
+		writeU8(oss, serialize_as_ver);
+		mb.serialize(oss, serialize_as_ver, true, -1);
+
+		db->saveBlock(*it, oss.str());
+
+		count++;
+		if (count % 0xFF == 0 && porting::getTimeS() - last_update_time >= 1) {
+			std::cerr << " Recompressed " << count << " blocks, "
+				<< (100.0f * count / blocks.size()) << "% completed.\r";
+			db->endSave();
+			db->beginSave();
+			last_update_time = porting::getTimeS();
+		}
+	}
+	std::cerr << std::endl;
+	db->endSave();
+
+	actionstream << "Done, " << count << " blocks were recompressed." << std::endl;
 	return true;
 }

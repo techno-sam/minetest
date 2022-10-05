@@ -1,4 +1,4 @@
-_G.vector = {}
+_G.vector = {metatable = {}}
 dofile("builtin/common/vector.lua")
 
 describe("vector", function()
@@ -29,6 +29,21 @@ describe("vector", function()
 				vector.new({ d = 3 })
 			end)
 		end)
+	end)
+
+	it("zero()", function()
+		assert.same({x = 0, y = 0, z = 0}, vector.zero())
+		assert.same(vector.new(), vector.zero())
+		assert.equal(vector.new(), vector.zero())
+		assert.is_true(vector.check(vector.zero()))
+	end)
+
+	it("copy()", function()
+		local v = vector.new(1, 2, 3)
+		assert.same(v, vector.copy(v))
+		assert.same(vector.new(v), vector.copy(v))
+		assert.equal(vector.new(v), vector.copy(v))
+		assert.is_true(vector.check(vector.copy(v)))
 	end)
 
 	it("indexes", function()
@@ -113,26 +128,34 @@ describe("vector", function()
 		assert.equal(vector.new(4.1, 5.9, 5.5), a:apply(f))
 	end)
 
+	it("combine()", function()
+		local a = vector.new(1, 2, 3)
+		local b = vector.new(3, 2, 1)
+		assert.equal(vector.add(a, b), vector.combine(a, b, function(x, y) return x + y end))
+		assert.equal(vector.new(3, 2, 3), vector.combine(a, b, math.max))
+		assert.equal(vector.new(1, 2, 1), vector.combine(a, b, math.min))
+	end)
+
 	it("equals()", function()
-			local function assertE(a, b)
-				assert.is_true(vector.equals(a, b))
-			end
-			local function assertNE(a, b)
-				assert.is_false(vector.equals(a, b))
-			end
+		local function assertE(a, b)
+			assert.is_true(vector.equals(a, b))
+		end
+		local function assertNE(a, b)
+			assert.is_false(vector.equals(a, b))
+		end
 
-			assertE({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})
-			assertE({x = -1, y = 0, z = 1}, {x = -1, y = 0, z = 1})
-			assertE({x = -1, y = 0, z = 1}, vector.new(-1, 0, 1))
-			local a = {x = 2, y = 4, z = -10}
-			assertE(a, a)
-			assertNE({x = -1, y = 0, z = 1}, a)
+		assertE({x = 0, y = 0, z = 0}, {x = 0, y = 0, z = 0})
+		assertE({x = -1, y = 0, z = 1}, {x = -1, y = 0, z = 1})
+		assertE({x = -1, y = 0, z = 1}, vector.new(-1, 0, 1))
+		local a = {x = 2, y = 4, z = -10}
+		assertE(a, a)
+		assertNE({x = -1, y = 0, z = 1}, a)
 
-			assert.equal(vector.new(1, 2, 3), vector.new(1, 2, 3))
-			assert.is_true(vector.new(1, 2, 3):equals(vector.new(1, 2, 3)))
-			assert.not_equal(vector.new(1, 2, 3), vector.new(1, 2, 4))
-			assert.is_true(vector.new(1, 2, 3) == vector.new(1, 2, 3))
-			assert.is_false(vector.new(1, 2, 3) == vector.new(1, 3, 3))
+		assert.equal(vector.new(1, 2, 3), vector.new(1, 2, 3))
+		assert.is_true(vector.new(1, 2, 3):equals(vector.new(1, 2, 3)))
+		assert.not_equal(vector.new(1, 2, 3), vector.new(1, 2, 4))
+		assert.is_true(vector.new(1, 2, 3) == vector.new(1, 2, 3))
+		assert.is_false(vector.new(1, 2, 3) == vector.new(1, 3, 3))
 	end)
 
 	it("metatable is same", function()
@@ -285,6 +308,7 @@ describe("vector", function()
 
 	it("from_string()", function()
 		local v = vector.new(1, 2, 3.14)
+		assert.is_true(vector.check(vector.from_string("(1, 2, 3.14)")))
 		assert.same({v, 13}, {vector.from_string("(1, 2, 3.14)")})
 		assert.same({v, 12}, {vector.from_string("(1,2 ,3.14)")})
 		assert.same({v, 12}, {vector.from_string("(1,2,3.14,)")})

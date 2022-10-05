@@ -153,7 +153,7 @@ CollisionAxis axisAlignedCollision(
 						(std::max(movingbox.MaxEdge.Z + speed.Z * time, staticbox.MaxEdge.Z)
 							- std::min(movingbox.MinEdge.Z + speed.Z * time, staticbox.MinEdge.Z)
 							- relbox.MinEdge.Z < 0)
-					) 
+					)
 					return COLLISION_AXIS_X;
 			}
 		} else {
@@ -180,7 +180,7 @@ CollisionAxis axisAlignedCollision(
 						(std::max(movingbox.MaxEdge.Y + speed.Y * time, staticbox.MaxEdge.Y)
 							- std::min(movingbox.MinEdge.Y + speed.Y * time, staticbox.MinEdge.Y)
 							- relbox.MinEdge.Y < 0)
-					) 
+					)
 					return COLLISION_AXIS_Z;
 			}
 		}
@@ -249,10 +249,13 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 	} else {
 		time_notification_done = false;
 	}
+
+	v3f dpos_f = (*speed_f + accel_f * 0.5f * dtime) * dtime;
+	v3f newpos_f = *pos_f + dpos_f;
 	*speed_f += accel_f * dtime;
 
-	// If there is no speed, there are no collisions
-	if (speed_f->getLength() == 0)
+	// If the object is static, there are no collisions
+	if (dpos_f == v3f())
 		return result;
 
 	// Limit speed for avoiding hangs
@@ -270,7 +273,6 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 	//TimeTaker tt2("collisionMoveSimple collect boxes");
 	ScopeProfiler sp2(g_profiler, "collisionMoveSimple(): collect boxes", SPT_AVG);
 
-	v3f newpos_f = *pos_f + *speed_f * dtime;
 	v3f minpos_f(
 		MYMIN(pos_f->X, newpos_f.X),
 		MYMIN(pos_f->Y, newpos_f.Y) + 0.01f * BS, // bias rounding, player often at +/-n.5
@@ -303,7 +305,8 @@ collisionMoveResult collisionMoveSimple(Environment *env, IGameDef *gamedef,
 			if (!f.walkable)
 				continue;
 
-			int n_bouncy_value = itemgroup_get(f.groups, "bouncy");
+			// Negative bouncy may have a meaning, but we need +value here.
+			int n_bouncy_value = abs(itemgroup_get(f.groups, "bouncy"));
 
 			int neighbors = 0;
 			if (f.drawtype == NDT_NODEBOX &&

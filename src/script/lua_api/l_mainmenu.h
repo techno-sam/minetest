@@ -82,6 +82,8 @@ private:
 
 	static int l_get_content_info(lua_State *L);
 
+	static int l_check_mod_configuration(lua_State *L);
+
 	//gui
 
 	static int l_show_keys_menu(lua_State *L);
@@ -111,6 +113,8 @@ private:
 	static int l_get_user_path(lua_State *L);
 
 	static int l_get_modpath(lua_State *L);
+
+	static int l_get_modpaths(lua_State *L);
 
 	static int l_get_clientmodpath(lua_State *L);
 
@@ -149,6 +153,8 @@ private:
 	static int l_open_url(lua_State *L);
 
 	static int l_open_dir(lua_State *L);
+
+	static int l_share_file(lua_State *L);
 
 
 	// async

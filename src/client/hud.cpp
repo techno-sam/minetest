@@ -20,6 +20,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 */
 
 #include "client/hud.h"
+#include <string>
+#include <iostream>
 #include <cmath>
 #include "settings.h"
 #include "util/numeric.h"
@@ -53,7 +55,7 @@ Hud::Hud(Client *client, LocalPlayer *player,
 	this->player      = player;
 	this->inventory   = inventory;
 
-	m_hud_scaling      = g_settings->getFloat("hud_scaling");
+	m_hud_scaling      = g_settings->getFloat("hud_scaling", 0.5f, 20.0f);
 	m_scale_factor     = m_hud_scaling * RenderingEngine::getDisplayDensity();
 	m_hotbar_imagesize = std::floor(HOTBAR_IMAGE_SIZE *
 		RenderingEngine::getDisplayDensity() + 0.5f);
@@ -148,7 +150,7 @@ void Hud::drawItem(const ItemStack &item, const core::rect<s32>& rect,
 		bool selected)
 {
 	if (selected) {
-		/* draw hihlighting around selected item */
+		/* draw highlighting around selected item */
 		if (use_hotbar_selected_image) {
 			core::rect<s32> imgrect2 = rect;
 			imgrect2.UpperLeftCorner.X  -= (m_padding*2);
@@ -222,6 +224,7 @@ void Hud::drawItem(const ItemStack &item, const core::rect<s32>& rect,
 }
 
 //NOTE: selectitem = 0 -> no selected; selectitem 1-based
+// mainlist can be NULL, but draw the frame anyway.
 void Hud::drawItems(v2s32 upperleftpos, v2s32 screen_offset, s32 itemcount,
 		s32 inv_offset, InventoryList *mainlist, u16 selectitem, u16 direction)
 {
@@ -269,7 +272,8 @@ void Hud::drawItems(v2s32 upperleftpos, v2s32 screen_offset, s32 itemcount,
 
 	// Draw items
 	core::rect<s32> imgrect(0, 0, m_hotbar_imagesize, m_hotbar_imagesize);
-	for (s32 i = inv_offset; i < itemcount && (size_t)i < mainlist->getSize(); i++) {
+	const s32 list_size = mainlist ? mainlist->getSize() : 0;
+	for (s32 i = inv_offset; i < itemcount && i < list_size; i++) {
 		s32 fullimglen = m_hotbar_imagesize + m_padding * 2;
 
 		v2s32 steppos;
@@ -331,8 +335,8 @@ bool Hud::calculateScreenPos(const v3s16 &camera_offset, HudElement *e, v2s32 *p
 
 void Hud::drawLuaElements(const v3s16 &camera_offset)
 {
-	u32 text_height = g_fontengine->getTextHeight();
-	irr::gui::IGUIFont* font = g_fontengine->getFont();
+	const u32 text_height = g_fontengine->getTextHeight();
+	gui::IGUIFont *const font = g_fontengine->getFont();
 
 	// Reorder elements by z_index
 	std::vector<HudElement*> elems;
@@ -356,40 +360,40 @@ void Hud::drawLuaElements(const v3s16 &camera_offset)
 				floor(e->pos.Y * (float) m_screensize.Y + 0.5));
 		switch (e->type) {
 			case HUD_ELEM_TEXT: {
-				irr::gui::IGUIFont *textfont = font;
 				unsigned int font_size = g_fontengine->getDefaultFontSize();
 
 				if (e->size.X > 0)
 					font_size *= e->size.X;
 
-				if (font_size != g_fontengine->getDefaultFontSize())
-					textfont = g_fontengine->getFont(font_size);
+#ifdef __ANDROID__
+				// The text size on Android is not proportional with the actual scaling
+				// FIXME: why do we have such a weird unportable hack??
+				if (font_size > 3 && e->offset.X < -20)
+					font_size -= 3;
+#endif
+				auto textfont = g_fontengine->getFont(FontSpec(font_size,
+					(e->style & HUD_STYLE_MONO) ? FM_Mono : FM_Unspecified,
+					e->style & HUD_STYLE_BOLD, e->style & HUD_STYLE_ITALIC));
 
 				video::SColor color(255, (e->number >> 16) & 0xFF,
 										 (e->number >> 8)  & 0xFF,
 										 (e->number >> 0)  & 0xFF);
 				std::wstring text = unescape_translate(utf8_to_wide(e->text));
 				core::dimension2d<u32> textsize = textfont->getDimension(text.c_str());
-#ifdef __ANDROID__
-				// The text size on Android is not proportional with the actual scaling
-				irr::gui::IGUIFont *font_scaled = font_size <= 3 ?
-					textfont : g_fontengine->getFont(font_size - 3);
-				if (e->offset.X < -20)
-					textsize = font_scaled->getDimension(text.c_str());
-#endif
-				v2s32 offset((e->align.X - 1.0) * (textsize.Width / 2),
-				             (e->align.Y - 1.0) * (textsize.Height / 2));
+
+				v2s32 offset(0, (e->align.Y - 1.0) * (textsize.Height / 2));
 				core::rect<s32> size(0, 0, e->scale.X * m_scale_factor,
-				                     text_height * e->scale.Y * m_scale_factor);
+						text_height * e->scale.Y * m_scale_factor);
 				v2s32 offs(e->offset.X * m_scale_factor,
-				           e->offset.Y * m_scale_factor);
-#ifdef __ANDROID__
-				if (e->offset.X < -20)
-					font_scaled->draw(text.c_str(), size + pos + offset + offs, color);
-				else
-#endif
+						e->offset.Y * m_scale_factor);
+				std::wstringstream wss(text);
+				std::wstring line;
+				while (std::getline(wss, line, L'\n'))
 				{
-					textfont->draw(text.c_str(), size + pos + offset + offs, color);
+					core::dimension2d<u32> linesize = textfont->getDimension(line.c_str());
+					v2s32 line_offset((e->align.X - 1.0) * (linesize.Width / 2), 0);
+					textfont->draw(line.c_str(), size + pos + offset + offs + line_offset, color);
+					offset.Y += linesize.Height;
 				}
 				break; }
 			case HUD_ELEM_STATBAR: {
@@ -399,13 +403,15 @@ void Hud::drawLuaElements(const v3s16 &camera_offset)
 				break; }
 			case HUD_ELEM_INVENTORY: {
 				InventoryList *inv = inventory->getList(e->text);
+				if (!inv)
+					warningstream << "HUD: Unknown inventory list. name=" << e->text << std::endl;
 				drawItems(pos, v2s32(e->offset.X, e->offset.Y), e->number, 0,
 					inv, e->item, e->dir);
 				break; }
 			case HUD_ELEM_WAYPOINT: {
 				if (!calculateScreenPos(camera_offset, e, &pos))
 					break;
-				v3f p_pos = player->getPosition() / BS;
+				
 				pos += v2s32(e->offset.X, e->offset.Y);
 				video::SColor color(255, (e->number >> 16) & 0xFF,
 										 (e->number >> 8)  & 0xFF,
@@ -423,6 +429,7 @@ void Hud::drawLuaElements(const v3s16 &camera_offset)
 				font->draw(text.c_str(), bounds + v2s32((e->align.X - 1.0) * bounds.getWidth() / 2, 0), color);
 				if (draw_precision) {
 					std::ostringstream os;
+					v3f p_pos = player->getPosition() / BS;
 					float distance = std::floor(precision * p_pos.getDistanceFrom(e->world_pos)) / precision;
 					os << distance << unit;
 					text = unescape_translate(utf8_to_wide(os.str()));
@@ -670,7 +677,7 @@ void Hud::drawStatbar(v2s32 pos, u16 corner, u16 drawdir,
 	// Rectangles for 1/2 the "off state" texture
 	core::rect<s32> srchalfrect2, dsthalfrect2;
 
-	if (count % 2 == 1) {
+	if (count % 2 == 1 || maxcount % 2 == 1) {
 		// Need to draw halves: Calculate rectangles
 		srchalfrect  = calculate_clipping_rect(srcd, steppos);
 		dsthalfrect  = calculate_clipping_rect(dstd, steppos);
@@ -705,7 +712,7 @@ void Hud::drawStatbar(v2s32 pos, u16 corner, u16 drawdir,
 		}
 	}
 
-	if (stat_texture_bg && maxcount > count / 2) {
+	if (stat_texture_bg && maxcount > count) {
 		// Draw "off state" textures
 		s32 start_offset;
 		if (count % 2 == 1)
@@ -725,8 +732,7 @@ void Hud::drawStatbar(v2s32 pos, u16 corner, u16 drawdir,
 
 		if (maxcount % 2 == 1) {
 			draw2DImageFilterScaled(driver, stat_texture_bg,
-					dsthalfrect + p, srchalfrect,
-					NULL, colors, true);
+				dsthalfrect + p, srchalfrect, NULL, colors, true);
 		}
 	}
 }
@@ -861,13 +867,14 @@ void Hud::drawSelectionMesh()
 	}
 }
 
-void Hud::toggleBlockBounds()
+enum Hud::BlockBoundsMode Hud::toggleBlockBounds()
 {
 	m_block_bounds_mode = static_cast<BlockBoundsMode>(m_block_bounds_mode + 1);
 
 	if (m_block_bounds_mode >= BLOCK_BOUNDS_MAX) {
 		m_block_bounds_mode = BLOCK_BOUNDS_OFF;
 	}
+	return m_block_bounds_mode;
 }
 
 void Hud::disableBlockBounds()
@@ -894,7 +901,7 @@ void Hud::drawBlockBounds()
 
 	v3f offset = intToFloat(client->getCamera()->getOffset(), BS);
 
-	s8 radius = m_block_bounds_mode == BLOCK_BOUNDS_ALL ? 2 : 0;
+	s8 radius = m_block_bounds_mode == BLOCK_BOUNDS_NEAR ? 2 : 0;
 
 	v3f halfNode = v3f(BS, BS, BS) / 2.0f;
 
@@ -1007,11 +1014,19 @@ void drawItemStack(
 
 	bool draw_overlay = false;
 
+	bool has_mesh = false;
+	ItemMesh *imesh;
+
+	core::rect<s32> viewrect = rect;
+	if (clip != nullptr)
+		viewrect.clipAgainst(*clip);
+
 	// Render as mesh if animated or no inventory image
 	if ((enable_animations && rotation_kind < IT_ROT_NONE) || def.inventory_image.empty()) {
-		ItemMesh *imesh = client->idef()->getWieldMesh(def.name, client);
-		if (!imesh || !imesh->mesh)
-			return;
+		imesh = client->idef()->getWieldMesh(def.name, client);
+		has_mesh = imesh && imesh->mesh;
+	}
+	if (has_mesh) {
 		scene::IMesh *mesh = imesh->mesh;
 		driver->clearBuffers(video::ECBF_DEPTH);
 		s32 delta = 0;
@@ -1027,9 +1042,6 @@ void drawItemStack(
 		core::rect<s32> oldViewPort = driver->getViewPort();
 		core::matrix4 oldProjMat = driver->getTransform(video::ETS_PROJECTION);
 		core::matrix4 oldViewMat = driver->getTransform(video::ETS_VIEW);
-		core::rect<s32> viewrect = rect;
-		if (clip)
-			viewrect.clipAgainst(*clip);
 
 		core::matrix4 ProjMatrix;
 		ProjMatrix.buildProjectionMatrixOrthoLH(2.0f, 2.0f, -1.0f, 100.0f);
@@ -1103,10 +1115,17 @@ void drawItemStack(
 		draw_overlay = def.type == ITEM_NODE && def.inventory_image.empty();
 	} else { // Otherwise just draw as 2D
 		video::ITexture *texture = client->idef()->getInventoryTexture(def.name, client);
-		if (!texture)
-			return;
-		video::SColor color =
-			client->idef()->getItemstackColor(item, client);
+		video::SColor color;
+		if (texture) {
+			color = client->idef()->getItemstackColor(item, client);
+		} else {
+			color = video::SColor(255, 255, 255, 255);
+			ITextureSource *tsrc = client->getTextureSource();
+			texture = tsrc->getTexture("no_texture.png");
+			if (!texture)
+				return;
+		}
+
 		const video::SColor colors[] = { color, color, color, color };
 
 		draw2DImageFilterScaled(driver, texture, rect,
@@ -1166,24 +1185,68 @@ void drawItemStack(
 		driver->draw2DRectangle(color, progressrect2, clip);
 	}
 
-	if (font != NULL && item.count >= 2) {
+	const std::string &count_text = item.metadata.getString("count_meta");
+	if (font != nullptr && (item.count >= 2 || !count_text.empty())) {
 		// Get the item count as a string
-		std::string text = itos(item.count);
-		v2u32 dim = font->getDimension(utf8_to_wide(text).c_str());
+		std::string text = count_text.empty() ? itos(item.count) : count_text;
+		v2u32 dim = font->getDimension(utf8_to_wide(unescape_enriched(text)).c_str());
 		v2s32 sdim(dim.X, dim.Y);
 
 		core::rect<s32> rect2(
-			/*rect.UpperLeftCorner,
-			core::dimension2d<u32>(rect.getWidth(), 15)*/
 			rect.LowerRightCorner - sdim,
-			sdim
+			rect.LowerRightCorner
 		);
 
-		video::SColor bgcolor(128, 0, 0, 0);
-		driver->draw2DRectangle(bgcolor, rect2, clip);
+		// get the count alignment
+		s32 count_alignment = stoi(item.metadata.getString("count_alignment"));
+		if (count_alignment != 0) {
+			s32 a_x = count_alignment & 3;
+			s32 a_y = (count_alignment >> 2) & 3;
+
+			s32 x1, x2, y1, y2;
+			switch (a_x) {
+			case 1: // left
+				x1 = rect.UpperLeftCorner.X;
+				x2 = x1 + sdim.X;
+				break;
+			case 2: // middle
+				x1 = (rect.UpperLeftCorner.X + rect.LowerRightCorner.X - sdim.X) / 2;
+				x2 = x1 + sdim.X;
+				break;
+			case 3: // right
+				x2 = rect.LowerRightCorner.X;
+				x1 = x2 - sdim.X;
+				break;
+			default: // 0 = default
+				x1 = rect2.UpperLeftCorner.X;
+				x2 = rect2.LowerRightCorner.X;
+				break;
+			}
+
+			switch (a_y) {
+			case 1: // up
+				y1 = rect.UpperLeftCorner.Y;
+				y2 = y1 + sdim.Y;
+				break;
+			case 2: // middle
+				y1 = (rect.UpperLeftCorner.Y + rect.LowerRightCorner.Y - sdim.Y) / 2;
+				y2 = y1 + sdim.Y;
+				break;
+			case 3: // down
+				y2 = rect.LowerRightCorner.Y;
+				y1 = y2 - sdim.Y;
+				break;
+			default: // 0 = default
+				y1 = rect2.UpperLeftCorner.Y;
+				y2 = rect2.LowerRightCorner.Y;
+				break;
+			}
+
+			rect2 = core::rect<s32>(x1, y1, x2, y2);
+		}
 
 		video::SColor color(255, 255, 255, 255);
-		font->draw(text.c_str(), rect2, color, false, false, clip);
+		font->draw(utf8_to_wide(text).c_str(), rect2, color, false, false, &viewrect);
 	}
 }
 

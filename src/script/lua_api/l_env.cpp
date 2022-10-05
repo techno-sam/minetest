@@ -158,7 +158,7 @@ int LuaRaycast::l_next(lua_State *L)
 	csm = getClient(L) != nullptr;
 #endif
 
-	LuaRaycast *o = checkobject(L, 1);
+	LuaRaycast *o = checkObject<LuaRaycast>(L, 1);
 	PointedThing pointed;
 	env->continueRaycast(&o->state, &pointed);
 	if (pointed.type == POINTEDTHING_NOTHING)
@@ -194,17 +194,6 @@ int LuaRaycast::create_object(lua_State *L)
 	return 1;
 }
 
-LuaRaycast *LuaRaycast::checkobject(lua_State *L, int narg)
-{
-	NO_MAP_LOCK_REQUIRED;
-
-	luaL_checktype(L, narg, LUA_TUSERDATA);
-	void *ud = luaL_checkudata(L, narg, className);
-	if (!ud)
-		luaL_typerror(L, narg, className);
-	return *(LuaRaycast **) ud;
-}
-
 int LuaRaycast::gc_object(lua_State *L)
 {
 	LuaRaycast *o = *(LuaRaycast **) (lua_touserdata(L, 1));
@@ -214,31 +203,12 @@ int LuaRaycast::gc_object(lua_State *L)
 
 void LuaRaycast::Register(lua_State *L)
 {
-	lua_newtable(L);
-	int methodtable = lua_gettop(L);
-	luaL_newmetatable(L, className);
-	int metatable = lua_gettop(L);
-
-	lua_pushliteral(L, "__metatable");
-	lua_pushvalue(L, methodtable);
-	lua_settable(L, metatable);
-
-	lua_pushliteral(L, "__index");
-	lua_pushvalue(L, methodtable);
-	lua_settable(L, metatable);
-
-	lua_pushliteral(L, "__gc");
-	lua_pushcfunction(L, gc_object);
-	lua_settable(L, metatable);
-
-	lua_pushliteral(L, "__call");
-	lua_pushcfunction(L, l_next);
-	lua_settable(L, metatable);
-
-	lua_pop(L, 1);
-
-	luaL_register(L, nullptr, methods);
-	lua_pop(L, 1);
+	static const luaL_Reg metamethods[] = {
+		{"__call", l_next},
+		{"__gc", gc_object},
+		{0, 0}
+	};
+	registerClass(L, className, methods, metamethods);
 
 	lua_register(L, className, create_object);
 }
@@ -477,7 +447,7 @@ int ModApiEnvMod::l_place_node(lua_State *L)
 		return 1;
 	}
 	// Create item to place
-	ItemStack item(ndef->get(n).name, 1, 0, idef);
+	Optional<ItemStack> item = ItemStack(ndef->get(n).name, 1, 0, idef);
 	// Make pointed position
 	PointedThing pointed;
 	pointed.type = POINTEDTHING_NODE;
@@ -640,7 +610,7 @@ int ModApiEnvMod::l_add_entity(lua_State *L)
 
 	v3f pos = checkFloatPos(L, 1);
 	const char *name = luaL_checkstring(L, 2);
-	const char *staticdata = luaL_optstring(L, 3, "");
+	std::string staticdata = readParam<std::string>(L, 3, "");
 
 	ServerActiveObject *obj = new LuaEntitySAO(env, pos, name, staticdata);
 	int objectid = env->addActiveObject(obj);
@@ -757,7 +727,7 @@ int ModApiEnvMod::l_get_objects_in_area(lua_State *L)
 {
 	GET_ENV_PTR;
 	ScriptApiBase *script = getScriptApiBase(L);
-	
+
 	v3f minp = read_v3f(L, 1) * BS;
 	v3f maxp = read_v3f(L, 2) * BS;
 	aabb3f box(minp, maxp);
@@ -880,6 +850,21 @@ int ModApiEnvMod::l_find_node_near(lua_State *L)
 	return 0;
 }
 
+static void checkArea(v3s16 &minp, v3s16 &maxp)
+{
+	auto volume = VoxelArea(minp, maxp).getVolume();
+	// Volume limit equal to 8 default mapchunks, (80 * 2) ^ 3 = 4,096,000
+	if (volume > 4096000) {
+		throw LuaError("Area volume exceeds allowed value of 4096000");
+	}
+
+	// Clamp to map range to avoid problems
+#define CLAMP(arg) core::clamp(arg, (s16)-MAX_MAP_GENERATION_LIMIT, (s16)MAX_MAP_GENERATION_LIMIT)
+	minp = v3s16(CLAMP(minp.X), CLAMP(minp.Y), CLAMP(minp.Z));
+	maxp = v3s16(CLAMP(maxp.X), CLAMP(maxp.Y), CLAMP(maxp.Z));
+#undef CLAMP
+}
+
 // find_nodes_in_area(minp, maxp, nodenames, [grouped])
 int ModApiEnvMod::l_find_nodes_in_area(lua_State *L)
 {
@@ -899,13 +884,7 @@ int ModApiEnvMod::l_find_nodes_in_area(lua_State *L)
 	}
 #endif
 
-	v3s16 cube = maxp - minp + 1;
-	// Volume limit equal to 8 default mapchunks, (80 * 2) ^ 3 = 4,096,000
-	if ((u64)cube.X * (u64)cube.Y * (u64)cube.Z > 4096000) {
-		luaL_error(L, "find_nodes_in_area(): area volume"
-				" exceeds allowed value of 4096000");
-		return 0;
-	}
+	checkArea(minp, maxp);
 
 	std::vector<content_t> filter;
 	collectNodeIds(L, 3, ndef, filter);
@@ -1010,13 +989,7 @@ int ModApiEnvMod::l_find_nodes_in_area_under_air(lua_State *L)
 	}
 #endif
 
-	v3s16 cube = maxp - minp + 1;
-	// Volume limit equal to 8 default mapchunks, (80 * 2) ^ 3 = 4,096,000
-	if ((u64)cube.X * (u64)cube.Y * (u64)cube.Z > 4096000) {
-		luaL_error(L, "find_nodes_in_area_under_air(): area volume"
-				" exceeds allowed value of 4096000");
-		return 0;
-	}
+	checkArea(minp, maxp);
 
 	std::vector<content_t> filter;
 	collectNodeIds(L, 3, ndef, filter);
@@ -1216,7 +1189,8 @@ int ModApiEnvMod::l_emerge_area(lua_State *L)
 	sortBoxVerticies(bpmin, bpmax);
 
 	size_t num_blocks = VoxelArea(bpmin, bpmax).getVolume();
-	assert(num_blocks != 0);
+	if (num_blocks == 0)
+		return 0;
 
 	if (lua_isfunction(L, 3)) {
 		callback = LuaEmergeAreaCallback;
@@ -1383,7 +1357,7 @@ int ModApiEnvMod::l_transforming_liquid_add(lua_State *L)
 	GET_ENV_PTR;
 
 	v3s16 p0 = read_v3s16(L, 1);
-	env->getMap().transforming_liquid_add(p0);
+	env->getServerMap().transforming_liquid_add(p0);
 	return 1;
 }
 
@@ -1406,7 +1380,7 @@ int ModApiEnvMod::l_compare_block_status(lua_State *L)
 	v3s16 nodepos = check_v3s16(L, 1);
 	std::string condition_s = luaL_checkstring(L, 2);
 	auto status = env->getBlockStatus(getNodeBlockPos(nodepos));
-	
+
 	int condition_i = -1;
 	if (!string_to_enum(es_BlockStatusType, condition_i, condition_s))
 		return 0; // Unsupported

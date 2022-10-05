@@ -320,25 +320,18 @@ void GUIButton::draw()
 					sourceRect, &AbsoluteClippingRect,
 					image_colors, UseAlphaChannel);
 		} else {
-			core::rect<s32> middle = BgMiddle;
-			// `-x` is interpreted as `w - x`
-			if (middle.LowerRightCorner.X < 0)
-				middle.LowerRightCorner.X += texture->getOriginalSize().Width;
-			if (middle.LowerRightCorner.Y < 0)
-				middle.LowerRightCorner.Y += texture->getOriginalSize().Height;
 			draw2DImage9Slice(driver, texture,
 					ScaleImage ? AbsoluteRect : core::rect<s32>(pos, sourceRect.getSize()),
-					middle, &AbsoluteClippingRect, image_colors);
+					sourceRect, BgMiddle, &AbsoluteClippingRect, image_colors);
 		}
 		// END PATCH
 	}
 
 	if (SpriteBank)
 	{
-		core::position2di pos(buttonCenter);
-
 		if (isEnabled())
 		{
+			core::position2di pos(buttonCenter);
 			// pressed / unpressed animation
 			EGUI_BUTTON_STATE state = Pressed ? EGBS_BUTTON_DOWN : EGBS_BUTTON_UP;
 			drawSprite(state, ClickTime, pos);
@@ -631,85 +624,6 @@ bool GUIButton::isDrawingBorder() const
 	return DrawBorder;
 }
 
-
-//! Writes attributes of the element.
-void GUIButton::serializeAttributes(io::IAttributes* out, io::SAttributeReadWriteOptions* options=0) const
-{
-	IGUIButton::serializeAttributes(out,options);
-
-	out->addBool	("PushButton",		IsPushButton );
-	if (IsPushButton)
-		out->addBool("Pressed",		    Pressed);
-
-	for ( u32 i=0; i<(u32)EGBIS_COUNT; ++i )
-	{
-		if ( ButtonImages[i].Texture )
-		{
-			core::stringc name( GUIButtonImageStateNames[i] );
-			out->addTexture(name.c_str(), ButtonImages[i].Texture);
-			name += "Rect";
-			out->addRect(name.c_str(), ButtonImages[i].SourceRect);
-		}
-	}
-
-	out->addBool	("UseAlphaChannel",	UseAlphaChannel);
-	out->addBool	("Border",		    DrawBorder);
-	out->addBool	("ScaleImage",		ScaleImage);
-
-	for ( u32 i=0; i<(u32)EGBS_COUNT; ++i )
-	{
-		if ( ButtonSprites[i].Index >= 0 )
-		{
-			core::stringc nameIndex( GUIButtonStateNames[i] );
-			nameIndex += "Index";
-			out->addInt(nameIndex.c_str(), ButtonSprites[i].Index );
-
-			core::stringc nameColor( GUIButtonStateNames[i] );
-			nameColor += "Color";
-			out->addColor(nameColor.c_str(), ButtonSprites[i].Color );
-
-			core::stringc nameLoop( GUIButtonStateNames[i] );
-			nameLoop += "Loop";
-			out->addBool(nameLoop.c_str(), ButtonSprites[i].Loop );
-
-			core::stringc nameScale( GUIButtonStateNames[i] );
-			nameScale += "Scale";
-			out->addBool(nameScale.c_str(), ButtonSprites[i].Scale );
-		}
-	}
-
-	//   out->addString  ("OverrideFont",	OverrideFont);
-}
-
-
-//! Reads attributes of the element
-void GUIButton::deserializeAttributes(io::IAttributes* in, io::SAttributeReadWriteOptions* options=0)
-{
-	IGUIButton::deserializeAttributes(in,options);
-
-	IsPushButton	= in->getAttributeAsBool("PushButton");
-	Pressed		= IsPushButton ? in->getAttributeAsBool("Pressed") : false;
-
-	core::rect<s32> rec = in->getAttributeAsRect("ImageRect");
-	if (rec.isValid())
-		setImage( in->getAttributeAsTexture("Image"), rec);
-	else
-		setImage( in->getAttributeAsTexture("Image") );
-
-	rec = in->getAttributeAsRect("PressedImageRect");
-	if (rec.isValid())
-		setPressedImage( in->getAttributeAsTexture("PressedImage"), rec);
-	else
-		setPressedImage( in->getAttributeAsTexture("PressedImage") );
-
-	setDrawBorder(in->getAttributeAsBool("Border"));
-	setUseAlphaChannel(in->getAttributeAsBool("UseAlphaChannel"));
-	setScaleImage(in->getAttributeAsBool("ScaleImage"));
-
-	//   setOverrideFont(in->getAttributeAsString("OverrideFont"));
-
-	updateAbsolutePosition();
-}
 
 // PATCH
 GUIButton* GUIButton::addButton(IGUIEnvironment *environment,

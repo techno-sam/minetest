@@ -1,4 +1,4 @@
--- Minetest: builtin/misc_register.lua
+-- Minetest: builtin/register.lua
 
 local S = core.get_translator("__builtin")
 
@@ -303,14 +303,16 @@ end
 
 function core.on_craft(itemstack, player, old_craft_list, craft_inv)
 	for _, func in ipairs(core.registered_on_crafts) do
-		itemstack = func(itemstack, player, old_craft_list, craft_inv) or itemstack
+		-- cast to ItemStack since func() could return a string
+		itemstack = ItemStack(func(itemstack, player, old_craft_list, craft_inv) or itemstack)
 	end
 	return itemstack
 end
 
 function core.craft_predict(itemstack, player, old_craft_list, craft_inv)
 	for _, func in ipairs(core.registered_craft_predicts) do
-		itemstack = func(itemstack, player, old_craft_list, craft_inv) or itemstack
+		-- cast to ItemStack since func() could return a string
+		itemstack = ItemStack(func(itemstack, player, old_craft_list, craft_inv) or itemstack)
 	end
 	return itemstack
 end
@@ -403,8 +405,14 @@ function core.override_item(name, redefinition)
 	register_item_raw(item)
 end
 
-
-core.callback_origins = {}
+do
+	local default = {mod = "??", name = "??"}
+	core.callback_origins = setmetatable({}, {
+		__index = function()
+			return default
+		end
+	})
+end
 
 function core.run_callbacks(callbacks, mode, ...)
 	assert(type(callbacks) == "table")
@@ -419,9 +427,7 @@ function core.run_callbacks(callbacks, mode, ...)
 	local ret = nil
 	for i = 1, cb_len do
 		local origin = core.callback_origins[callbacks[i]]
-		if origin then
-			core.set_last_run_mod(origin.mod)
-		end
+		core.set_last_run_mod(origin.mod)
 		local cb_ret = callbacks[i](...)
 
 		if mode == 0 and i == 1 then
@@ -601,6 +607,7 @@ core.registered_on_crafts, core.register_on_craft = make_registration()
 core.registered_craft_predicts, core.register_craft_predict = make_registration()
 core.registered_on_protection_violation, core.register_on_protection_violation = make_registration()
 core.registered_on_item_eats, core.register_on_item_eat = make_registration()
+core.registered_on_item_pickups, core.register_on_item_pickup = make_registration()
 core.registered_on_punchplayers, core.register_on_punchplayer = make_registration()
 core.registered_on_priv_grant, core.register_on_priv_grant = make_registration()
 core.registered_on_priv_revoke, core.register_on_priv_revoke = make_registration()

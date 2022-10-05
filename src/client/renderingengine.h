@@ -46,6 +46,10 @@ class RenderingCore;
 class RenderingEngine
 {
 public:
+	/// Default color factor before applying effects like bloom or tomemapping
+	/// this is derived from tonemapping code and tuned empirically
+	static constexpr float DEFAULT_EXPOSURE_FACTOR = 2.5f;
+
 	RenderingEngine(IEventReceiver *eventReceiver);
 	~RenderingEngine();
 
@@ -55,7 +59,6 @@ public:
 
 	static const VideoDriverInfo &getVideoDriverInfo(irr::video::E_DRIVER_TYPE type);
 	static float getDisplayDensity();
-	static v2u32 getDisplaySize();
 
 	bool setupTopLevelWindow(const std::string &name);
 	void setupTopLevelXorgWindow(const std::string &name);
