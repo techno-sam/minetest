@@ -461,7 +461,7 @@ private:
 	 * types were drawn before others.
 	 * This function sorts the elements in the old order for backwards compatibility.
 	 */
-	void legacySortElements(std::list<IGUIElement *>::Iterator from);
+	void legacySortElements(core::list<IGUIElement *>::Iterator from);
 
 	int m_btn_height;
 	gui::IGUIFont *m_font = nullptr;

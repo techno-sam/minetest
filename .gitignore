@@ -115,5 +115,7 @@ lib/irrlichtmt
 /bin_HIDDEN
 /server
 /unused_mods
-util/Never-Gonna-Give-You-Up-Rick-Astley-pixels.png
-util/pixart.png
+/util/Never-Gonna-Give-You-Up-Rick-Astley-pixels.png
+/util/pixart.png
+/util/notes.txt
+/client/mod_storage_backup
