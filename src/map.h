@@ -259,7 +259,7 @@ public:
 	/*
 		Misc.
 	*/
-	std::map<v2s16, MapSector*> *getSectorsPtr(){return &m_sectors;}
+	std::unordered_map<v2s16, MapSector*> *getSectorsPtr(){return &m_sectors;}
 
 	/*
 		Variables

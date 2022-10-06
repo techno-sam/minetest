@@ -43,7 +43,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/shadows/dynamicshadowsrender.h"
 
 /// Draw3D pipeline step
-void Draw3D::drawTracersAndESP()
+void Draw3D::drawTracersAndESP(PipelineContext &context)
 {
 	bool draw_esp = g_settings->getBool("enable_esp");
 	bool draw_tracers = g_settings->getBool("enable_tracers");
@@ -52,20 +52,20 @@ void Draw3D::drawTracersAndESP()
 	//errorstream << "drawTracersAndESP" << std::endl;
 	//bool draw_chunk_bounds = g_settings->getBool("enable_chunk_bounds");
 	//bool draw_sector_bounds = g_settings->getBool("enable_sector_bounds");
-	ClientEnvironment &env = client->getEnv();
-	Camera *camera = client->getCamera();
+	ClientEnvironment &env = context.client->getEnv();
+	Camera *camera = context.client->getCamera();
 	
 	v3f camera_offset = intToFloat(camera->getOffset(), BS);
 	
 	v3f eye_pos = (camera->getPosition() + camera->getDirection() - camera_offset);
  	
  	video::SMaterial material, oldmaterial;
- 	oldmaterial = driver->getMaterial2D();
+ 	oldmaterial = context.device->getVideoDriver()->getMaterial2D();
 	material.setFlag(video::EMF_LIGHTING, false);
 	material.setFlag(video::EMF_BILINEAR_FILTER, false);
 	material.setFlag(video::EMF_ZBUFFER, false);
 	material.setFlag(video::EMF_ZWRITE_ENABLE, false);
-	driver->setMaterial(material);
+	context.device->getVideoDriver()->setMaterial(material);
 
 
 	LocalPlayer *player = env.getLocalPlayer();
@@ -97,9 +97,9 @@ void Draw3D::drawTracersAndESP()
 			box.MinEdge += pos;
 			box.MaxEdge += pos;
 			if (draw_esp and (cao->isPlayer()==true or g_settings->getBool("player_only_esp")==false))
-				driver->draw3DBox(box, draw_color);
+				context.device->getVideoDriver()->draw3DBox(box, draw_color);
 			if (draw_tracers and (cao->isPlayer()==true or g_settings->getBool("player_only_tracers")==false))
-				driver->draw3DLine(eye_pos, box.getCenter(), draw_color);
+				context.device->getVideoDriver()->draw3DLine(eye_pos, box.getCenter(), draw_color);
 		}
 		//draw tracers to localplayer
 		if (g_settings->getBool("freecam")) {
@@ -110,14 +110,14 @@ void Draw3D::drawTracersAndESP()
 			box.MinEdge += pos;
 			box.MaxEdge += pos;
 			if (draw_esp)
-				driver->draw3DBox(box, draw_color);
+				context.device->getVideoDriver()->draw3DBox(box, draw_color);
 			if (draw_tracers)
-				driver->draw3DLine(eye_pos, box.getCenter(), draw_color);
+				context.device->getVideoDriver()->draw3DLine(eye_pos, box.getCenter(), draw_color);
 		}
 	}
 	if (draw_node_esp || draw_node_tracers) {
 		Map &map = env.getMap();
-		std::map<v2s16, MapSector*> *sectors = map.getSectorsPtr();
+		std::unordered_map<v2s16, MapSector*> *sectors = map.getSectorsPtr();
 		
 		for (auto &sector_it : *sectors) {
 			MapSector *sector = sector_it.second;
@@ -130,16 +130,16 @@ void Draw3D::drawTracersAndESP()
 					v3f pos = intToFloat(p, BS) - camera_offset;
 					MapNode node = map.getNode(p);
 					std::vector<aabb3f> boxes;
-					node.getSelectionBoxes(client->getNodeDefManager(), &boxes, node.getNeighbors(p, &map));
-					video::SColor color = client->getNodeDefManager()->get(node).minimap_color;
+					node.getSelectionBoxes(context.client->getNodeDefManager(), &boxes, node.getNeighbors(p, &map));
+					video::SColor color = context.client->getNodeDefManager()->get(node).minimap_color;
 				
 					for (aabb3f box : boxes) {
 						box.MinEdge += pos;
 						box.MaxEdge += pos;
 						if (draw_node_esp)
-							driver->draw3DBox(box, color);
+							context.device->getVideoDriver()->draw3DBox(box, color);
 						if (draw_node_tracers)
-							driver->draw3DLine(eye_pos, box.getCenter(), color);
+							context.device->getVideoDriver()->draw3DLine(eye_pos, box.getCenter(), color);
 					}
 				}
 			}
@@ -147,7 +147,23 @@ void Draw3D::drawTracersAndESP()
 
 	}
 	
-	driver->setMaterial(oldmaterial);
+	context.device->getVideoDriver()->setMaterial(oldmaterial);
+}
+
+
+
+static void applyTileColor(PreMeshBuffer &pmb)
+{
+	video::SColor tc = pmb.layer.color;
+	if (tc == video::SColor(0xFFFFFFFF))
+		return;
+	for (video::S3DVertex &vertex : pmb.vertices) {
+		video::SColor *c = &vertex.Color;
+		c->set(c->getAlpha(),
+			c->getRed() * tc.getRed() / 255,
+			c->getGreen() * tc.getGreen() / 255,
+			c->getBlue() * tc.getBlue() / 255);
+	}
 }
 
 void Draw3D::run(PipelineContext &context)
@@ -161,35 +177,35 @@ void Draw3D::run(PipelineContext &context)
 		return;
 	context.hud->drawBlockBounds();
 	context.hud->drawSelectionMesh();
-	if (!shadow_renderer) {//for some reason, freezes computer when shadows and HUD nodes are enabled simultaneously
+	if (true){//!context.shadow_renderer) {//for some reason, freezes computer when shadows and HUD nodes are enabled simultaneously - bug fixed, cool!
 	// HUD nodes (can't be drawn in drawHUD, because the transform is all wrong)
 	//preparation
-	ClientEnvironment &env = client->getEnv();
-	Camera *camera = client->getCamera();
+	ClientEnvironment &env = context.client->getEnv();
+	Camera *camera = context.client->getCamera();
 	
 	v3f camera_offset = intToFloat(camera->getOffset(), BS);
 	
 	v3f eye_pos = (camera->getPosition() + camera->getDirection() - camera_offset);
  	
  	video::SMaterial material, oldmaterial;
- 	oldmaterial = driver->getMaterial2D();
+ 	oldmaterial = context.device->getVideoDriver()->getMaterial2D();
 	/*material.setFlag(video::EMF_LIGHTING, false);
 	material.setFlag(video::EMF_BILINEAR_FILTER, false);
 	material.setFlag(video::EMF_ZBUFFER, false);
 	material.setFlag(video::EMF_ZWRITE_ENABLE, false);
-	driver->setMaterial(material);*/
+	context.device->getVideoDriver()->setMaterial(material);*/
 
 	LocalPlayer *player = env.getLocalPlayer();
 
-	const NodeDefManager *ndefmgr = client->getNodeDefManager();
+	const NodeDefManager *ndefmgr = context.client->getNodeDefManager();
 
-	auto *m_shdrsrc = client->getShaderSource();
+	auto *m_shdrsrc = context.client->getShaderSource();
 
 	//voxelmanip prep
 	auto m_cache_enable_shaders = g_settings->getBool("enable_shaders");
 	auto m_cache_smooth_lighting = g_settings->getBool("smooth_lighting");
 	auto m_cache_enable_vbo = g_settings->getBool("enable_vbo");
-	MeshMakeData mesh_data = MeshMakeData(client,m_cache_enable_shaders);
+	MeshMakeData mesh_data = MeshMakeData(context.client,m_cache_enable_shaders);
 	mesh_data.m_blockpos = {0,0,0};
 	//VoxelManipulator data_manip = mesh_data.m_vmanip;
 	// actual logic
@@ -210,7 +226,41 @@ void Draw3D::run(PipelineContext &context)
 			}
 		}
 	}
-	MeshCollector mesh_collector;
+
+	// 4-21ms for MAP_BLOCKSIZE=16  (NOTE: probably outdated)
+	// 24-155ms for MAP_BLOCKSIZE=32  (NOTE: probably outdated)
+	//TimeTaker timer1("MapBlockMesh()");
+
+//	std::vector<FastFace> fastfaces_new;
+//	fastfaces_new.reserve(512);
+	/*
+		We are including the faces of the trailing edges of the block.
+		This means that when something changes, the caller must
+		also update the meshes of the blocks at the leading edges.
+
+		NOTE: This is the slowest part of this method.
+	*/
+/*	{
+		// 4-23ms for MAP_BLOCKSIZE=16  (NOTE: probably outdated)
+		//TimeTaker timer2("updateAllFastFaceRows()");
+		updateAllFastFaceRows(mesh_data, fastfaces_new);
+	}
+	MeshCollector mesh_collector(v3f((MAP_BLOCKSIZE * 0.5f - 0.5f) * BS));
+
+	{
+		// avg 0ms (100ms spikes when loading textures the first time)
+		// (NOTE: probably outdated)
+		//TimeTaker timer2("MeshCollector building");
+
+		for (const FastFace &f : fastfaces_new) {
+			static const u16 indices[] = {0, 1, 2, 2, 3, 0};
+			static const u16 indices_alternate[] = {0, 1, 3, 2, 3, 1};
+			const u16 *indices_p =
+				f.vertex_0_2_connected ? indices : indices_alternate;
+			mesh_collector.append(f.tile, f.vertices, 4, indices_p, 6);
+		}
+	}*/
+	MeshCollector mesh_collector(v3f((MAP_BLOCKSIZE * 0.5f - 0.5f) * BS));
 	MapblockMeshGenerator mesh_gen = MapblockMeshGenerator(&mesh_data,&mesh_collector,mesh_data.m_client->getSceneManager()->getMeshManipulator());
 	mesh_gen.generateClient();
 
@@ -278,7 +328,7 @@ void Draw3D::run(PipelineContext &context)
 
 			video::SMaterial& material = buf->getMaterial();
 			video::IMaterialRenderer* rnd =
-				driver->getMaterialRenderer(material.MaterialType);
+				context.device->getVideoDriver()->getMaterialRenderer(material.MaterialType);
 			bool c_transparent = (rnd && rnd->isTransparent());
 			bool c_is_transparent_pass = false;//c_transparent;
 			if (true) {//c_transparent == c_is_transparent_pass) {
@@ -312,7 +362,7 @@ void Draw3D::run(PipelineContext &context)
 						"returning." << std::endl;
 				return;
 			}
-			driver->setMaterial(list.m);
+			context.device->getVideoDriver()->setMaterial(list.m);
 
 			//drawcall_count += list.bufs.size();
 			for (auto &pair : list.bufs) {
@@ -322,8 +372,8 @@ void Draw3D::run(PipelineContext &context)
 				m.setTranslation(block_wpos - offset);
 				//errorstream << "block_wpos: " << PP(block_wpos) << ", translation: " << PP(block_wpos - offset) << ", vertex count: " << buf->getVertexCount() << std::endl;
 
-				driver->setTransform(video::ETS_WORLD, m);
-				driver->drawMeshBuffer(buf);
+				context.device->getVideoDriver()->setTransform(video::ETS_WORLD, m);
+				context.device->getVideoDriver()->drawMeshBuffer(buf);
 				//vertex_count += buf->getVertexCount();
 			}
 		}
@@ -332,13 +382,13 @@ void Draw3D::run(PipelineContext &context)
 	g_profiler->avg(prefix + "draw ghost meshes [ms]", draw.stop(true));
 
 	//cleanup
-	driver->setMaterial(oldmaterial);
+	context.device->getVideoDriver()->setMaterial(oldmaterial);
 	
 	for (scene::IMesh *m : mclient_mesh) {
 		if (m_cache_enable_vbo) {
 			for (u32 i = 0; i < m->getMeshBufferCount(); i++) {
 				scene::IMeshBuffer *buf = m->getMeshBuffer(i);
-				driver->removeHardwareBuffer(buf);
+				context.device->getVideoDriver()->removeHardwareBuffer(buf);
 			}
 		}
 		m->drop();
@@ -346,7 +396,7 @@ void Draw3D::run(PipelineContext &context)
 	
 	// End HUD nodes
 	}
-	drawTracersAndESP();
+	drawTracersAndESP(context);
 	if (context.draw_wield_tool)
 		context.client->getCamera()->drawWieldedTool();
 }

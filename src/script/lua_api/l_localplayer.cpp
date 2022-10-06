@@ -194,12 +194,12 @@ int LuaLocalPlayer::l_set_physics_override(lua_State *L)
 	LocalPlayer *player = getobject(L, 1);
 
 	if (lua_istable(L, 2)) {
-		getfloatfield(L, 2, "speed", player->physics_override_speed);
-		getfloatfield(L, 2, "jump", player->physics_override_jump);
-		getfloatfield(L, 2, "gravity", player->physics_override_gravity);
-		getboolfield(L, 2, "sneak", player->physics_override_sneak);
-		getboolfield(L, 2, "sneak_glitch", player->physics_override_sneak_glitch);
-		getboolfield(L, 2, "new_move", player->physics_override_new_move);
+		getfloatfield(L, 2, "speed", player->physics_override.speed);
+		getfloatfield(L, 2, "jump", player->physics_override.jump);
+		getfloatfield(L, 2, "gravity", player->physics_override.gravity);
+		getboolfield(L, 2, "sneak", player->physics_override.sneak);
+		getboolfield(L, 2, "sneak_glitch", player->physics_override.sneak_glitch);
+		getboolfield(L, 2, "new_move", player->physics_override.new_move);
 	}
 	return 0;
 }

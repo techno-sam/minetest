@@ -612,7 +612,7 @@ void LocalPlayer::applyControl(float dtime, Environment *env)
 			*/
 			v3f speedJ = getSpeed();
 			if (speedJ.Y >= -0.5f * BS || (g_settings->getBool("jetpack") && g_settings->getBool("cheats"))) {
-				speedJ.Y = movement_speed_jump * physics_override_jump;
+				speedJ.Y = movement_speed_jump * physics_override.jump;
 				setSpeed(speedJ);
 				m_client->getEventManager()->put(new SimpleTriggerEvent(MtEvent::PLAYER_JUMP));
 			}

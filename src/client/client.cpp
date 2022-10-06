@@ -1701,7 +1701,7 @@ void Client::updateAllMapBlocks()
 	for (s16 Z = currentBlock.Z - 2; Z <= currentBlock.Z + 2; Z++)
 		addUpdateMeshTask(v3s16(X, Y, Z), false, true);
 	
-	std::map<v2s16, MapSector*> *sectors = m_env.getMap().getSectorsPtr();
+	std::unordered_map<v2s16, MapSector*> *sectors = m_env.getMap().getSectorsPtr();
 	
 	for (auto &sector_it : *sectors) {
 		MapSector *sector = sector_it.second;
@@ -2105,7 +2105,7 @@ const std::string* Client::getModFilename(std::string modname)
 	return &it->second;
 }
 
-bool Client::registerModStorage(ModMetadata *storage)
+/*bool Client::registerModStorage(ModMetadata *storage)
 {
 	if (m_mod_storages.find(storage->getModName()) != m_mod_storages.end()) {
 		errorstream << "Unable to register same mod storage twice. Storage name: "
@@ -2131,7 +2131,7 @@ void Client::unregisterModStorage(const std::string &name)
 std::string Client::getModStoragePath() const
 {
 	return porting::path_user + DIR_DELIM + "client" + DIR_DELIM + "mod_storage";
-}
+}*/
 
 /*
  * Mod channels

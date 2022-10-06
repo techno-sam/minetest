@@ -21,6 +21,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #pragma once
 #include "core.h"
 #include "pipeline.h"
+#include "client/mapblock_mesh.h"
 
 /**
  * Implements a pipeline step that renders the 3D scene
@@ -33,7 +34,7 @@ public:
 
 	virtual void reset(PipelineContext &context) override {}
 	virtual void run(PipelineContext &context) override;
-	virtual void drawTracersAndESP();
+	virtual void drawTracersAndESP(PipelineContext &context);
 
 private:
 	RenderTarget *m_target {nullptr};
