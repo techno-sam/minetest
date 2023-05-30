@@ -48,6 +48,10 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "client/shader.h"
 #include "client/minimap.h"
 #include <quaternion.h>
+#include "client/clientmap.h"
+#include "mapsector.h"
+#include "mapblock.h"
+#include "mapblock_mesh.h"
 
 class Settings;
 struct ToolCapabilities;
@@ -324,6 +328,8 @@ void TestCAO::processMessage(const std::string &data)
 	GenericCAO
 */
 
+#include "clientmap.h"
+
 GenericCAO::GenericCAO(Client *client, ClientEnvironment *env):
 		ClientActiveObject(0, client, env)
 {
@@ -442,6 +448,10 @@ scene::ISceneNode *GenericCAO::getSceneNode() const
 {
 	if (m_meshnode) {
 		return m_meshnode;
+	}
+
+	if (m_vaenode) {
+		return m_vaenode;
 	}
 
 	if (m_animated_meshnode) {
@@ -575,6 +585,10 @@ void GenericCAO::removeFromScene(bool permanent)
 		m_meshnode->remove();
 		m_meshnode->drop();
 		m_meshnode = nullptr;
+	} else if (m_vaenode) {
+		m_vaenode->remove();
+		m_vaenode->drop();
+		m_vaenode = nullptr;
 	} else if (m_animated_meshnode)	{
 		m_animated_meshnode->remove();
 		m_animated_meshnode->drop();
@@ -812,6 +826,41 @@ void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
 			(m_prop.visual == "wielditem"));
 
 		m_wield_meshnode->setScale(m_prop.visual_size / 2.0f);
+	} else if (m_prop.visual == "vae") { // todo actually do vae somehow
+		grabMatrixNode();
+//		scene::IMesh *mesh = createCubeMesh(v3f(BS,BS,BS));
+//		m_meshnode = m_smgr->addMeshSceneNode(mesh, m_matrixnode);
+		MapSector* sector = m_client->getEnv().getClientMap().getSectorNoGenerate(v2s16(0, 0));
+		if (sector != NULL) {
+			MapBlock *block = sector->getBlockNoCreateNoEx(0);
+			if (block != NULL) {
+				MapBlockMesh *mapBlockMesh = block->mesh;
+				if (mapBlockMesh != NULL) {
+					scene::IMesh *mesh = mapBlockMesh->getMesh();
+					m_vaenode = m_smgr->addMeshSceneNode(
+							mesh, m_matrixnode); //&m_client->getEnv().getClientMap();
+					m_vaenode->grab();
+					//				mesh->drop(); // fixme dropping this is bad??
+
+					m_vaenode->setScale(m_prop.visual_size);
+					//m_vaenode->setMaterialFlag(
+					//		video::EMF_BACK_FACE_CULLING, m_prop.backface_culling);
+
+					//setSceneNodeMaterial(m_vaenode);
+				}
+			}
+		}
+		if (!m_vaenode) {
+			scene::IMesh *mesh = createCubeMesh(v3f(BS,BS,BS));
+			m_vaenode = m_smgr->addMeshSceneNode(mesh, m_matrixnode);
+			m_vaenode->grab();
+			mesh->drop();
+			m_vaenode->setScale(m_prop.visual_size);
+//			m_vaenode->setMaterialFlag(
+//					video::EMF_BACK_FACE_CULLING, m_prop.backface_culling);
+
+//			setSceneNodeMaterial(m_vaenode);
+		}
 	} else {
 		infostream<<"GenericCAO::addToScene(): \""<<m_prop.visual
 				<<"\" not supported"<<std::endl;
@@ -1515,6 +1564,55 @@ void GenericCAO::updateTextures(std::string mod)
 			if (!m_prop.colors.empty() && m_prop.glow < 0)
 				setMeshColor(mesh, m_prop.colors[0]);
 		}
+	}
+
+	else if (m_vaenode) {
+		if(m_prop.visual == "vae") // todo vae textures for real or something
+		{
+			MapSector* sector = m_client->getEnv().getClientMap().getSectorNoGenerate(v2s16(0, 0));
+			if (sector != NULL) {
+				MapBlock *block = sector->getBlockNoCreateNoEx(0);
+				if (block != NULL) {
+					MapBlockMesh *mapBlockMesh = block->mesh;
+					if (mapBlockMesh != NULL) {
+						scene::IMesh *mesh = mapBlockMesh->getMesh();
+						((scene::IMeshSceneNode *)m_vaenode)->setMesh(mesh);
+					}
+				}
+			}
+			/*for (u32 i = 0; i < 6; ++i)
+			{
+				std::string texturestring = "no_texture.png";
+				if(m_prop.textures.size() > i)
+					texturestring = m_prop.textures[i];
+				texturestring += mod;
+
+
+			// Set material flags and texture
+			video::SMaterial& material = m_vaenode->getMaterial(i);
+			material.MaterialType = m_material_type;
+			material.MaterialTypeParam = 0.5f;
+			material.setFlag(video::EMF_LIGHTING, false);
+			material.setFlag(video::EMF_BILINEAR_FILTER, false);
+			material.setTexture(0,
+					tsrc->getTextureForMesh(texturestring));
+			material.getTextureMatrix(0).makeIdentity();
+
+			// This allows setting per-material colors. However, until a real lighting
+			// system is added, the code below will have no effect. Once MineTest
+			// has directional lighting, it should work automatically.
+			if(m_prop.colors.size() > i)
+			{
+				m_vaenode->getMaterial(i).AmbientColor = m_prop.colors[i];
+				m_vaenode->getMaterial(i).DiffuseColor = m_prop.colors[i];
+				m_vaenode->getMaterial(i).SpecularColor = m_prop.colors[i];
+			}
+
+			m_vaenode->getMaterial(i).setFlag(video::EMF_TRILINEAR_FILTER, use_trilinear_filter);
+			m_vaenode->getMaterial(i).setFlag(video::EMF_BILINEAR_FILTER, use_bilinear_filter);
+			m_vaenode->getMaterial(i).setFlag(video::EMF_ANISOTROPIC_FILTER, use_anisotropic_filter);
+		}*/
+	}
 	}
 	// Prevent showing the player after changing texture
 	if (m_is_local_player)

@@ -31,6 +31,21 @@ minetest.register_entity("testentities:cube", {
 	},
 })
 
+minetest.register_entity(":vtestentities:cube_vae", {
+	initial_properties = {
+		visual = "vae",
+		textures = {
+			"testentities_cube1.png",
+			"testentities_cube2.png",
+			"testentities_cube3.png",
+			"testentities_cube4.png",
+			"testentities_cube5.png",
+			"testentities_cube6.png",
+		},
+		visual_size = { x=0.1, y=0.1, z=0.1 },
+	},
+})
+
 minetest.register_entity("testentities:item", {
 	initial_properties = {
 		visual = "item",
