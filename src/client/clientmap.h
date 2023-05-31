@@ -183,7 +183,6 @@ private:
 
 	std::map<v3s16, MapBlock*, MapBlockComparer> m_drawlist;
 	std::vector<MapBlock*> m_keeplist;
-	std::vector<GenericCAO*> m_vaelist;
 	std::map<v3s16, MapBlock*> m_drawlist_shadow;
 	bool m_needs_update_drawlist;
 

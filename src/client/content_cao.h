@@ -81,7 +81,6 @@ private:
 	Client *m_client = nullptr;
 	aabb3f m_selection_box = aabb3f(-BS/3.,-BS/3.,-BS/3., BS/3.,BS/3.,BS/3.);
 	scene::IMeshSceneNode *m_meshnode = nullptr;
-	scene::ISceneNode *m_vaenode = nullptr;
 	scene::IAnimatedMeshSceneNode *m_animated_meshnode = nullptr;
 	WieldMeshSceneNode *m_wield_meshnode = nullptr;
 	scene::IBillboardSceneNode *m_spritenode = nullptr;
@@ -291,4 +290,6 @@ public:
 	}
 
 	void updateMeshCulling();
+
+	inline void updateVAEMesh();
 };

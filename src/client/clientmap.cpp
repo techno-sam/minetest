@@ -31,7 +31,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "camera.h"               // CameraModes
 #include "util/basic_macros.h"
 #include "client/renderingengine.h"
-#include "content_cao.h"
 
 #include <queue>
 
@@ -822,12 +821,6 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 					}
 				}
 			}
-		}
-	}
-
-	for (GenericCAO* cao : m_vaelist) {
-		if (cao->isVAE()) {
-
 		}
 	}
 
