@@ -33,6 +33,14 @@ class Client;
 struct Nametag;
 struct MinimapMarker;
 
+struct ClientVAEData {
+	v3s16 min_pos; // in MapBlock coordinates, multiply by 16 for block coords
+	v3u16 size; // in MapBlock coordinates, multiply by 16 for block coords
+	v3f world_pos;
+	v3f scale;
+	v3f rotation;
+};
+
 /*
 	SmoothTranslator
 */
@@ -85,6 +93,8 @@ private:
 	WieldMeshSceneNode *m_wield_meshnode = nullptr;
 	scene::IBillboardSceneNode *m_spritenode = nullptr;
 	scene::IDummyTransformationSceneNode *m_matrixnode = nullptr;
+	bool m_registered_vaedata = false;
+	ClientVAEData *m_vaedata = nullptr;
 	Nametag *m_nametag = nullptr;
 	MinimapMarker *m_marker = nullptr;
 	v3f m_position = v3f(0.0f, 10.0f * BS, 0);
@@ -291,5 +301,17 @@ public:
 
 	void updateMeshCulling();
 
-	inline void updateVAEMesh();
+	bool isVAE() {
+		return m_vaedata != NULL;
+	}
+
+	v3s16 getVAEMinPos() {
+		return m_vaedata == NULL ? v3s16(0, 0, 0) : m_vaedata->min_pos;
+	}
+
+	v3u16 getVAESize() {
+		return m_vaedata == NULL ? v3u16(0, 0, 0) : m_vaedata->size;
+	}
+
+	void updateVAEData();
 };

@@ -461,6 +461,11 @@ scene::ISceneNode *GenericCAO::getSceneNode() const
 	if (m_spritenode) {
 		return m_spritenode;
 	}
+
+	if (m_matrixnode) {
+		return m_matrixnode; // prevent rotating selectionboxes from breaking when vae
+	}
+
 	return NULL;
 }
 
@@ -608,6 +613,14 @@ void GenericCAO::removeFromScene(bool permanent)
 
 	if (m_marker && m_client->getMinimap())
 		m_client->getMinimap()->removeMarker(&m_marker);
+
+	if (m_vaedata) {
+		if (m_env)
+			m_env->getClientMap().removeVAE(m_vaedata);
+
+		delete m_vaedata;
+		m_vaedata = nullptr;
+	}
 }
 
 void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
@@ -819,7 +832,14 @@ void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
 
 		m_wield_meshnode->setScale(m_prop.visual_size / 2.0f);
 	} else if (m_prop.visual == "vae") { // todo actually do vae somehow
-		// intentionally left blank
+		grabMatrixNode();
+		m_registered_vaedata = false;
+		m_vaedata = new ClientVAEData();
+		m_vaedata->min_pos = v3s16(0, 0, 0);
+		m_vaedata->size = v3u16(1, 1, 1);
+		m_vaedata->world_pos = v3f(0, 0, 0);
+		m_vaedata->scale = v3f(1, 1, 1);
+		m_vaedata->rotation = v3f(0, 0, 0);
 	} else {
 		infostream<<"GenericCAO::addToScene(): \""<<m_prop.visual
 				<<"\" not supported"<<std::endl;
@@ -1029,6 +1049,7 @@ void GenericCAO::updateNametag()
 
 void GenericCAO::updateNodePos()
 {
+	updateVAEData();
 	if (getParent() != NULL)
 		return;
 
@@ -2101,6 +2122,21 @@ void GenericCAO::updateMeshCulling()
 			mat.FrontfaceCulling = false;
 		});
 	}
+}
+void GenericCAO::updateVAEData()
+{
+	if (!m_vaedata) {
+		return;
+	}
+
+	if (!m_registered_vaedata && m_env) {
+		m_registered_vaedata = true;
+		m_env->getClientMap().registerVAE(m_vaedata);
+	}
+
+	m_vaedata->world_pos = getPosition();
+	m_vaedata->scale = m_prop.visual_size;
+	m_vaedata->rotation = m_rotation;
 }
 
 // Prototype

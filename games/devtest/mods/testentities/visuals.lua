@@ -42,7 +42,8 @@ minetest.register_entity(":vtestentities:cube_vae", {
 			"testentities_cube5.png",
 			"testentities_cube6.png",
 		},
-		visual_size = { x=0.1, y=0.1, z=0.1 },
+		--visual_size = { x=0.1, y=0.1, z=0.1 },
+		selectionbox = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, rotate = true}
 	},
 })
 

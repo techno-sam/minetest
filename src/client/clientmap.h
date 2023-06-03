@@ -22,6 +22,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "irrlichttypes_extrabloated.h"
 #include "map.h"
 #include "camera.h"
+#include "content_cao.h"
 #include <set>
 #include <map>
 
@@ -35,6 +36,26 @@ struct MapDrawControl
 	bool allow_noclip = false;
 	// show a wire frame for debugging
 	bool show_wireframe = false;
+};
+
+// fixme: REBASE 0123456789 how is this used now?
+struct VAEMeshBufList
+{
+	video::SMaterial m;
+	std::vector<std::pair<ClientVAEData*,scene::IMeshBuffer*>> bufs;
+};
+
+struct VAEMeshBufListList
+{
+	/*!
+	 * Stores the mesh buffers of the world.
+	 * The array index is the material's layer.
+	 * The vector part groups vertices by material.
+	 */
+	std::vector<VAEMeshBufList> lists[MAX_TILE_LAYERS];
+
+	void clear();
+	void add(scene::IMeshBuffer *buf, ClientVAEData *vae_data, u8 layer);
 };
 
 class Client;
@@ -114,6 +135,10 @@ public:
 
 	void onSettingChanged(const std::string &name);
 
+	void registerVAE(ClientVAEData *vae_data);
+
+	void removeVAE(ClientVAEData *vae_data);
+
 protected:
 	// use drop() instead
 	virtual ~ClientMap();
@@ -143,23 +168,34 @@ private:
 		v3s16 m_camera_block;
 	};
 
-
 	// reference to a mesh buffer used when rendering the map.
 	struct DrawDescriptor {
-		v3s16 m_pos;
+		union {
+			v3s16 m_pos;
+			ClientVAEData *m_vae_data;
+		};
 		union {
 			scene::IMeshBuffer *m_buffer;
 			const PartialMeshBuffer *m_partial_buffer;
 		};
 		bool m_reuse_material:1;
 		bool m_use_partial_buffer:1;
+		bool m_is_vae:1;
 
 		DrawDescriptor(v3s16 pos, scene::IMeshBuffer *buffer, bool reuse_material) :
-			m_pos(pos), m_buffer(buffer), m_reuse_material(reuse_material), m_use_partial_buffer(false)
+				m_pos(pos), m_buffer(buffer), m_reuse_material(reuse_material), m_use_partial_buffer(false), m_is_vae(false)
 		{}
 
 		DrawDescriptor(v3s16 pos, const PartialMeshBuffer *buffer) :
-			m_pos(pos), m_partial_buffer(buffer), m_reuse_material(false), m_use_partial_buffer(true)
+				m_pos(pos), m_partial_buffer(buffer), m_reuse_material(false), m_use_partial_buffer(true), m_is_vae(false)
+		{}
+
+		DrawDescriptor(ClientVAEData *vae_data, scene::IMeshBuffer *buffer, bool reuse_material) :
+				m_vae_data(vae_data), m_buffer(buffer), m_reuse_material(reuse_material), m_use_partial_buffer(false), m_is_vae(true)
+		{}
+
+		DrawDescriptor(ClientVAEData *vae_data, const PartialMeshBuffer *buffer) :
+				m_vae_data(vae_data), m_partial_buffer(buffer), m_reuse_material(false), m_use_partial_buffer(true), m_is_vae(true)
 		{}
 
 		scene::IMeshBuffer* getBuffer();
@@ -195,4 +231,6 @@ private:
 
 	bool m_loops_occlusion_culler;
 	bool m_enable_raytraced_culling;
+
+	std::list<ClientVAEData*> m_vaentities;
 };

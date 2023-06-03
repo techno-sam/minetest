@@ -824,12 +824,108 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 		}
 	}
 
+	/*
+	 	Draw (all) the Voxel Area Entities - fixme pre-culling later
+	 */
+
+	VAEMeshBufListList grouped_vae_buffers;
+
+	for (ClientVAEData *vae_data : m_vaentities) {
+		v3f world_pos = vae_data->world_pos;
+		v3s16 block_pos = vae_data->min_pos; // fixme implement size
+		MapSector *sector = getSectorNoGenerate(v2s16(block_pos.X, block_pos.Z));
+		if (sector == NULL)
+			continue;
+		MapBlock *block = sector->getBlockNoCreateNoEx(block_pos.Y);
+		if (block == NULL)
+			continue;
+		MapBlockMesh *block_mesh = block->mesh;
+
+		// If the mesh of the block happened to get deleted, ignore it
+		if (!block_mesh)
+			continue;
+
+		// Do exact frustum culling
+		// (The one in updateDrawList is only coarse.)
+		v3f mesh_sphere_center = world_pos//intToFloat(block->getPosRelative(), BS)
+								 + block_mesh->getBoundingSphereCenter();
+		f32 mesh_sphere_radius = block_mesh->getBoundingRadius();
+		if (is_frustum_culled(mesh_sphere_center, mesh_sphere_radius))
+			continue;
+
+		v3f block_pos_r = mesh_sphere_center;//intToFloat(block->getPosRelative() + MAP_BLOCKSIZE / 2, BS);
+
+		float d = camera_position.getDistanceFrom(block_pos_r);
+		d = MYMAX(0,d - BLOCK_MAX_RADIUS);
+
+		// Mesh animation
+		if (pass == scene::ESNRP_SOLID) {
+			// Pretty random but this should work somewhat nicely
+			bool faraway = d >= BS * 50;
+			if (block_mesh->isAnimationForced() || !faraway ||
+					mesh_animate_count < (m_control.range_all ? 200 : 50)) {
+
+				bool animated = block_mesh->animate(faraway, animation_time,
+						crack, daynight_ratio);
+				if (animated)
+					mesh_animate_count++;
+			} else {
+				block_mesh->decreaseAnimationForceTimer();
+			}
+		}
+
+		/*
+			Get the meshbuffers of the block
+		*/
+		if (is_transparent_pass) {
+			// In transparent pass, the mesh will give us
+			// the partial buffers in the correct order
+			for (auto &buffer : block_mesh->getTransparentBuffers())
+				draw_order.emplace_back(vae_data, &buffer);
+		}
+		else {
+			// otherwise, group buffers across meshes
+			// using MeshBufListList
+			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+				scene::IMesh *mesh = block_mesh->getMesh(layer);
+				assert(mesh);
+
+				u32 c = mesh->getMeshBufferCount();
+				for (u32 i = 0; i < c; i++) {
+					scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+
+					video::SMaterial& material = buf->getMaterial();
+					video::IMaterialRenderer* rnd =
+							driver->getMaterialRenderer(material.MaterialType);
+					bool transparent = (rnd && rnd->isTransparent());
+					if (!transparent) {
+						if (buf->getVertexCount() == 0)
+							errorstream << "Block [" << analyze_block(block)
+										<< "] contains an empty meshbuf" << std::endl;
+
+						grouped_vae_buffers.add(buf, vae_data, layer);
+					}
+				}
+			}
+		}
+	}
+
 	// Capture draw order for all solid meshes
 	for (auto &map : grouped_buffers.maps) {
 		for (auto &list : map) {
 			// iterate in reverse to draw closest blocks first
 			for (auto it = list.second.rbegin(); it != list.second.rend(); ++it) {
 				draw_order.emplace_back(it->first, it->second, it != list.second.rbegin());
+			}
+		}
+	}
+
+	// Capture draw order for all solid VAE meshes
+	for (auto &lists : grouped_vae_buffers.lists) {
+		for (VAEMeshBufList &list : lists) {
+			// iterate in reverse to draw closest blocks first
+			for (auto it = list.bufs.rbegin(); it != list.bufs.rend(); ++it) {
+				draw_order.emplace_back(it->first, it->second, it != list.bufs.rbegin());
 			}
 		}
 	}
@@ -875,8 +971,17 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			material.TextureLayers[ShadowRenderer::TEXTURE_LAYER_SHADOW].Texture = nullptr;
 		}
 
-		v3f block_wpos = intToFloat(mesh_grid.getMeshPos(descriptor.m_pos) * MAP_BLOCKSIZE, BS);
-		m.setTranslation(block_wpos - offset);
+		v3f block_wpos;
+		if (descriptor.m_is_vae) {
+			block_wpos = descriptor.m_vae_data->world_pos;
+
+			m.setTranslation(block_wpos - offset);
+			m.setScale(descriptor.m_vae_data->scale);
+			m.setRotationDegrees(descriptor.m_vae_data->rotation);
+		} else {
+			block_wpos = intToFloat(mesh_grid.getMeshPos(descriptor.m_pos) * MAP_BLOCKSIZE, BS);
+			m.setTranslation(block_wpos - offset);
+		}
 
 		driver->setTransform(video::ETS_WORLD, m);
 		descriptor.draw(driver);
@@ -1401,4 +1506,38 @@ bool ClientMap::isMeshOccluded(MapBlock *mesh_block, u16 mesh_size, v3s16 cam_po
 	}
 
 	return true;
+}
+void ClientMap::registerVAE(ClientVAEData *vae_data)
+{
+	m_vaentities.push_back(vae_data);
+}
+void ClientMap::removeVAE(ClientVAEData *vae_data)
+{
+	m_vaentities.remove(vae_data);
+}
+void VAEMeshBufListList::clear()
+{
+	for (auto &list : lists)
+		list.clear();
+}
+void VAEMeshBufListList::add(scene::IMeshBuffer *buf, ClientVAEData *vae_data, u8 layer)
+{
+	// Append to the correct layer
+	std::vector<VAEMeshBufList> &list = lists[layer];
+	const video::SMaterial &m = buf->getMaterial();
+	for (VAEMeshBufList &l : list) {
+		// comparing a full material is quite expensive so we don't do it if
+		// not even first texture is equal
+		if (l.m.TextureLayer[0].Texture != m.TextureLayer[0].Texture)
+		continue;
+
+		if (l.m == m) {
+		l.bufs.emplace_back(vae_data, buf);
+		return;
+		}
+	}
+	VAEMeshBufList l;
+	l.m = m;
+	l.bufs.emplace_back(vae_data, buf);
+	list.emplace_back(l);
 }
