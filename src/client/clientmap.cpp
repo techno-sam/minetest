@@ -977,7 +977,8 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 
 			m.setTranslation(block_wpos - offset);
 			m.setScale(descriptor.m_vae_data->scale);
-			m.setRotationDegrees(descriptor.m_vae_data->rotation);
+			setPitchYawRoll(m, -descriptor.m_vae_data->rotation);
+//			m.setRotationDegrees(-descriptor.m_vae_data->rotation);
 		} else {
 			block_wpos = intToFloat(mesh_grid.getMeshPos(descriptor.m_pos) * MAP_BLOCKSIZE, BS);
 			m.setTranslation(block_wpos - offset);

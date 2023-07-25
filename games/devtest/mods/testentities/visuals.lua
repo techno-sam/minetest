@@ -17,6 +17,8 @@ minetest.register_entity("testentities:upright_sprite", {
 	},
 })
 
+local vae_mirror_entity = nil
+
 minetest.register_entity("testentities:cube", {
 	initial_properties = {
 		visual = "cube",
@@ -29,6 +31,10 @@ minetest.register_entity("testentities:cube", {
 			"testentities_cube6.png",
 		},
 	},
+	on_rightclick = function(self, clicker)
+		print("Set self as vae mirror entity")
+		vae_mirror_entity = self
+	end
 })
 
 minetest.register_entity(":vtestentities:cube_vae", {
@@ -45,6 +51,11 @@ minetest.register_entity(":vtestentities:cube_vae", {
 		--visual_size = { x=0.1, y=0.1, z=0.1 },
 		selectionbox = { -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, rotate = true}
 	},
+	on_step = function(self, dtime, moveresult)
+		if (vae_mirror_entity ~= nil and vae_mirror_entity.object ~= nil) then
+			vae_mirror_entity.object:set_rotation(self.object:get_rotation())
+		end
+	end
 })
 
 minetest.register_entity("testentities:item", {

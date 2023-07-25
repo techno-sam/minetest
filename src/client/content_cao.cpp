@@ -840,6 +840,17 @@ void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
 		m_vaedata->world_pos = v3f(0, 0, 0);
 		m_vaedata->scale = v3f(1, 1, 1);
 		m_vaedata->rotation = v3f(0, 0, 0);
+
+		scene::IMesh *mesh = createCubeMesh(v3f(BS,BS,BS));
+		m_meshnode = m_smgr->addMeshSceneNode(mesh, m_matrixnode);
+		m_meshnode->grab();
+		mesh->drop();
+
+		m_meshnode->setScale(m_prop.visual_size);
+		m_meshnode->setMaterialFlag(video::EMF_BACK_FACE_CULLING,
+				m_prop.backface_culling);
+
+		setSceneNodeMaterial(m_meshnode);
 	} else {
 		infostream<<"GenericCAO::addToScene(): \""<<m_prop.visual
 				<<"\" not supported"<<std::endl;
@@ -2136,7 +2147,53 @@ void GenericCAO::updateVAEData()
 
 	m_vaedata->world_pos = getPosition();
 	m_vaedata->scale = m_prop.visual_size;
-	m_vaedata->rotation = m_rotation;
+
+
+	scene::ISceneNode *node = getSceneNode();
+	if (node && fabs(m_prop.automatic_rotate) > 0.001f) {
+		/*float tmp;
+		v3f tmpRot = rot_translator.val_current; // irrlicht has different axis conventions than we do, so flip y<->z
+		tmp = tmpRot.Z;
+		tmpRot.Z = tmpRot.Y;
+		tmpRot.Y = tmp;
+
+		core::quaternion baseRot(tmpRot * core::DEGTORAD);
+		tmpRot = v3f(45, 0, 0);//node->getRotation();
+		tmp = tmpRot.Z;
+		tmpRot.Z = tmpRot.Y;
+		tmpRot.Y = tmp;
+		core::quaternion relRot(tmpRot * core::DEGTORAD);
+		core::quaternion combinedRot = relRot * baseRot;
+		combinedRot.toEuler(m_vaedata->rotation);//matrix2.getRotationDegrees();//node->getRotation();
+		m_vaedata->rotation *= core::RADTODEG;
+		tmp = m_vaedata->rotation.Z; // undo y<->z flip
+		m_vaedata->rotation.Z = m_vaedata->rotation.Y;
+		m_vaedata->rotation.Y = tmp;*/
+/*		core::matrix4 relRot = core::matrix4();
+		setPitchYawRoll(relRot, node->getRotation());
+		getPosRotMatrix() * relRot;*/
+
+		// This replicates what happens clientside serverside
+		core::matrix4 rot;
+		setPitchYawRoll(rot, -m_rotation);
+		// First rotate by m_rotation, then rotate by the automatic rotate yaw
+		(core::quaternion(v3f(0, 0 * core::DEGTORAD, 0))
+				* core::quaternion(rot.getRotationDegrees() * core::DEGTORAD))
+				.toEuler(m_vaedata->rotation);
+		//core::quaternion(rot.getRotationDegrees() * core::DEGTORAD).toEuler(m_vaedata->rotation);
+		m_vaedata->rotation *= core::RADTODEG;
+		/*float tmp = m_vaedata->rotation.Z;
+		m_vaedata->rotation.Z = m_vaedata->rotation.Y;
+		m_vaedata->rotation.Y = tmp;*/
+
+		std::cout << "Node Y: " <<  node->getRotation().Y << std::endl;
+		//m_vaedata->rotation = (baseRot).getMatrix().getRotationDegrees();
+		//m_vaedata->rotation.X += node->getRotation().Y;
+//		matrix2 += matrix;
+//		m_vaedata->rotation = matrix2.getRotationDegrees();
+	} else {
+		m_vaedata->rotation = rot_translator.val_current;
+	}
 }
 
 // Prototype

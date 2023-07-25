@@ -14,7 +14,8 @@ local active_selectionbox_entities = 0 -- count active entities
 
 minetest.register_entity("testentities:selectionbox", {
 	initial_properties = {
-		visual = "cube",
+		--visual = "cube",
+		visual = "vae",
 		infotext = "Punch to randomize rotation, rightclick to toggle rotation"
 	},
 	on_activate = function(self)
@@ -41,6 +42,7 @@ minetest.register_entity("testentities:selectionbox", {
 		self.object:set_properties({
 			automatic_rotate = self.object:get_properties().automatic_rotate == 0 and 2 * math.pi * (math.random() - 0.5) or 0
 		})
+		print(self.object:get_properties().automatic_rotate)
 	end
 })
 
