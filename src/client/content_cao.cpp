@@ -847,10 +847,15 @@ void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
 		mesh->drop();
 
 		m_meshnode->setScale(m_prop.visual_size);
-		m_meshnode->setMaterialFlag(video::EMF_BACK_FACE_CULLING,
-				m_prop.backface_culling);
 
-		setSceneNodeMaterial(m_meshnode);
+		// set vertex colors to ensure alpha is set
+		setMeshColor(m_meshnode->getMesh(), video::SColor(0xFFFFFFFF));
+
+		setSceneNodeMaterials(m_meshnode);
+
+		m_meshnode->forEachMaterial([this] (auto &mat) {
+		    mat.BackfaceCulling = m_prop.backface_culling;
+		});
 	} else {
 		infostream<<"GenericCAO::addToScene(): \""<<m_prop.visual
 				<<"\" not supported"<<std::endl;
@@ -2150,48 +2155,41 @@ void GenericCAO::updateVAEData()
 
 
 	scene::ISceneNode *node = getSceneNode();
-	if (node && fabs(m_prop.automatic_rotate) > 0.001f) {
-		/*float tmp;
-		v3f tmpRot = rot_translator.val_current; // irrlicht has different axis conventions than we do, so flip y<->z
-		tmp = tmpRot.Z;
-		tmpRot.Z = tmpRot.Y;
-		tmpRot.Y = tmp;
+	if (node && fabsf(m_prop.automatic_rotate) > 0.001f) {
+		/*
+		 Just for temporary reference as to how automatic_rotate is encoded in node->getRotation()
 
-		core::quaternion baseRot(tmpRot * core::DEGTORAD);
-		tmpRot = v3f(45, 0, 0);//node->getRotation();
-		tmp = tmpRot.Z;
-		tmpRot.Z = tmpRot.Y;
-		tmpRot.Y = tmp;
-		core::quaternion relRot(tmpRot * core::DEGTORAD);
-		core::quaternion combinedRot = relRot * baseRot;
-		combinedRot.toEuler(m_vaedata->rotation);//matrix2.getRotationDegrees();//node->getRotation();
-		m_vaedata->rotation *= core::RADTODEG;
-		tmp = m_vaedata->rotation.Z; // undo y<->z flip
-		m_vaedata->rotation.Z = m_vaedata->rotation.Y;
-		m_vaedata->rotation.Y = tmp;*/
-/*		core::matrix4 relRot = core::matrix4();
-		setPitchYawRoll(relRot, node->getRotation());
-		getPosRotMatrix() * relRot;*/
-
-		// This replicates what happens clientside serverside
+		 > // This is the child node's rotation. It is only used for automatic_rotate.
+		 > v3f local_rot = node->getRotation();
+		 > local_rot.Y = modulo360f(local_rot.Y - dtime * core::RADTODEG *
+		 > 		m_prop.automatic_rotate);
+		 > node->setRotation(local_rot);
+		 */
 		core::matrix4 rot;
 		setPitchYawRoll(rot, -m_rotation);
-		// First rotate by m_rotation, then rotate by the automatic rotate yaw
-		(core::quaternion(v3f(0, 0 * core::DEGTORAD, 0))
-				* core::quaternion(rot.getRotationDegrees() * core::DEGTORAD))
-				.toEuler(m_vaedata->rotation);
-		//core::quaternion(rot.getRotationDegrees() * core::DEGTORAD).toEuler(m_vaedata->rotation);
-		m_vaedata->rotation *= core::RADTODEG;
-		/*float tmp = m_vaedata->rotation.Z;
-		m_vaedata->rotation.Z = m_vaedata->rotation.Y;
-		m_vaedata->rotation.Y = tmp;*/
 
-		std::cout << "Node Y: " <<  node->getRotation().Y << std::endl;
-		//m_vaedata->rotation = (baseRot).getMatrix().getRotationDegrees();
-		//m_vaedata->rotation.X += node->getRotation().Y;
-//		matrix2 += matrix;
-//		m_vaedata->rotation = matrix2.getRotationDegrees();
+		core::quaternion a;
+		a.fromAngleAxis(wrapDegrees_0_360(node->getRotation().Y) * core::DEGTORAD, v3f(0, 1, 0));
+
+		//const core::quaternion b = core::quaternion(m_rotation * core::DEGTORAD); // we'll multiply this in once autorotation works
+
+		// later this will become (a*b) or (b*a), but for now we just need to fix the snapping with autorotate
+		(a).normalize().toEuler(m_vaedata->rotation);
+
+		m_vaedata->rotation *= core::RADTODEG;
+
+		auto eulerTestValue = 2.0 * (a.Y * a.W - a.X * a.Z);
+
+		std::cout << "Resulting rotation X: " << m_vaedata->rotation.X;
+		std::cout << ", Y: " << m_vaedata->rotation.Y;
+		std::cout << ", Z: " << m_vaedata->rotation.Z;
+		std::cout << ", Test: " << eulerTestValue << std::endl;
+
+		std::cout << "Node X: " << node->getRotation().X;
+		std::cout << ", Y: " << node->getRotation().Y;
+		std::cout << ", Z: " << node->getRotation().Z << std::endl;
 	} else {
+		// Not worried about this for now
 		m_vaedata->rotation = rot_translator.val_current;
 	}
 }

@@ -12,11 +12,12 @@ end
 
 local active_selectionbox_entities = 0 -- count active entities
 
+-- todo: clean up before (future) merge
 minetest.register_entity("testentities:selectionbox", {
 	initial_properties = {
 		--visual = "cube",
 		visual = "vae",
-		infotext = "Punch to randomize rotation, rightclick to toggle rotation"
+		infotext = "Punch to randomize rotation, rightclick to toggle rotation, sneak+punch to reset rotation"
 	},
 	on_activate = function(self)
 		active_selectionbox_entities = active_selectionbox_entities + 1
@@ -30,19 +31,31 @@ minetest.register_entity("testentities:selectionbox", {
 		})
 		assert(self.object:get_properties().selectionbox.rotate)
 		self.object:set_armor_groups({punch_operable = 1})
-		self.object:set_rotation(random_rotation())
+		--self.object:set_rotation(random_rotation())
 	end,
 	on_deactivate = function()
 		active_selectionbox_entities = active_selectionbox_entities - 1
 	end,
-	on_punch = function(self)
-		self.object:set_rotation(random_rotation())
+	on_punch = function(self, puncher)
+		if puncher:get_player_control().sneak then
+			self.object:set_rotation(vector.new(0, 0, 0))
+		else
+			self.object:set_rotation(random_rotation())
+		end
 	end,
 	on_rightclick = function(self)
 		self.object:set_properties({
 			automatic_rotate = self.object:get_properties().automatic_rotate == 0 and 2 * math.pi * (math.random() - 0.5) or 0
 		})
 		print(self.object:get_properties().automatic_rotate)
+	end,
+	on_step = function(self, dtime, moveresult)
+		if (testentities.vae_mirror_entity ~= nil and testentities.vae_mirror_entity.object ~= nil) then
+			testentities.vae_mirror_entity.object:set_rotation(self.object:get_rotation())
+			testentities.vae_mirror_entity.object:set_properties({
+				automatic_rotate = self.object:get_properties().automatic_rotate
+			})
+		end
 	end
 })
 

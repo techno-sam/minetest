@@ -38,26 +38,6 @@ struct MapDrawControl
 	bool show_wireframe = false;
 };
 
-// fixme: REBASE 0123456789 how is this used now?
-struct VAEMeshBufList
-{
-	video::SMaterial m;
-	std::vector<std::pair<ClientVAEData*,scene::IMeshBuffer*>> bufs;
-};
-
-struct VAEMeshBufListList
-{
-	/*!
-	 * Stores the mesh buffers of the world.
-	 * The array index is the material's layer.
-	 * The vector part groups vertices by material.
-	 */
-	std::vector<VAEMeshBufList> lists[MAX_TILE_LAYERS];
-
-	void clear();
-	void add(scene::IMeshBuffer *buf, ClientVAEData *vae_data, u8 layer);
-};
-
 class Client;
 class ITextureSource;
 class PartialMeshBuffer;

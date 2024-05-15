@@ -71,6 +71,33 @@ namespace {
 			bufs.emplace_back(position, buf);
 		}
 	};
+
+	struct VAEMeshBufListMaps
+	{
+	    using VAEMeshBufListMap = std::unordered_map<
+	            video::SMaterial,
+	            std::vector<std::pair<ClientVAEData *, scene::IMeshBuffer *>>,
+	            MeshBufListMaps::MaterialHash>;
+
+	    std::array<VAEMeshBufListMap, MAX_TILE_LAYERS> maps;
+
+	    void clear()
+	    {
+	        for (auto &map : maps)
+	            map.clear();
+	    }
+
+	    void add(scene::IMeshBuffer *buf, ClientVAEData *vae_data, u8 layer)
+	    {
+		    assert(layer < MAX_TILE_LAYERS);
+
+		    // Append to the correct layer
+		    auto &map = maps[layer];
+		    const video::SMaterial &m = buf->getMaterial();
+		    auto &bufs = map[m];
+		    bufs.emplace_back(vae_data, buf);
+	    }
+	};
 }
 
 static void on_settings_changed(const std::string &name, void *data)
@@ -828,7 +855,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	 	Draw (all) the Voxel Area Entities - fixme pre-culling later
 	 */
 
-	VAEMeshBufListList grouped_vae_buffers;
+	VAEMeshBufListMaps grouped_vae_buffers;
 
 	for (ClientVAEData *vae_data : m_vaentities) {
 		v3f world_pos = vae_data->world_pos;
@@ -921,11 +948,11 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	}
 
 	// Capture draw order for all solid VAE meshes
-	for (auto &lists : grouped_vae_buffers.lists) {
-		for (VAEMeshBufList &list : lists) {
+	for (auto &map : grouped_vae_buffers.maps) {
+		for (auto &list : map) {
 			// iterate in reverse to draw closest blocks first
-			for (auto it = list.bufs.rbegin(); it != list.bufs.rend(); ++it) {
-				draw_order.emplace_back(it->first, it->second, it != list.bufs.rbegin());
+			for (auto it = list.second.rbegin(); it != list.second.rend(); ++it) {
+				draw_order.emplace_back(it->first, it->second, it != list.second.rbegin());
 			}
 		}
 	}
@@ -978,7 +1005,7 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 			m.setTranslation(block_wpos - offset);
 			m.setScale(descriptor.m_vae_data->scale);
 			setPitchYawRoll(m, -descriptor.m_vae_data->rotation);
-//			m.setRotationDegrees(-descriptor.m_vae_data->rotation);
+//			m.setRotationDegrees(wrapDegrees_0_360_v3f(-descriptor.m_vae_data->rotation));
 		} else {
 			block_wpos = intToFloat(mesh_grid.getMeshPos(descriptor.m_pos) * MAP_BLOCKSIZE, BS);
 			m.setTranslation(block_wpos - offset);
@@ -1515,30 +1542,4 @@ void ClientMap::registerVAE(ClientVAEData *vae_data)
 void ClientMap::removeVAE(ClientVAEData *vae_data)
 {
 	m_vaentities.remove(vae_data);
-}
-void VAEMeshBufListList::clear()
-{
-	for (auto &list : lists)
-		list.clear();
-}
-void VAEMeshBufListList::add(scene::IMeshBuffer *buf, ClientVAEData *vae_data, u8 layer)
-{
-	// Append to the correct layer
-	std::vector<VAEMeshBufList> &list = lists[layer];
-	const video::SMaterial &m = buf->getMaterial();
-	for (VAEMeshBufList &l : list) {
-		// comparing a full material is quite expensive so we don't do it if
-		// not even first texture is equal
-		if (l.m.TextureLayer[0].Texture != m.TextureLayer[0].Texture)
-		continue;
-
-		if (l.m == m) {
-		l.bufs.emplace_back(vae_data, buf);
-		return;
-		}
-	}
-	VAEMeshBufList l;
-	l.m = m;
-	l.bufs.emplace_back(vae_data, buf);
-	list.emplace_back(l);
 }
