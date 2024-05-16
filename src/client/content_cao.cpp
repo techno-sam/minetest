@@ -839,7 +839,7 @@ void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
 		m_vaedata->size = v3u16(1, 1, 1);
 		m_vaedata->world_pos = v3f(0, 0, 0);
 		m_vaedata->scale = v3f(1, 1, 1);
-		m_vaedata->rotation = v3f(0, 0, 0);
+		m_vaedata->quaternion = core::quaternion(0, 1, 0, 0);
 
 		scene::IMesh *mesh = createCubeMesh(v3f(BS,BS,BS));
 		m_meshnode = m_smgr->addMeshSceneNode(mesh, m_matrixnode);
@@ -1065,7 +1065,6 @@ void GenericCAO::updateNametag()
 
 void GenericCAO::updateNodePos()
 {
-	updateVAEData();
 	if (getParent() != NULL)
 		return;
 
@@ -1310,6 +1309,7 @@ void GenericCAO::step(float dtime, ClientEnvironment *env)
 		m_animated_meshnode->animateJoints();
 		updateBones(dtime);
 	}
+	updateVAEData();
 }
 
 void GenericCAO::updateTexturePos()
@@ -2153,44 +2153,22 @@ void GenericCAO::updateVAEData()
 	m_vaedata->world_pos = getPosition();
 	m_vaedata->scale = m_prop.visual_size;
 
+	v3f globalPitchRot;
+	v3f globalMainRot = rot_translator.val_current * core::DEGTORAD;
+	globalPitchRot.Y = globalMainRot.Y;
+	globalMainRot.Y = 0;
+
+	core::quaternion globalPitch = core::quaternion(globalPitchRot);
+	core::quaternion globalMain = core::quaternion(globalMainRot);
 
 	scene::ISceneNode *node = getSceneNode();
-	if (node && fabsf(m_prop.automatic_rotate) > 0.001f) {
-		/*
-		 Just for temporary reference as to how automatic_rotate is encoded in node->getRotation()
+	if (node) {
+		core::quaternion local;
+		local.fromAngleAxis(wrapDegrees_180(-node->getRotation().Y) * core::DEGTORAD, v3f(0, 1, 0));
 
-		 > // This is the child node's rotation. It is only used for automatic_rotate.
-		 > v3f local_rot = node->getRotation();
-		 > local_rot.Y = modulo360f(local_rot.Y - dtime * core::RADTODEG *
-		 > 		m_prop.automatic_rotate);
-		 > node->setRotation(local_rot);
-		 */
-		core::matrix4 rot;
-		setPitchYawRoll(rot, -m_rotation);
-
-		core::quaternion a;
-		a.fromAngleAxis(wrapDegrees_0_360(node->getRotation().Y) * core::DEGTORAD, v3f(0, 1, 0));
-
-		//const core::quaternion b = core::quaternion(m_rotation * core::DEGTORAD); // we'll multiply this in once autorotation works
-
-		// later this will become (a*b) or (b*a), but for now we just need to fix the snapping with autorotate
-		(a).normalize().toEuler(m_vaedata->rotation);
-
-		m_vaedata->rotation *= core::RADTODEG;
-
-		auto eulerTestValue = 2.0 * (a.Y * a.W - a.X * a.Z);
-
-		std::cout << "Resulting rotation X: " << m_vaedata->rotation.X;
-		std::cout << ", Y: " << m_vaedata->rotation.Y;
-		std::cout << ", Z: " << m_vaedata->rotation.Z;
-		std::cout << ", Test: " << eulerTestValue << std::endl;
-
-		std::cout << "Node X: " << node->getRotation().X;
-		std::cout << ", Y: " << node->getRotation().Y;
-		std::cout << ", Z: " << node->getRotation().Z << std::endl;
+		m_vaedata->quaternion = ((globalPitch * globalMain) * local).normalize();
 	} else {
-		// Not worried about this for now
-		m_vaedata->rotation = rot_translator.val_current;
+		m_vaedata->quaternion = (globalPitch * globalMain).normalize();
 	}
 }
 

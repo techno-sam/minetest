@@ -1002,10 +1002,16 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 		if (descriptor.m_is_vae) {
 			block_wpos = descriptor.m_vae_data->world_pos;
 
-			m.setTranslation(block_wpos - offset);
-			m.setScale(descriptor.m_vae_data->scale);
-			setPitchYawRoll(m, -descriptor.m_vae_data->rotation);
-//			m.setRotationDegrees(wrapDegrees_0_360_v3f(-descriptor.m_vae_data->rotation));
+			core::matrix4 pos_mat;
+			pos_mat.setTranslation(block_wpos - offset);
+
+			core::matrix4 scale_mat;
+			scale_mat.setScale(descriptor.m_vae_data->scale);
+
+			core::matrix4 rot_mat;
+			descriptor.m_vae_data->quaternion.getMatrix_transposed(rot_mat);
+
+			m = pos_mat * rot_mat * scale_mat;
 		} else {
 			block_wpos = intToFloat(mesh_grid.getMeshPos(descriptor.m_pos) * MAP_BLOCKSIZE, BS);
 			m.setTranslation(block_wpos - offset);

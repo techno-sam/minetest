@@ -27,7 +27,7 @@ minetest.register_entity("testentities:selectionbox", {
 			textures = {random_color(), random_color(), random_color(), random_color(), random_color(), random_color()},
 			selectionbox = {rotate = true, -w/2, -h/2, -l/2, w/2, h/2, l/2},
 			visual_size = vector.new(w, h, l),
-			automatic_rotate = 2 * math.pi * (math.random() - 0.5)
+			--automatic_rotate = 2 * math.pi * (math.random() - 0.5)
 		})
 		assert(self.object:get_properties().selectionbox.rotate)
 		self.object:set_armor_groups({punch_operable = 1})
