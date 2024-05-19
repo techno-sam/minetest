@@ -1,4 +1,5 @@
 local player_font_huds = {}
+local player_block_huds = {}
 
 local font_states = {
 	{0, "Normal font"},
@@ -52,6 +53,23 @@ minetest.register_globalstep(function(dtime)
 	font_state = font_state + 1
 end)
 
+local block_pos_etime = 0
+minetest.register_globalstep(function(dtime)
+	block_pos_etime = block_pos_etime + dtime
+	if block_pos_etime < 0.5 then
+		return
+	end
+	block_pos_etime = 0
+	for _, player in ipairs(minetest.get_connected_players()) do
+		local hud_id = player_block_huds[player:get_player_name()]
+		if hud_id then
+			local block_pos = player:get_pos() / 16
+			block_pos = vector.floor(block_pos)
+			player:hud_change(hud_id, "text", ("Block: %s"):format(block_pos))
+		end
+	end
+end)
+
 minetest.register_chatcommand("hudfonts", {
 	params = "[<HUD elements>]",
 	description = "Show/Hide some text on the HUD with various font options",
@@ -74,6 +92,30 @@ minetest.register_chatcommand("hudfonts", {
 				minetest.chat_send_player(name, "All text HUD elements removed.")
 			end
 			player_font_huds[name] = nil
+		end
+		return true
+	end,
+})
+
+minetest.register_chatcommand("hudblock", {
+	params = "",
+	description = "Show/Hide the block position on the HUD",
+	func = function(name, param)
+		local player = minetest.get_player_by_name(name)
+		if player_block_huds[name] == nil then
+			player_block_huds[name] = player:hud_add({
+				type = "text",
+				position = {x = 0.5, y = 0.75},
+				scale = {x = 2, y = 2},
+				alignment = { x = 0, y = 0 },
+				number = 0xFFFFFF,
+				text = "Block: (0, 0, 0)",
+			})
+			minetest.chat_send_player(name, "Block position HUD element added.")
+		else
+			player:hud_remove(player_block_huds[name])
+			player_block_huds[name] = nil
+			minetest.chat_send_player(name, "Block position HUD element removed.")
 		end
 		return true
 	end,

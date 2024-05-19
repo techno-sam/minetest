@@ -698,6 +698,9 @@ void Camera::removeNametag(Nametag *nametag)
 
 std::array<core::plane3d<f32>, 4> Camera::getFrustumCullPlanes() const
 {
+	if (m_cached_frustum_cull_planes_valid)
+		return m_cached_frustum_cull_planes;
+
 	using irr::scene::SViewFrustum;
 	const auto &frustum_planes = m_cameranode->getViewFrustum()->planes;
 	return {

@@ -835,8 +835,9 @@ void GenericCAO::addToScene(ITextureSource *tsrc, scene::ISceneManager *smgr)
 		grabMatrixNode();
 		m_registered_vaedata = false;
 		m_vaedata = new ClientVAEData();
-		m_vaedata->min_pos = v3s16(0, 0, 0);
-		m_vaedata->size = v3u16(1, 1, 1);
+		m_vaedata->min_pos = m_prop.vae_min_pos;
+		m_vaedata->size = m_prop.vae_size;
+		// Implementation-specific rendering variables
 		m_vaedata->world_pos = v3f(0, 0, 0);
 		m_vaedata->scale = v3f(1, 1, 1);
 		m_vaedata->quaternion = core::quaternion(0, 1, 0, 0);
@@ -1729,7 +1730,9 @@ bool GenericCAO::visualExpiryRequired(const ObjectProperties &new_) const
 		old.visual_size != new_.visual_size ||
 		old.wield_item != new_.wield_item ||
 		old.colors != new_.colors ||
-		(uses_legacy_texture && old.textures != new_.textures);
+		(uses_legacy_texture && old.textures != new_.textures) ||
+		(new_.visual == "vae" &&
+			(old.vae_size != new_.vae_size || old.vae_min_pos != new_.vae_min_pos));
 }
 
 void GenericCAO::processMessage(const std::string &data)

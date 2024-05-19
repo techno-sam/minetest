@@ -2336,7 +2336,8 @@ void Server::sendNodeChangePkt(NetworkPacket &pkt, v3s16 block_pos,
 
 		// If player is far away, only set modified blocks not sent
 		if (!client->isBlockSent(block_pos) || (sao &&
-				sao->getBasePosition().getDistanceFrom(p) > maxd)) {
+				sao->getBasePosition().getDistanceFrom(p) > maxd &&
+				!m_env->clientNeedsBlockForVAE(client, block_pos))) {
 			if (far_players)
 				far_players->emplace(client_id);
 			else

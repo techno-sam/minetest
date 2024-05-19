@@ -17,12 +17,14 @@ minetest.register_entity("testentities:selectionbox", {
 	initial_properties = {
 		--visual = "cube",
 		visual = "vae",
+		vae_min_pos = vector.new(0, 0, 0),
+		vae_size = vector.new(13, 5, 13),
 		infotext = "Punch to randomize rotation, rightclick to toggle rotation, sneak+punch to reset rotation"
 	},
 	on_activate = function(self)
 		active_selectionbox_entities = active_selectionbox_entities + 1
 
-		local w, h, l = math.random(), math.random(), math.random()
+		local w, h, l = 1, 1, 1--math.random(), math.random(), math.random()
 		self.object:set_properties({
 			textures = {random_color(), random_color(), random_color(), random_color(), random_color(), random_color()},
 			selectionbox = {rotate = true, -w/2, -h/2, -l/2, w/2, h/2, l/2},

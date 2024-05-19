@@ -131,6 +131,8 @@ void ObjectProperties::serialize(std::ostream &os) const
 	Pointabilities::serializePointabilityType(os, pointable);
 	os << serializeString16(visual);
 	writeV3F32(os, visual_size);
+	writeV3S16(os, vae_min_pos);
+	writeV3U16(os, vae_size);
 	writeU16(os, textures.size());
 	for (const std::string &texture : textures) {
 		os << serializeString16(texture);
@@ -192,6 +194,8 @@ void ObjectProperties::deSerialize(std::istream &is)
 	pointable = Pointabilities::deSerializePointabilityType(is);
 	visual = deSerializeString16(is);
 	visual_size = readV3F32(is);
+	vae_min_pos = readV3S16(is);
+	vae_size = readV3U16(is);
 	textures.clear();
 	u32 texture_count = readU16(is);
 	for (u32 i = 0; i < texture_count; i++){

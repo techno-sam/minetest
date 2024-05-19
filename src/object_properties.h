@@ -46,6 +46,13 @@ struct ObjectProperties
 	// For dropped items, this contains the serialized item.
 	std::string wield_item;
 	v3f visual_size = v3f(1, 1, 1);
+
+	// VAE specific data
+	// This is in block units NOT node units. TODO: what level of precision do we actually want?
+	v3s16 vae_min_pos;
+	// This is in block units NOT node units. TODO: what level of precision do we actually want?
+	v3u16 vae_size;
+
 	video::SColor nametag_color = video::SColor(255, 255, 255, 255);
 	std::optional<video::SColor> nametag_bgcolor;
 	v2s16 spritediv = v2s16(1, 1);
@@ -88,7 +95,7 @@ private:
 		eye_height, zoom_fov, hp_max, breath_max, glow, pointable, physical,
 		collideWithObjects, rotate_selectionbox, is_visible, makes_footstep_sound,
 		automatic_face_movement_dir, backface_culling, static_save, use_texture_alpha,
-		shaded, show_on_minimap
+		shaded, show_on_minimap, vae_min_pos, vae_size
 		);
 	}
 

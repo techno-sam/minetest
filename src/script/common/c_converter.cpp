@@ -274,6 +274,15 @@ v3s16 check_v3s16(lua_State *L, int index)
 	return doubleToInt(pf, 1.0);
 }
 
+void push_v3u16(lua_State *L, v3u16 p)
+{
+	lua_rawgeti(L, LUA_REGISTRYINDEX, CUSTOM_RIDX_PUSH_VECTOR);
+	lua_pushinteger(L, p.X);
+	lua_pushinteger(L, p.Y);
+	lua_pushinteger(L, p.Z);
+	lua_call(L, 3, 1);
+}
+
 bool read_color(lua_State *L, int index, video::SColor *color)
 {
 	if (lua_istable(L, index)) {

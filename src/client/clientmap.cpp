@@ -76,7 +76,7 @@ namespace {
 	{
 	    using VAEMeshBufListMap = std::unordered_map<
 	            video::SMaterial,
-	            std::vector<std::pair<ClientVAEData *, scene::IMeshBuffer *>>,
+	            std::vector<std::pair<ClientOffsetVAEData, scene::IMeshBuffer *>>,
 	            MeshBufListMaps::MaterialHash>;
 
 	    std::array<VAEMeshBufListMap, MAX_TILE_LAYERS> maps;
@@ -87,7 +87,7 @@ namespace {
 	            map.clear();
 	    }
 
-	    void add(scene::IMeshBuffer *buf, ClientVAEData *vae_data, u8 layer)
+	    void add(scene::IMeshBuffer *buf, ClientOffsetVAEData vae_data, u8 layer)
 	    {
 		    assert(layer < MAX_TILE_LAYERS);
 
@@ -858,79 +858,106 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 	VAEMeshBufListMaps grouped_vae_buffers;
 
 	for (ClientVAEData *vae_data : m_vaentities) {
-		v3f world_pos = vae_data->world_pos;
-		v3s16 block_pos = vae_data->min_pos; // fixme implement size
-		MapSector *sector = getSectorNoGenerate(v2s16(block_pos.X, block_pos.Z));
-		if (sector == NULL)
-			continue;
-		MapBlock *block = sector->getBlockNoCreateNoEx(block_pos.Y);
-		if (block == NULL)
-			continue;
-		MapBlockMesh *block_mesh = block->mesh;
+		for (auto xo = 0; xo < vae_data->size.X; xo++)
+		for (auto zo = 0; zo < vae_data->size.Z; zo++) {
+			v3s16 block_pos = vae_data->min_pos + v3s16(xo, 0, zo);
+			MapSector *sector = getSectorNoGenerate(v2s16(block_pos.X, block_pos.Z));
+			if (sector == NULL)
+				continue;
 
-		// If the mesh of the block happened to get deleted, ignore it
-		if (!block_mesh)
-			continue;
+			for (auto yo = 0; yo < vae_data->size.Y; yo++) {
+				MapBlock *block = sector->getBlockNoCreateNoEx(block_pos.Y+yo);
+				if (block == NULL)
+					continue;
+				MapBlockMesh *block_mesh = block->mesh;
 
-		// Do exact frustum culling
-		// (The one in updateDrawList is only coarse.)
-		v3f mesh_sphere_center = world_pos//intToFloat(block->getPosRelative(), BS)
-								 + block_mesh->getBoundingSphereCenter();
-		f32 mesh_sphere_radius = block_mesh->getBoundingRadius();
-		if (is_frustum_culled(mesh_sphere_center, mesh_sphere_radius))
-			continue;
+				ClientOffsetVAEData offset_vae_data;
+				offset_vae_data.offset = v3s16(xo, yo, zo);
+				offset_vae_data.data = vae_data;
 
-		v3f block_pos_r = mesh_sphere_center;//intToFloat(block->getPosRelative() + MAP_BLOCKSIZE / 2, BS);
+				// If the mesh of the block happened to get deleted, ignore it
+				if (!block_mesh)
+					continue;
 
-		float d = camera_position.getDistanceFrom(block_pos_r);
-		d = MYMAX(0,d - BLOCK_MAX_RADIUS);
+				v3f world_pos;
+				f32 max_scale = MYMAX(vae_data->scale.X, MYMAX(vae_data->scale.Y, vae_data->scale.Z));
+				{
+					core::matrix4 pos_mat;
+					pos_mat.setTranslation(vae_data->world_pos);
 
-		// Mesh animation
-		if (pass == scene::ESNRP_SOLID) {
-			// Pretty random but this should work somewhat nicely
-			bool faraway = d >= BS * 50;
-			if (block_mesh->isAnimationForced() || !faraway ||
-					mesh_animate_count < (m_control.range_all ? 200 : 50)) {
+					core::matrix4 scale_mat;
+					scale_mat.setScale(vae_data->scale);
 
-				bool animated = block_mesh->animate(faraway, animation_time,
-						crack, daynight_ratio);
-				if (animated)
-					mesh_animate_count++;
-			} else {
-				block_mesh->decreaseAnimationForceTimer();
-			}
-		}
+					core::matrix4 rot_mat;
+					vae_data->quaternion.getMatrix_transposed(rot_mat);
 
-		/*
-			Get the meshbuffers of the block
-		*/
-		if (is_transparent_pass) {
-			// In transparent pass, the mesh will give us
-			// the partial buffers in the correct order
-			for (auto &buffer : block_mesh->getTransparentBuffers())
-				draw_order.emplace_back(vae_data, &buffer);
-		}
-		else {
-			// otherwise, group buffers across meshes
-			// using MeshBufListList
-			for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
-				scene::IMesh *mesh = block_mesh->getMesh(layer);
-				assert(mesh);
+					core::matrix4 secondary_pos_mat;
+					secondary_pos_mat.setTranslation(intToFloat(offset_vae_data.offset * MAP_BLOCKSIZE, BS) +
+						block_mesh->getBoundingSphereCenter());
 
-				u32 c = mesh->getMeshBufferCount();
-				for (u32 i = 0; i < c; i++) {
-					scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+					auto m = pos_mat * rot_mat * scale_mat * secondary_pos_mat;
+					world_pos = m.getTranslation();
+				}
 
-					video::SMaterial& material = buf->getMaterial();
-					video::IMaterialRenderer* rnd =
-							driver->getMaterialRenderer(material.MaterialType);
-					bool transparent = (rnd && rnd->isTransparent());
-					if (!transparent) {
-						if (buf->getVertexCount() == 0)
-							errorstream << "Block [" << analyze_block(block)
-										<< "] contains an empty meshbuf" << std::endl;
+				// Do exact frustum culling
+				// (The one in updateDrawList is only coarse.)
+				v3f mesh_sphere_center = world_pos;
+				f32 mesh_sphere_radius = block_mesh->getBoundingRadius() * max_scale;
+				if (is_frustum_culled(mesh_sphere_center, mesh_sphere_radius))
+					continue;
 
-						grouped_vae_buffers.add(buf, vae_data, layer);
+				v3f block_pos_r = mesh_sphere_center;//intToFloat(block->getPosRelative() + MAP_BLOCKSIZE / 2, BS);
+
+				float d = camera_position.getDistanceFrom(block_pos_r);
+				d = MYMAX(0, d - BLOCK_MAX_RADIUS);
+
+				// Mesh animation
+				if (pass == scene::ESNRP_SOLID) {
+					// Pretty random but this should work somewhat nicely
+					bool faraway = d >= BS * 50;
+					if (block_mesh->isAnimationForced() || !faraway ||
+						mesh_animate_count < (m_control.range_all ? 200 : 50)) {
+
+						bool animated = block_mesh->animate(faraway, animation_time,
+															crack, daynight_ratio);
+						if (animated)
+							mesh_animate_count++;
+					} else {
+						block_mesh->decreaseAnimationForceTimer();
+					}
+				}
+
+				/*
+					Get the meshbuffers of the block
+				*/
+				if (is_transparent_pass) {
+					// In transparent pass, the mesh will give us
+					// the partial buffers in the correct order
+					for (auto &buffer: block_mesh->getTransparentBuffers())
+						draw_order.emplace_back(offset_vae_data, &buffer);
+				} else {
+					// otherwise, group buffers across meshes
+					// using MeshBufListList
+					for (int layer = 0; layer < MAX_TILE_LAYERS; layer++) {
+						scene::IMesh *mesh = block_mesh->getMesh(layer);
+						assert(mesh);
+
+						u32 c = mesh->getMeshBufferCount();
+						for (u32 i = 0; i < c; i++) {
+							scene::IMeshBuffer *buf = mesh->getMeshBuffer(i);
+
+							video::SMaterial &material = buf->getMaterial();
+							video::IMaterialRenderer *rnd =
+									driver->getMaterialRenderer(material.MaterialType);
+							bool transparent = (rnd && rnd->isTransparent());
+							if (!transparent) {
+								if (buf->getVertexCount() == 0)
+									errorstream << "Block [" << analyze_block(block)
+												<< "] contains an empty meshbuf" << std::endl;
+
+								grouped_vae_buffers.add(buf, offset_vae_data, layer);
+							}
+						}
 					}
 				}
 			}
@@ -1000,18 +1027,21 @@ void ClientMap::renderMap(video::IVideoDriver* driver, s32 pass)
 
 		v3f block_wpos;
 		if (descriptor.m_is_vae) {
-			block_wpos = descriptor.m_vae_data->world_pos;
+			block_wpos = descriptor.m_vae_data.data->world_pos;
 
 			core::matrix4 pos_mat;
 			pos_mat.setTranslation(block_wpos - offset);
 
 			core::matrix4 scale_mat;
-			scale_mat.setScale(descriptor.m_vae_data->scale);
+			scale_mat.setScale(descriptor.m_vae_data.data->scale);
 
 			core::matrix4 rot_mat;
-			descriptor.m_vae_data->quaternion.getMatrix_transposed(rot_mat);
+			descriptor.m_vae_data.data->quaternion.getMatrix_transposed(rot_mat);
 
-			m = pos_mat * rot_mat * scale_mat;
+			core::matrix4 secondary_pos_mat;
+			secondary_pos_mat.setTranslation(intToFloat(descriptor.m_vae_data.offset * MAP_BLOCKSIZE, BS));
+
+			m = pos_mat * rot_mat * scale_mat * secondary_pos_mat;
 		} else {
 			block_wpos = intToFloat(mesh_grid.getMeshPos(descriptor.m_pos) * MAP_BLOCKSIZE, BS);
 			m.setTranslation(block_wpos - offset);

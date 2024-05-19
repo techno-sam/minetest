@@ -268,6 +268,9 @@ void RemoteClient::GetNextBlocks (
 
 	const v3s16 cam_pos_nodes = floatToInt(camera_pos, BS);
 
+	std::unordered_set<v3s16> already_queued;
+
+	// Collect normal blocks
 	s16 d;
 	for (d = d_start; d <= d_max; d++) {
 		/*
@@ -401,6 +404,91 @@ void RemoteClient::GetNextBlocks (
 			PrioritySortedBlockTransfer q((float)dist, p, peer_id);
 
 			dest.push_back(q);
+
+			already_queued.insert(p);
+
+			num_blocks_selected += 1;
+		}
+	}
+
+	// Collect VAE blocks
+	for (auto id : m_known_objects) {
+		ServerActiveObject *obj = env->getActiveObject(id);
+		if (!obj)
+			continue;
+
+		ObjectProperties *props = obj->accessObjectProperties();
+		if (!props)
+			continue;
+
+		if (props->visual != "vae")
+			continue;
+
+		for (int xo = 0; xo < props->vae_size.X; xo++)
+		for (int yo = 0; yo < props->vae_size.Y; yo++)
+		for (int zo = 0; zo < props->vae_size.Z; zo++) {
+			v3s16 p = props->vae_min_pos + v3s16(xo, yo, zo);
+			/*
+				Check if map has this block
+			*/
+			MapBlock *block = env->getMap().getBlockNoCreateNoEx(p);
+			if (block) {
+				// First: Reset usage timer, this block will be of use in the future.
+				block->resetUsageTimer();
+			}
+
+			// Don't select too many blocks for sending
+			if (num_blocks_selected >= max_simul_sends_usually)
+				goto queue_full_break;
+
+			// Don't send blocks that are currently being transferred
+			if (m_blocks_sending.find(p) != m_blocks_sending.end())
+				continue;
+
+			/*
+				Don't send already sent blocks
+			*/
+			if (m_blocks_sent.find(p) != m_blocks_sent.end())
+				continue;
+
+			// Don't send blocks that are already queued
+			if (already_queued.find(p) != already_queued.end())
+				continue;
+
+			if (block) {
+				/*
+					If block is not generated, skip block.
+				*/
+				if (!block->isGenerated())
+					continue;
+			}
+
+			/*
+				Add inexistent block to emerge queue.
+			*/
+			if (!block || !block->isGenerated()) {
+				if (emerge->enqueueBlockEmerge(peer_id, p, false)) {
+					if (nearest_emerged_d == -1)
+						nearest_emerged_d = d;
+				} else {
+					if (nearest_emergefull_d == -1)
+						nearest_emergefull_d = d;
+					goto queue_full_break;
+				}
+
+				// get next one.
+				continue;
+			}
+
+			auto dist = (obj->getBasePosition() - playerpos_predicted).getLength();
+			/*
+				Add block to send queue
+			*/
+			PrioritySortedBlockTransfer q(dist, p, peer_id);
+
+			dest.push_back(q);
+
+			already_queued.insert(p);
 
 			num_blocks_selected += 1;
 		}

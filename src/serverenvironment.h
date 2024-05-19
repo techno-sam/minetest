@@ -29,6 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "server/activeobjectmgr.h"
 #include "util/numeric.h"
 #include "util/metricsbackend.h"
+#include "server/clientiface.h"
 
 class IGameDef;
 struct GameParams;
@@ -389,6 +390,9 @@ public:
 	AuthDatabase *getAuthDatabase() { return m_auth_database; }
 	static bool migrateAuthDatabase(const GameParams &game_params,
 			const Settings &cmd_args);
+
+	bool clientNeedsBlockForVAE(RemoteClient *client, v3s16 block_pos);
+
 private:
 
 	/**

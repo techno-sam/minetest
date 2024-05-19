@@ -40,6 +40,8 @@ minetest.register_entity("testentities:cube", {
 minetest.register_entity(":vtestentities:cube_vae", {
 	initial_properties = {
 		visual = "vae",
+		vae_min_pos = vector.new(0, 0, 0),
+		vae_size = vector.new(1, 1, 1),
 		textures = {
 			"testentities_cube1.png",
 			"testentities_cube2.png",

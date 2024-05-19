@@ -110,6 +110,7 @@ void                push_v2s16          (lua_State *L, v2s16 p);
 void                push_v2s32          (lua_State *L, v2s32 p);
 void                push_v2u32          (lua_State *L, v2u32 p);
 void                push_v3s16          (lua_State *L, v3s16 p);
+void                push_v3u16          (lua_State *L, v3u16 p);
 void                push_aabb3f         (lua_State *L, aabb3f box, f32 divisor = 1.0f);
 void                push_ARGB8          (lua_State *L, video::SColor color);
 void                pushFloatPos        (lua_State *L, v3f p);

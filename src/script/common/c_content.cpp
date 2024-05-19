@@ -258,7 +258,7 @@ void push_item_definition_full(lua_State *L, const ItemDefinition &i)
 }
 
 /******************************************************************************/
-const std::array<const char *, 33> object_property_keys = {
+const std::array<const char *, 35> object_property_keys = {
 	"hp_max",
 	"breath_max",
 	"physical",
@@ -269,6 +269,8 @@ const std::array<const char *, 33> object_property_keys = {
 	"visual",
 	"mesh",
 	"visual_size",
+	"vae_min_pos",
+	"vae_size",
 	"textures",
 	"colors",
 	"spritediv",
@@ -365,6 +367,21 @@ void read_object_properties(lua_State *L, int index,
 		lua_pop(L, 1);
 
 		prop->visual_size = v3f(scale_xy.X, scale_xy.Y, scale_z);
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "vae_min_pos");
+	if (lua_istable(L, -1)) {
+		prop->vae_min_pos = read_v3s16(L, -1);
+	}
+	lua_pop(L, 1);
+
+	lua_getfield(L, -1, "vae_size");
+	if (lua_istable(L, -1)) {
+		v3s16 signed_size = read_v3s16(L, -1);
+		prop->vae_size.X = MYMAX(1, signed_size.X);
+		prop->vae_size.Y = MYMAX(1, signed_size.Y);
+		prop->vae_size.Z = MYMAX(1, signed_size.Z);
 	}
 	lua_pop(L, 1);
 
@@ -490,6 +507,10 @@ void push_object_properties(lua_State *L, const ObjectProperties *prop)
 	lua_setfield(L, -2, "pointable");
 	lua_pushlstring(L, prop->visual.c_str(), prop->visual.size());
 	lua_setfield(L, -2, "visual");
+	push_v3s16(L, prop->vae_min_pos);
+	lua_setfield(L, -2, "vae_min_pos");
+	push_v3u16(L, prop->vae_size);
+	lua_setfield(L, -2, "vae_size");
 	lua_pushlstring(L, prop->mesh.c_str(), prop->mesh.size());
 	lua_setfield(L, -2, "mesh");
 	push_v3f(L, prop->visual_size);

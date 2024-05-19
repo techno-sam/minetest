@@ -2528,3 +2528,26 @@ bool ServerEnvironment::migrateAuthDatabase(
 	}
 	return true;
 }
+
+bool ServerEnvironment::clientNeedsBlockForVAE(RemoteClient *client, v3s16 block_pos)
+{
+	for (auto id : client->m_known_objects) {
+		ServerActiveObject *obj = getActiveObject(id);
+		if (!obj)
+			continue;
+		ObjectProperties *props = obj->accessObjectProperties();
+		if (!props)
+			continue;
+		if (props->visual == "vae") {
+			if (block_pos < props->vae_min_pos)
+				continue;
+			v3s16 relative = block_pos - props->vae_min_pos;
+			v3u16 relativeU = v3u16((unsigned short) relative.X, (unsigned short) relative.Y,
+									(unsigned short) relative.Z);
+			if (relativeU <= props->vae_size) {
+				return true;
+			}
+		}
+	}
+	return false;
+}

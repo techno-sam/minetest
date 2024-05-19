@@ -209,10 +209,25 @@ public:
 
 	inline void addArmInertia(f32 player_yaw);
 
+	inline void clearCachedFrustumCullPlanes() {
+		m_cached_frustum_cull_planes_valid = false;
+	}
+
+	inline void cacheFrustumCullPlanes() {
+		if (!m_cached_frustum_cull_planes_valid) {
+			m_cached_frustum_cull_planes = getFrustumCullPlanes();
+			m_cached_frustum_cull_planes_valid = true;
+		}
+	}
+
 private:
 	// Use getFrustumCuller().
 	// This helper just exists to decrease the header's number of includes.
 	std::array<core::plane3d<f32>, 4> getFrustumCullPlanes() const;
+
+	// Cached frustum cull planes (for when camera update is disabled)
+	bool m_cached_frustum_cull_planes_valid = false;
+	std::array<core::plane3d<f32>, 4> m_cached_frustum_cull_planes;
 
 	// Nodes
 	scene::ISceneNode *m_playernode = nullptr;

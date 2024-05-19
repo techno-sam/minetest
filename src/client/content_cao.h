@@ -34,11 +34,18 @@ struct Nametag;
 struct MinimapMarker;
 
 struct ClientVAEData {
-	v3s16 min_pos; // in MapBlock coordinates, multiply by 16 for block coords
-	v3u16 size; // in MapBlock coordinates, multiply by 16 for block coords
+	v3s16 min_pos; // in MapBlock coordinates, multiply by 16 for node coords
+	v3u16 size; // in MapBlock coordinates, multiply by 16 for node coords
+
+	// these are purely rendering
 	v3f world_pos;
 	v3f scale;
 	core::quaternion quaternion;
+};
+
+struct ClientOffsetVAEData {
+	v3s16 offset;
+	ClientVAEData *data;
 };
 
 /*

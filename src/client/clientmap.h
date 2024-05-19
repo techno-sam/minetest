@@ -152,7 +152,7 @@ private:
 	struct DrawDescriptor {
 		union {
 			v3s16 m_pos;
-			ClientVAEData *m_vae_data;
+			ClientOffsetVAEData m_vae_data;
 		};
 		union {
 			scene::IMeshBuffer *m_buffer;
@@ -170,11 +170,11 @@ private:
 				m_pos(pos), m_partial_buffer(buffer), m_reuse_material(false), m_use_partial_buffer(true), m_is_vae(false)
 		{}
 
-		DrawDescriptor(ClientVAEData *vae_data, scene::IMeshBuffer *buffer, bool reuse_material) :
+		DrawDescriptor(ClientOffsetVAEData vae_data, scene::IMeshBuffer *buffer, bool reuse_material) :
 				m_vae_data(vae_data), m_buffer(buffer), m_reuse_material(reuse_material), m_use_partial_buffer(false), m_is_vae(true)
 		{}
 
-		DrawDescriptor(ClientVAEData *vae_data, const PartialMeshBuffer *buffer) :
+		DrawDescriptor(ClientOffsetVAEData vae_data, const PartialMeshBuffer *buffer) :
 				m_vae_data(vae_data), m_partial_buffer(buffer), m_reuse_material(false), m_use_partial_buffer(true), m_is_vae(true)
 		{}
 
